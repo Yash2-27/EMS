@@ -18,5 +18,4 @@ public class Parents {
     private String studentName;
     private Integer studentId;
     private String relationshipWithStudent;
-
 }

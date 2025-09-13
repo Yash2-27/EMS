@@ -72,7 +72,7 @@ public class QuestionDTO {
     private String answer;
 
     @JsonProperty("studentClass")
-    @NotBlank(message = "Student class is required")
+  //  @NotBlank(message = "Student class is required")
     private String StudentClass;
 
     @JsonProperty("descriptive")
