@@ -10,7 +10,12 @@ import java.util.List;
 public interface FeesRepository extends JpaRepository<Fees, Integer> {
     List<Fees> findByStatus(String status);
 
-    List<Fees> findByStudentClass(String studentClass);
+    // List<Fees> findByStudentClass(String studentClass);
 
     Fees findByStudentClassAndBatch(String studentClass, String batch);
+
+    //--------------------------------------------------------------------
+
+    Fees findByStudentClass(String studentClass);
+
 }

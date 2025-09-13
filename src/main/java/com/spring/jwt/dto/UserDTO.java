@@ -6,7 +6,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -53,6 +52,8 @@ public class UserDTO {
     @Schema(
             description = "Roles of the User", example = "[\"USER\", \"ADMIN\"]"
     )
+
+
     private Set<String> roles;
 
     private String name;
@@ -69,7 +70,7 @@ public class UserDTO {
         this.lastName = user.getLastName();
         this.mobileNumber = user.getMobileNumber();
         this.userId = user.getId().toString();
-        
+
         if (user.getRoles() != null) {
             this.roles = user.getRoles().stream()
                 .map(Role::getName)
@@ -90,13 +91,13 @@ public class UserDTO {
         dto.setLastName(user.getLastName());
         dto.setAddress(user.getAddress());
         dto.setUserId(user.getId().toString());
-        
+
         if (user.getRoles() != null) {
             dto.setRoles(user.getRoles().stream()
                 .map(Role::getName)
                 .collect(Collectors.toSet()));
         }
-        
+
         return dto;
     }
 }

@@ -25,6 +25,7 @@ public class User {
     @Column(name = "user_id")
     private Integer id;
 
+
     @NotBlank(message = "Email cannot be blank")
     @Email
     @Pattern(regexp = "^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$", message = "Invalid email format")
@@ -73,7 +74,7 @@ public class User {
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "user_id"),
     inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "role_id"))
-    private Set<Role> roles;
 
+    private Set<Role> roles;
 
 }
