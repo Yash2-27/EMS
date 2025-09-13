@@ -1,8 +1,13 @@
 package com.spring.jwt.service.impl;
 
-import com.spring.jwt.Fees.FeesRepository;
-import com.spring.jwt.dto.*;
-import com.spring.jwt.entity.*;
+import com.spring.jwt.dto.ResetPassword;
+import com.spring.jwt.dto.UserDTO;
+import com.spring.jwt.dto.UserUpdateRequest;
+import com.spring.jwt.entity.Role;
+import com.spring.jwt.entity.Student;
+import com.spring.jwt.entity.User;
+import com.spring.jwt.entity.Teacher;
+import com.spring.jwt.entity.Parents;
 import com.spring.jwt.exception.BaseException;
 import com.spring.jwt.exception.UserNotFoundExceptions;
 import com.spring.jwt.repository.RoleRepository;
@@ -38,6 +43,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.spring.jwt.mapper.UserMapper;
+import com.spring.jwt.dto.UserProfileDTO;
+import com.spring.jwt.dto.StudentDTO;
+import com.spring.jwt.dto.TeacherDTO;
+import com.spring.jwt.dto.ParentsDTO;
 
 @Service
 @RequiredArgsConstructor
@@ -63,8 +72,6 @@ public class UserServiceImpl implements UserService {
     private final EmailService emailService;
     
     private final UserMapper userMapper;
-
-    private final FeesRepository feesRepository;
 
     @Value("${app.url.password-reset}")
     private String passwordResetUrl;
@@ -498,71 +505,4 @@ public class UserServiceImpl implements UserService {
         
         return profileDTO;
     }
-
-
-    @Override
-    public PersonalInfoDTO getPersonalInfo(Long userId) {
-        User user = userRepository.findById(userId).orElse(null);
-        if (user == null) return null;
-
-        // Fetch Student linked to User
-        Student student = studentRepository.findByUserId(user.getId());
-
-        // Fetch Parents linked to Student
-        Parents parent = null;
-        if (student != null) {
-            parent = parentsRepository.findByStudentId(student.getStudentId());
-        }
-
-        // Fetch Fees linked to Student Class (ignore case)
-        Fees fees = null;
-        if (student != null) {
-            fees = feesRepository.findByStudentClass(student.getStudentClass());
-        }
-
-        return new PersonalInfoDTO(
-                user.getFirstName(),
-                user.getLastName(),
-                user.getEmail(),
-                user.getMobileNumber(),
-                parent != null ? parent.getRelationshipWithStudent() : null, // ✅ relationship
-                fees != null ? fees.getFee() : 0                            // ✅ avoid null
-        );
-    }
-
-
-
-    @Override
-    @Transactional
-    public PersonalInfoDTO updatePersonalInfo(Long userId, PersonalInfoDTO dto) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
-
-        // ✅ Update User basic info
-        user.setFirstName(dto.getFirstName());
-        user.setLastName(dto.getLastName());
-        user.setEmail(dto.getEmail());
-        user.setMobileNumber(dto.getPhoneNumber());
-        userRepository.save(user);
-
-        // ✅ Update Parent info
-        Student student = studentRepository.findByUserId(user.getId());
-        if (student != null) {
-            Parents parent = parentsRepository.findByStudentId(student.getStudentId());
-            if (parent != null) {
-                parent.setRelationshipWithStudent(dto.getRelationshipWithStudent());
-                parentsRepository.save(parent);
-            }
-
-            // ✅ Update Fees info
-            Fees fees = feesRepository.findByStudentClass(student.getStudentClass());
-            if (fees != null) {
-                fees.setFee(dto.getFees());
-                feesRepository.save(fees);
-            }
-        }
-
-        return dto; // return updated data
-    }
-
 }

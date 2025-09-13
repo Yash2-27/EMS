@@ -1,6 +1,9 @@
 package com.spring.jwt.service;
 
-import com.spring.jwt.dto.*;
+import com.spring.jwt.dto.ResetPassword;
+import com.spring.jwt.dto.UserDTO;
+import com.spring.jwt.dto.UserProfileDTO;
+import com.spring.jwt.dto.UserUpdateRequest;
 import com.spring.jwt.exception.UserNotFoundExceptions;
 import com.spring.jwt.utils.BaseResponseDTO;
 import com.spring.jwt.utils.ResponseDto;
@@ -32,12 +35,4 @@ public interface UserService {
     UserProfileDTO getCurrentUserProfile();
 
     UserDTO updateUser(Long id, UserUpdateRequest request);
-
-    PersonalInfoDTO getPersonalInfo(Long userId);
-
-    PersonalInfoDTO updatePersonalInfo(Long userId, PersonalInfoDTO dto);
-
-
-
-
 }
