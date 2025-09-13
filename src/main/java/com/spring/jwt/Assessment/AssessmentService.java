@@ -95,5 +95,4 @@ public interface AssessmentService {
      * @throws AssessmentNotFoundException if assessment not found
      */
     AssessmentDTO removeQuestionFromAssessment(Integer assessmentId, Integer questionId);
-
 }

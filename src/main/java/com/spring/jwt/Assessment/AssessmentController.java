@@ -256,5 +256,4 @@ public class AssessmentController {
                     .body(ApiResponse.error(HttpStatus.BAD_REQUEST, "Failed to search assessments", e.getMessage()));
         }
     }
-
 }

@@ -110,10 +110,31 @@ public class AssessmentServiceImpl implements AssessmentService {
         Assessment assessment = assessmentRepository.findById(id)
                 .orElseThrow(() -> new AssessmentNotFoundException("Assessment not found with id: " + id));
 
-        // Use the updateEntityFromDto method from AssessmentMapper for cleaner updates
-        assessmentMapper.updateEntityFromDto(assessmentDTO, assessment);
+        if (assessmentDTO.getTitle() != null) {
+            assessment.setTitle(assessmentDTO.getTitle());
+        }
+        if (assessmentDTO.getSubject() != null) {
+            assessment.setSubject(assessmentDTO.getSubject());
+        }
+        if (assessmentDTO.getDescription() != null) {
+            assessment.setDescription(assessmentDTO.getDescription());
+        }
+        if (assessmentDTO.getAssessmentDate() != null) {
+            assessment.setAssessmentDate(assessmentDTO.getAssessmentDate());
+        }
+        if (assessmentDTO.getDuration() != null) {
+            assessment.setDuration(assessmentDTO.getDuration());
+        }
+        if (assessmentDTO.getStartTime() != null) {
+            assessment.setStartTime(assessmentDTO.getStartTime());
+        }
+        if (assessmentDTO.getEndTime() != null) {
+            assessment.setEndTime(assessmentDTO.getEndTime());
+        }
+        if (assessmentDTO.getIsActive() != null) {
+            assessment.setIsActive(assessmentDTO.getIsActive());
+        }
 
-        // Handle questions separately as the mapper might not handle this complex logic
         if (assessmentDTO.getQuestionIds() != null && !assessmentDTO.getQuestionIds().isEmpty()) {
             List<Question> questions = questionRepository.findAllById(assessmentDTO.getQuestionIds());
 
@@ -188,7 +209,6 @@ public class AssessmentServiceImpl implements AssessmentService {
             }
 
             if (filters.containsKey("createdBy")) {
-                // Assuming 'id' is the primary key for the User entity
                 predicates.add(criteriaBuilder.equal(
                         root.get("user").get("id"),
                         Long.parseLong(filters.get("createdBy"))
@@ -227,19 +247,8 @@ public class AssessmentServiceImpl implements AssessmentService {
 
         assessment.getQuestions().add(question);
 
-        // Note: The logic for AssessmentQuestion (points, orderNumber) might need
-        // a dedicated repository if AssessmentQuestion is a separate entity
-        // or a clearer way to manage the ManyToMany with extra columns.
-        // As it stands, this part of the code initializes an AssessmentQuestion
-        // but doesn't persist it or associate it with the ManyToMany relationship
-        // in a standard JPA way without a separate join entity repository.
-        // If AssessmentQuestion is a join entity, you'd need an AssessmentQuestionRepository
-        // and persist it there. If it's merely properties for the join, MapStruct
-        // or manual mapping with specific DTOs would handle it.
         if (questionDTO.getPoints() != null || questionDTO.getOrderNumber() != null) {
-            // This part might need refinement based on how you manage AssessmentQuestion as a join entity
-            // or if points/orderNumber are directly managed on the Question entity or in a separate table.
-            AssessmentQuestion assessmentQuestion = new AssessmentQuestion(); // This entity is not directly persisted here
+            AssessmentQuestion assessmentQuestion = new AssessmentQuestion();
             assessmentQuestion.setAssessment(assessment);
             assessmentQuestion.setQuestion(question);
 
@@ -250,8 +259,7 @@ public class AssessmentServiceImpl implements AssessmentService {
             if (questionDTO.getOrderNumber() != null) {
                 assessmentQuestion.setOrderNumber(questionDTO.getOrderNumber());
             }
-            // If AssessmentQuestion is an actual entity, it would need to be saved via its repository here.
-            // Example: assessmentQuestionRepository.save(assessmentQuestion);
+
         }
 
         Assessment savedAssessment = assessmentRepository.save(assessment);
@@ -272,6 +280,4 @@ public class AssessmentServiceImpl implements AssessmentService {
         Assessment savedAssessment = assessmentRepository.save(assessment);
         return assessmentMapper.toDto(savedAssessment);
     }
-
-
 }
