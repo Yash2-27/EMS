@@ -17,4 +17,7 @@ public class Parents {
     private String batch;
     private String studentName;
     private Integer studentId;
+
+    private String relationshipWithStudent;  // <-- NEW FIELD
+
 }
