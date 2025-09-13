@@ -60,14 +60,14 @@ public class AssessmentServiceImpl implements AssessmentService {
                 Set<Integer> foundIds = questions.stream()
                         .map(Question::getQuestionId)
                         .collect(Collectors.toSet());
-                
+
                 List<Integer> notFound = assessmentDTO.getQuestionIds().stream()
                         .filter(id -> !foundIds.contains(id))
                         .collect(Collectors.toList());
-                
+
                 throw new QuestionNotFoundException("Questions not found with ids: " + notFound);
             }
-            
+
             assessment.setQuestions(questions);
         }
 
@@ -142,14 +142,14 @@ public class AssessmentServiceImpl implements AssessmentService {
                 Set<Integer> foundIds = questions.stream()
                         .map(Question::getQuestionId)
                         .collect(Collectors.toSet());
-                
+
                 List<Integer> notFound = assessmentDTO.getQuestionIds().stream()
                         .filter(qid -> !foundIds.contains(qid))
                         .collect(Collectors.toList());
-                
+
                 throw new QuestionNotFoundException("Questions not found with ids: " + notFound);
             }
-            
+
             assessment.setQuestions(questions);
         }
 
@@ -161,7 +161,7 @@ public class AssessmentServiceImpl implements AssessmentService {
     public void deleteAssessment(Integer id) {
         Assessment assessment = assessmentRepository.findById(id)
                 .orElseThrow(() -> new AssessmentNotFoundException("Assessment not found with id: " + id));
-        
+
         assessmentRepository.delete(assessment);
     }
 
@@ -171,7 +171,7 @@ public class AssessmentServiceImpl implements AssessmentService {
         if (!userRepository.existsById(userId.longValue())) {
             throw new UserNotFoundExceptions("User not found with id: " + userId);
         }
-        
+
         return assessmentRepository.findByUserId(userId.longValue(), pageable)
                 .map(assessmentMapper::toDto);
     }
@@ -182,7 +182,7 @@ public class AssessmentServiceImpl implements AssessmentService {
         if (!userRepository.existsById(userId.longValue())) {
             throw new UserNotFoundExceptions("User not found with id: " + userId);
         }
-        
+
         return assessmentRepository.findByUserId(userId.longValue()).stream()
                 .map(assessmentMapper::toDto)
                 .collect(Collectors.toList());
@@ -193,38 +193,38 @@ public class AssessmentServiceImpl implements AssessmentService {
     public Page<AssessmentDTO> searchAssessments(Map<String, String> filters, Pageable pageable) {
         Specification<Assessment> spec = (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
-            
+
             if (filters.containsKey("title")) {
                 predicates.add(criteriaBuilder.like(
-                    criteriaBuilder.lower(root.get("title")), 
-                    "%" + filters.get("title").toLowerCase() + "%"
+                        criteriaBuilder.lower(root.get("title")),
+                        "%" + filters.get("title").toLowerCase() + "%"
                 ));
             }
-            
+
             if (filters.containsKey("subject")) {
                 predicates.add(criteriaBuilder.equal(
-                    criteriaBuilder.lower(root.get("subject")), 
-                    filters.get("subject").toLowerCase()
+                        criteriaBuilder.lower(root.get("subject")),
+                        filters.get("subject").toLowerCase()
                 ));
             }
-            
+
             if (filters.containsKey("createdBy")) {
                 predicates.add(criteriaBuilder.equal(
-                    root.get("user").get("id"), 
-                    Long.parseLong(filters.get("createdBy"))
+                        root.get("user").get("id"),
+                        Long.parseLong(filters.get("createdBy"))
                 ));
             }
-            
+
             if (filters.containsKey("isActive")) {
                 predicates.add(criteriaBuilder.equal(
-                    root.get("isActive"), 
-                    Boolean.parseBoolean(filters.get("isActive"))
+                        root.get("isActive"),
+                        Boolean.parseBoolean(filters.get("isActive"))
                 ));
             }
-            
+
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
-        
+
         return assessmentRepository.findAll(spec, pageable)
                 .map(assessmentMapper::toDto);
     }
@@ -240,7 +240,7 @@ public class AssessmentServiceImpl implements AssessmentService {
 
         boolean questionExists = assessment.getQuestions().stream()
                 .anyMatch(q -> q.getQuestionId().equals(questionDTO.getQuestionId()));
-        
+
         if (questionExists) {
             throw new DuplicateQuestionInSetException("Question already exists in the assessment: " + questionDTO.getQuestionId());
         }
@@ -251,17 +251,17 @@ public class AssessmentServiceImpl implements AssessmentService {
             AssessmentQuestion assessmentQuestion = new AssessmentQuestion();
             assessmentQuestion.setAssessment(assessment);
             assessmentQuestion.setQuestion(question);
-            
+
             if (questionDTO.getPoints() != null) {
                 assessmentQuestion.setPoints(questionDTO.getPoints());
             }
-            
+
             if (questionDTO.getOrderNumber() != null) {
                 assessmentQuestion.setOrderNumber(questionDTO.getOrderNumber());
             }
 
         }
-        
+
         Assessment savedAssessment = assessmentRepository.save(assessment);
         return assessmentMapper.toDto(savedAssessment);
     }
@@ -272,7 +272,7 @@ public class AssessmentServiceImpl implements AssessmentService {
                 .orElseThrow(() -> new AssessmentNotFoundException("Assessment not found with id: " + assessmentId));
 
         boolean questionExists = assessment.getQuestions().removeIf(q -> q.getQuestionId().equals(questionId));
-        
+
         if (!questionExists) {
             throw new QuestionNotFoundException("Question not found in the assessment: " + questionId);
         }

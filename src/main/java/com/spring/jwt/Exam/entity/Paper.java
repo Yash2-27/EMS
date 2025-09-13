@@ -1,6 +1,5 @@
 package com.spring.jwt.Exam.entity;
 
-
 import com.spring.jwt.entity.PaperPattern;
 import com.spring.jwt.entity.Question;
 import jakarta.persistence.*;
@@ -45,6 +44,13 @@ public class Paper {
     @OneToMany(mappedBy = "paper", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<NegativeMarks> negativeMarksList;
 
+    // >>> START OF MODIFICATION: Added One-to-One relationship with UpcomingExams <<<
+    // mappedBy indicates that the 'paper' field in the UpcomingExams entity owns the relationship.
+    // cascade = ALL ensures that if a Paper is deleted, its associated UpcomingExams entry is also deleted.
+    // orphanRemoval = true means if the upcomingExam is set to null, the associated UpcomingExams entry is removed.
+    @OneToOne(mappedBy = "paper", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private UpcomingExams upcomingExam; // Reference to the UpcomingExams entity
+    // >>> END OF MODIFICATION <<<
 
     public List<Question> getQuestions() {
         return questions;
