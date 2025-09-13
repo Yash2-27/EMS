@@ -1,11 +1,20 @@
 package com.spring.jwt.service.impl;
 
-import com.spring.jwt.Fees.FeesRepository;
-import com.spring.jwt.dto.*;
-import com.spring.jwt.entity.*;
+import com.spring.jwt.dto.ResetPassword;
+import com.spring.jwt.dto.UserDTO;
+import com.spring.jwt.dto.UserUpdateRequest;
+import com.spring.jwt.entity.Role;
+import com.spring.jwt.entity.Student;
+import com.spring.jwt.entity.User;
+import com.spring.jwt.entity.Teacher;
+import com.spring.jwt.entity.Parents;
 import com.spring.jwt.exception.BaseException;
 import com.spring.jwt.exception.UserNotFoundExceptions;
-import com.spring.jwt.repository.*;
+import com.spring.jwt.repository.RoleRepository;
+import com.spring.jwt.repository.StudentRepository;
+import com.spring.jwt.repository.UserRepository;
+import com.spring.jwt.repository.TeacherRepository;
+import com.spring.jwt.repository.ParentsRepository;
 import com.spring.jwt.service.UserService;
 import com.spring.jwt.utils.BaseResponseDTO;
 import com.spring.jwt.utils.EmailService;
@@ -34,12 +43,14 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.spring.jwt.mapper.UserMapper;
+import com.spring.jwt.dto.UserProfileDTO;
+import com.spring.jwt.dto.StudentDTO;
+import com.spring.jwt.dto.TeacherDTO;
+import com.spring.jwt.dto.ParentsDTO;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-
-
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
@@ -59,10 +70,8 @@ public class UserServiceImpl implements UserService {
     private final BCryptPasswordEncoder passwordEncoder;
 
     private final EmailService emailService;
-
+    
     private final UserMapper userMapper;
-
-    private  final FeesRepository feesRepository;
 
     @Value("${app.url.password-reset}")
     private String passwordResetUrl;
@@ -141,7 +150,7 @@ public class UserServiceImpl implements UserService {
 
         return user;
     }
-
+    
     private void createStudentProfile(User user, UserDTO userDTO) {
         Student student = new Student();
         student.setName(userDTO.getFirstName());
@@ -152,11 +161,11 @@ public class UserServiceImpl implements UserService {
         student.setStudentcol1(userDTO.getStudentcol1());
         student.setStudentClass(userDTO.getStudentClass());
         student.setUserId(user.getId().intValue());
-
+        
         studentRepository.save(student);
         log.info("Created student profile for user ID: {}", user.getId());
     }
-
+    
     private void createTeacherProfile(User user, UserDTO userDTO) {
         Teacher teacher = new Teacher();
         teacher.setName(userDTO.getFirstName() + " " + userDTO.getLastName());
@@ -164,11 +173,11 @@ public class UserServiceImpl implements UserService {
         teacher.setDeg(userDTO.getStudentcol1());
         teacher.setStatus("Active");
         teacher.setUserId(user.getId().intValue());
-
+        
         teacherRepository.save(teacher);
         log.info("Created teacher profile for user ID: {}", user.getId());
     }
-
+    
     private void createParentProfile(User user, UserDTO userDTO) {
         Integer studentId = null;
         try {
@@ -178,14 +187,14 @@ public class UserServiceImpl implements UserService {
         } catch (NumberFormatException e) {
             log.warn("Invalid student ID format for parent registration: {}", userDTO.getBatch());
         }
-
+        
         Parents parent = new Parents();
         parent.setParentsId(user.getId().intValue());
         parent.setName(userDTO.getFirstName() + " " + userDTO.getLastName());
         parent.setBatch(userDTO.getStudentClass());
         parent.setStudentName(userDTO.getStudentcol1());
         parent.setStudentId(studentId);
-
+        
         parentsRepository.save(parent);
         log.info("Created parent profile for user ID: {}", user.getId());
     }
@@ -227,18 +236,18 @@ public class UserServiceImpl implements UserService {
             log.warn("Forgot password attempt with empty email");
             return new ResponseDto("Unsuccessful", "Email is required");
         }
-
+        
         User user = userRepository.findByEmail(email);
         if (user == null) {
-            log.warn("Forgot password attempt for non-existent email: {}",
+            log.warn("Forgot password attempt for non-existent email: {}", 
                     DataMaskingUtils.maskEmail(email));
             throw new UserNotFoundExceptions("User not found with email: " + email);
         }
 
         String token = RandomStringUtils.randomAlphanumeric(64);
-        log.debug("Generated password reset token for user: {}",
+        log.debug("Generated password reset token for user: {}", 
                 DataMaskingUtils.maskEmail(email));
-
+        
         updateResetPassword(token, email);
 
         String resetPasswordLink = passwordResetUrl + "?token=" + token;
@@ -271,12 +280,12 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public ResponseDto updatePassword(String token, String newPassword) {
         User user = userRepository.findByResetPasswordToken(token);
-        if (user == null || user.getResetPasswordTokenExpiry() == null ||
+        if (user == null || user.getResetPasswordTokenExpiry() == null || 
                 LocalDateTime.now().isAfter(user.getResetPasswordTokenExpiry())) {
             log.warn("Invalid or expired reset token used: {}", token);
             throw new UserNotFoundExceptions("Invalid or expired token");
         }
-
+        
         user.setPassword(passwordEncoder.encode(newPassword));
         user.setResetPasswordToken(null);
         user.setResetPasswordTokenExpiry(null);
@@ -294,7 +303,7 @@ public class UserServiceImpl implements UserService {
             log.warn("Missing required fields in password reset request");
             return new ResponseDto("Unsuccessful", "Missing required fields");
         }
-
+        
         if (!request.getPassword().equals(request.getConfirmPassword())) {
             log.warn("Password mismatch in reset request");
             return new ResponseDto("Unsuccessful", "Passwords do not match");
@@ -324,20 +333,20 @@ public class UserServiceImpl implements UserService {
         if (token == null || token.isEmpty()) {
             return false;
         }
-
+        
         User user = userRepository.findByResetPasswordToken(token);
         if (user == null) {
             log.debug("Reset token not found: {}", token);
             return false;
         }
 
-        boolean isValid = user.getResetPasswordTokenExpiry() != null &&
-                LocalDateTime.now().isBefore(user.getResetPasswordTokenExpiry());
-
+        boolean isValid = user.getResetPasswordTokenExpiry() != null && 
+                         LocalDateTime.now().isBefore(user.getResetPasswordTokenExpiry());
+        
         if (!isValid) {
             log.debug("Expired reset token used: {}", token);
         }
-
+        
         return isValid;
     }
 
@@ -353,7 +362,7 @@ public class UserServiceImpl implements UserService {
     public Page<UserDTO> getAllUsers(int pageNo, int pageSize) {
         Pageable pageable = PageRequest.of(pageNo, pageSize);
         Page<User> users = userRepository.findAll(pageable);
-
+        
         return users.map(user -> {
             UserDTO userDTO = userMapper.toDTO(user);
             return populateRoleSpecificData(user, userDTO);
@@ -364,12 +373,12 @@ public class UserServiceImpl implements UserService {
     public UserDTO getUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundExceptions("User not found with id: " + id));
-
+        
         UserDTO userDTO = userMapper.toDTO(user);
 
         return populateRoleSpecificData(user, userDTO);
     }
-
+    
     /**
      * Helper method to populate role-specific data in UserDTO
      */
@@ -378,12 +387,12 @@ public class UserServiceImpl implements UserService {
         Set<String> roles = user.getRoles().stream()
                 .map(Role::getName)
                 .collect(Collectors.toSet());
-
+                
         // Ensure the roles collection is preserved
         userDTO.setRoles(roles);
 
         Integer userId = user.getId().intValue();
-
+        
         if (roles.contains("STUDENT")) {
             Student student = studentRepository.findByUserId(userId);
             if (student != null) {
@@ -411,7 +420,7 @@ public class UserServiceImpl implements UserService {
                 userDTO.setStudentClass(parent.getBatch());
             }
         }
-
+        
         return userDTO;
     }
 
@@ -432,7 +441,7 @@ public class UserServiceImpl implements UserService {
         if (request.getMobileNumber() != null) {
             user.setMobileNumber(request.getMobileNumber());
         }
-
+        
         User updatedUser = userRepository.save(user);
         return userMapper.toDTO(updatedUser);
     }
@@ -441,26 +450,26 @@ public class UserServiceImpl implements UserService {
     public UserProfileDTO getUserProfileById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundExceptions("User not found with id: " + id));
-
+        
         return buildUserProfileDTO(user);
     }
-
+    
     @Override
     public UserProfileDTO getCurrentUserProfile() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new BaseException(String.valueOf(HttpStatus.UNAUTHORIZED.value()), "User not authenticated");
         }
-
+        
         String email = authentication.getName();
         User user = userRepository.findByEmail(email);
         if (user == null) {
             throw new UserNotFoundExceptions("User not found with email: " + email);
         }
-
+        
         return buildUserProfileDTO(user);
     }
-
+    
     private UserProfileDTO buildUserProfileDTO(User user) {
         UserProfileDTO profileDTO = new UserProfileDTO();
 
@@ -472,96 +481,28 @@ public class UserServiceImpl implements UserService {
         profileDTO.setRoles(roles);
 
         Integer userId = user.getId().intValue();
-
+        
         if (roles.contains("STUDENT")) {
             Student student = studentRepository.findByUserId(userId);
             if (student != null) {
                 profileDTO.setStudentInfo(StudentDTO.fromEntity(student));
             }
         }
-
+        
         if (roles.contains("TEACHER")) {
             Teacher teacher = teacherRepository.findByUserId(userId);
             if (teacher != null) {
                 profileDTO.setTeacherInfo(TeacherDTO.fromEntity(teacher));
             }
         }
-
+        
         if (roles.contains("PARENT")) {
             Parents parent = parentsRepository.findById(userId).orElse(null);
             if (parent != null) {
                 profileDTO.setParentInfo(ParentsDTO.fromEntity(parent));
             }
         }
-
+        
         return profileDTO;
     }
-
-    //----------------------------------------------------------------------------------------
-
-    @Override
-    public PersonalInfoDTO getPersonalInfo(Long userId) {
-        User user = userRepository.findById(userId).orElse(null);
-        if (user == null) return null;
-
-        // Fetch Student linked to User
-        Student student = studentRepository.findByUserId(user.getId());
-
-        // Fetch Parents linked to Student
-        Parents parent = null;
-        if (student != null) {
-            parent = parentsRepository.findByStudentId(student.getStudentId());
-        }
-
-        // Fetch Fees linked to Student Class (ignore case)
-        Fees fees = null;
-        if (student != null) {
-            fees = feesRepository.findByStudentClass(student.getStudentClass());
-        }
-
-        return new PersonalInfoDTO(
-                user.getFirstName(),
-                user.getLastName(),
-                user.getEmail(),
-                user.getMobileNumber(),
-                parent != null ? parent.getRelationshipWithStudent() : null, // ✅ relationship
-                fees != null ? fees.getFee() : 0                            // ✅ avoid null
-        );
-    }
-
-
-
-    @Override
-    @Transactional
-    public PersonalInfoDTO updatePersonalInfo(Long userId, PersonalInfoDTO dto) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
-
-        // ✅ Update User basic info
-        user.setFirstName(dto.getFirstName());
-        user.setLastName(dto.getLastName());
-        user.setEmail(dto.getEmail());
-        user.setMobileNumber(dto.getPhoneNumber());
-        userRepository.save(user);
-
-        // ✅ Update Parent info
-        Student student = studentRepository.findByUserId(user.getId());
-        if (student != null) {
-            Parents parent = parentsRepository.findByStudentId(student.getStudentId());
-            if (parent != null) {
-                parent.setRelationshipWithStudent(dto.getRelationshipWithStudent());
-                parentsRepository.save(parent);
-            }
-
-            // ✅ Update Fees info
-            Fees fees = feesRepository.findByStudentClass(student.getStudentClass());
-            if (fees != null) {
-                fees.setFee(dto.getFees());
-                feesRepository.save(fees);
-            }
-        }
-
-        return dto; // return updated data
-    }
-
 }

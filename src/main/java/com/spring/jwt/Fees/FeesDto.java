@@ -18,4 +18,6 @@ public class FeesDto {
     private String status;
     private Date date;
     private String batch;
+
+
 }
