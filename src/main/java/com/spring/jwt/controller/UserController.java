@@ -62,7 +62,6 @@ import java.util.Map;
 @Slf4j
 @CrossOrigin(origins = "${app.cors.allowed-origins}", maxAge = 3600)
 
-
 public class UserController {
 
     private final UserService userService;
