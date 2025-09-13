@@ -28,4 +28,7 @@ public interface StudentAttendanceService {
     List<StudentAttendanceDTO> getByDateSubTeacherIdStudentClass(LocalDate date, String sub, Integer teacherId, String studentClass);
 
     StudentAttendanceSummaryResponseDto getSubjectWiseSummaryByUserId(Integer userId);
+
+    ProgressBarDto getMonthlyProgress(Integer userId, String studentClass);
+
 }
