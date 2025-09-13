@@ -1,6 +1,10 @@
 package com.spring.jwt.controller;
 
-import com.spring.jwt.dto.*;
+import com.spring.jwt.dto.ResetPassword;
+import com.spring.jwt.dto.ResponseAllUsersDto;
+import com.spring.jwt.dto.UserDTO;
+import com.spring.jwt.dto.UserUpdateRequest;
+import com.spring.jwt.dto.UserProfileDTO;
 import com.spring.jwt.entity.User;
 import com.spring.jwt.jwt.JwtService;
 import com.spring.jwt.repository.UserRepository;
@@ -29,7 +33,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
- import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
@@ -61,19 +66,17 @@ import java.util.Map;
 @Validated
 @Slf4j
 @CrossOrigin(origins = "${app.cors.allowed-origins}", maxAge = 3600)
-
-
 public class UserController {
 
     private final UserService userService;
     private final UserRepository userRepository;
     private final EncryptionUtil encryptionUtil;
     private final JwtService jwtService;
-
+    
     @Value("${app.url.password-reset}")
     private String passwordResetUrl;
 
-    ///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
 //
 //      File Name    : UserController
 //      Description  : Used to create user
@@ -151,7 +154,7 @@ public class UserController {
     public ResponseEntity<ResponseDto> requestPasswordReset(
             @RequestParam @Email(message = "Invalid email format") @NotBlank(message = "Email is required") String email,
             HttpServletRequest request) {
-
+        
         ResponseDto response = userService.handleForgotPassword(email, request.getServerName());
         return ResponseEntity.ok(response);
     }
@@ -192,7 +195,7 @@ public class UserController {
             if (!userService.validateResetToken(token)) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid or expired token");
             }
-
+            
             ClassPathResource resource = new ClassPathResource("templates/reset-password.html");
             String htmlContent = Files.readString(Paths.get(resource.getURI()), StandardCharsets.UTF_8);
             return ResponseEntity.ok().contentType(MediaType.TEXT_HTML).body(htmlContent);
@@ -227,7 +230,7 @@ public class UserController {
     }
 
 
-    ///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
 //
 //      File Name    : UserController
 //      Description  : Used to get all users
@@ -265,28 +268,28 @@ public class UserController {
     public ResponseEntity<ResponseAllUsersDto> getAllUsers(
             @RequestParam(defaultValue = "0") @Min(value = 0, message = "Page number cannot be negative") int page,
             @RequestParam(defaultValue = "10") @Min(value = 1, message = "Page size must be at least 1") int size) {
-
+        
         Page<UserDTO> userPage = userService.getAllUsers(page, size);
 
         List<UserDTO> decryptedUsers = userPage.getContent().stream()
-                .map(user -> {
-                    try {
-                        if (user.getFirstName() != null) {
-                            user.setFirstName(encryptionUtil.decrypt(user.getFirstName()));
-                        }
-                        if (user.getLastName() != null) {
-                            user.setLastName(encryptionUtil.decrypt(user.getLastName()));
-                        }
-                        if (user.getAddress() != null) {
-                            user.setAddress(encryptionUtil.decrypt(user.getAddress()));
-                        }
-                    } catch (Exception e) {
-                        log.error("Error decrypting user data: {}", e.getMessage());
+            .map(user -> {
+                try {
+                    if (user.getFirstName() != null) {
+                        user.setFirstName(encryptionUtil.decrypt(user.getFirstName()));
                     }
-                    return user;
-                })
-                .toList();
-
+                    if (user.getLastName() != null) {
+                        user.setLastName(encryptionUtil.decrypt(user.getLastName()));
+                    }
+                    if (user.getAddress() != null) {
+                        user.setAddress(encryptionUtil.decrypt(user.getAddress()));
+                    }
+                } catch (Exception e) {
+                    log.error("Error decrypting user data: {}", e.getMessage());
+                }
+                return user;
+            })
+            .toList();
+        
         ResponseAllUsersDto response = new ResponseAllUsersDto("success", decryptedUsers);
         response.setTotalPages(userPage.getTotalPages());
         response.setTotalElements(userPage.getTotalElements());
@@ -294,7 +297,7 @@ public class UserController {
         response.setCurrentPage(userPage.getNumber());
         response.setFirst(userPage.isFirst());
         response.setLast(userPage.isLast());
-
+        
         return ResponseEntity.ok(response);
     }
 
@@ -329,7 +332,7 @@ public class UserController {
     public ResponseEntity<UserDTO> getUserById(
             @PathVariable @Min(value = 1, message = "Invalid user ID") Long id) {
         UserDTO user = userService.getUserById(id);
-
+        
         try {
             if (user.getFirstName() != null) {
                 user.setFirstName(encryptionUtil.decrypt(user.getFirstName()));
@@ -344,7 +347,7 @@ public class UserController {
         } catch (Exception e) {
             log.error("Error decrypting user data: {}", e.getMessage());
         }
-
+        
         return ResponseEntity.ok(user);
     }
 
@@ -395,10 +398,10 @@ public class UserController {
         } catch (Exception e) {
             log.error("Error decrypting user data: {}", e.getMessage());
         }
-
+        
         return ResponseEntity.ok(profile);
     }
-
+    
     @Operation(
             summary = "Get current user's profile",
             description = "Returns the profile of the currently authenticated user",
@@ -421,7 +424,7 @@ public class UserController {
     @GetMapping("/profile/me")
     public ResponseEntity<UserProfileDTO> getCurrentUserProfile() {
         UserProfileDTO profile = userService.getCurrentUserProfile();
-
+        
         try {
             UserDTO user = profile.getUser();
             if (user != null) {
@@ -438,7 +441,7 @@ public class UserController {
         } catch (Exception e) {
             log.error("Error decrypting user data: {}", e.getMessage());
         }
-
+        
         return ResponseEntity.ok(profile);
     }
 
@@ -520,15 +523,15 @@ public class UserController {
     public ResponseEntity<Map<String, Object>> checkDeviceFingerprint(HttpServletRequest request) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            if (authentication == null || !authentication.isAuthenticated() ||
+            if (authentication == null || !authentication.isAuthenticated() || 
                     authentication instanceof AnonymousAuthenticationToken) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(Map.of("error", "User not authenticated"));
             }
-
+            
             String username = authentication.getName();
             User user = userRepository.findByEmail(username);
-
+            
             if (user == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(Map.of("error", "User not found"));
@@ -536,7 +539,7 @@ public class UserController {
 
             String storedFingerprint = user.getDeviceFingerprint();
             String currentFingerprint = jwtService.generateDeviceFingerprint(request);
-
+            
             Map<String, Object> result = new HashMap<>();
             result.put("email", user.getEmail());
             result.put("lastLogin", user.getLastLogin());
@@ -546,19 +549,19 @@ public class UserController {
             } else {
                 result.put("storedFingerprint", null);
             }
-
+            
             if (currentFingerprint != null) {
                 result.put("currentFingerprint", currentFingerprint.substring(0, 8) + "...");
             } else {
                 result.put("currentFingerprint", null);
             }
-
-            boolean fingerprintsMatch = storedFingerprint != null &&
-                    currentFingerprint != null &&
+            
+            boolean fingerprintsMatch = storedFingerprint != null && 
+                    currentFingerprint != null && 
                     storedFingerprint.equals(currentFingerprint);
-
+            
             result.put("fingerprintsMatch", fingerprintsMatch);
-
+            
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             log.error("Error checking device fingerprint: {}", e.getMessage(), e);
@@ -566,80 +569,4 @@ public class UserController {
                     .body(Map.of("error", "Error checking device fingerprint: " + e.getMessage()));
         }
     }
-
-
-    // ---------------------------------------------------------------------------------------------
-
-
-
-    @Operation(
-            summary = "Get Personal Information",
-            description = "Fetches a user’s personal details including name, email, phone number, parent relationship, and fees.",
-            tags = {"User Management"},
-            security = { @SecurityRequirement(name = "bearer-jwt") }
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Personal information retrieved successfully",
-                    content = @Content(schema = @Schema(implementation = PersonalInfoDTO.class))
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "User not found",
-                    content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Internal server error",
-                    content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
-            )
-    })
-    @GetMapping("/{id}/personal-info")
-    public ResponseEntity<PersonalInfoDTO> getPersonalInfo(@PathVariable Long id) {
-        PersonalInfoDTO personalInfo = userService.getPersonalInfo(id);
-        if (personalInfo == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-        return ResponseEntity.ok(personalInfo);
-    }
-
-    @Operation(
-            summary = "Edit Personal Information",
-            description = "Updates a user’s personal details including name, email, phone, parent relationship, and fees.",
-            tags = {"User Management"},
-            security = { @SecurityRequirement(name = "bearer-jwt") }
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Personal information updated successfully",
-                    content = @Content(schema = @Schema(implementation = PersonalInfoDTO.class))
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Invalid input data",
-                    content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "User not found",
-                    content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Internal server error",
-                    content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
-            )
-    })
-
-
-    @PostMapping("/{id}/edit-personal-info")
-    public ResponseEntity<PersonalInfoDTO> editPersonalInfo(
-            @PathVariable Long id,
-            @RequestBody PersonalInfoDTO dto) {
-        PersonalInfoDTO updatedInfo = userService.updatePersonalInfo(id, dto);
-        return ResponseEntity.ok(updatedInfo);
-    }
-
 }
