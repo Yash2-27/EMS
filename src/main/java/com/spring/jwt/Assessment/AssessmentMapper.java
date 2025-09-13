@@ -2,7 +2,6 @@ package com.spring.jwt.Assessment;
 
 import com.spring.jwt.Question.QuestionRepository;
 import com.spring.jwt.entity.Assessment;
-import com.spring.jwt.entity.AssessmentQuestion;
 import com.spring.jwt.entity.Question;
 import com.spring.jwt.entity.enum01.QType;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +9,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -29,7 +27,7 @@ public class AssessmentMapper {
         if (entity == null) {
             return null;
         }
-        
+
         AssessmentDTO dto = new AssessmentDTO();
         dto.setId(entity.getAssessmentId());
         dto.setTitle(entity.getTitle());
@@ -44,7 +42,7 @@ public class AssessmentMapper {
         dto.setCreatedAt(entity.getCreatedAt());
         dto.setUpdatedAt(entity.getUpdatedAt());
         dto.setIsActive(entity.getIsActive());
-        
+
         if (entity.getUser() != null) {
             dto.setUserId(entity.getUser().getId().intValue());
             dto.setCreatedBy(entity.getUser().getId().intValue());
@@ -60,19 +58,19 @@ public class AssessmentMapper {
                 questionDto.setQuestionType(QType.valueOf(String.valueOf(question.getType())));
                 questionDto.setQuestionOrder(1);
                 questionDto.setMarks(1);
-                
+
                 questionDtos.add(questionDto);
             }
             dto.setQuestions(questionDtos);
 
             dto.setQuestionIds(entity.getQuestions().stream()
-                .map(Question::getQuestionId)
-                .collect(Collectors.toList()));
+                    .map(Question::getQuestionId)
+                    .collect(Collectors.toList()));
         }
-        
+
         return dto;
     }
-    
+
     /**
      * Convert an AssessmentDTO to an Assessment entity
      */
@@ -80,13 +78,13 @@ public class AssessmentMapper {
         if (dto == null) {
             return null;
         }
-        
+
         Assessment entity = new Assessment();
-        
+
         if (dto.getId() != null) {
             entity.setAssessmentId(dto.getId());
         }
-        
+
         entity.setTitle(dto.getTitle());
         entity.setDescription(dto.getDescription());
         entity.setDuration(dto.getDuration());
@@ -102,10 +100,10 @@ public class AssessmentMapper {
             List<Question> questions = questionRepository.findAllById(dto.getQuestionIds());
             entity.setQuestions(questions);
         }
-        
+
         return entity;
     }
-    
+
     /**
      * Update an existing Assessment entity from an AssessmentDTO
      */
@@ -113,7 +111,7 @@ public class AssessmentMapper {
         if (dto == null || entity == null) {
             return;
         }
-        
+
         if (dto.getTitle() != null) {
             entity.setTitle(dto.getTitle());
         }
@@ -145,4 +143,6 @@ public class AssessmentMapper {
             entity.setIsActive(dto.getIsActive());
         }
     }
-} 
+
+
+}
