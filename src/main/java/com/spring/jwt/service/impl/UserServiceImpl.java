@@ -513,7 +513,7 @@ public class UserServiceImpl implements UserService {
             parent = parentsRepository.findByStudentId(student.getStudentId());
         }
 
-        // Fetch Fees linked to Student Class
+        // Fetch Fees linked to Student Class (ignore case)
         Fees fees = null;
         if (student != null) {
             fees = feesRepository.findByStudentClass(student.getStudentClass());
@@ -525,9 +525,11 @@ public class UserServiceImpl implements UserService {
                 user.getEmail(),
                 user.getMobileNumber(),
                 parent != null ? parent.getRelationshipWithStudent() : null, // ✅ relationship
-                fees != null ? fees.getFee() : null                         // ✅ only fee
+                fees != null ? fees.getFee() : 0                            // ✅ avoid null
         );
     }
+
+
 
     @Override
     @Transactional
@@ -561,7 +563,5 @@ public class UserServiceImpl implements UserService {
 
         return dto; // return updated data
     }
-
-
 
 }

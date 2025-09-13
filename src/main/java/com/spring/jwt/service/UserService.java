@@ -37,7 +37,8 @@ public interface UserService {
     // -----------------------------------------------------------------
 
 
-    PersonalInfoDTO getPersonalInfo(Long id);
+    PersonalInfoDTO getPersonalInfo(Long userId);
+
     PersonalInfoDTO updatePersonalInfo(Long userId, PersonalInfoDTO dto);
 
 

@@ -14,4 +14,6 @@ public class PersonalInfoDTO {
     private Long phoneNumber;
     private String relationshipWithStudent; // now mapped correctly
     private Integer fees;
+
+
 }
