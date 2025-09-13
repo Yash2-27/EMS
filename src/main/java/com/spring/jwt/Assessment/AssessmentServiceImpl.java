@@ -60,14 +60,14 @@ public class AssessmentServiceImpl implements AssessmentService {
                 Set<Integer> foundIds = questions.stream()
                         .map(Question::getQuestionId)
                         .collect(Collectors.toSet());
-                
+
                 List<Integer> notFound = assessmentDTO.getQuestionIds().stream()
                         .filter(id -> !foundIds.contains(id))
                         .collect(Collectors.toList());
-                
+
                 throw new QuestionNotFoundException("Questions not found with ids: " + notFound);
             }
-            
+
             assessment.setQuestions(questions);
         }
 
@@ -110,31 +110,10 @@ public class AssessmentServiceImpl implements AssessmentService {
         Assessment assessment = assessmentRepository.findById(id)
                 .orElseThrow(() -> new AssessmentNotFoundException("Assessment not found with id: " + id));
 
-        if (assessmentDTO.getTitle() != null) {
-            assessment.setTitle(assessmentDTO.getTitle());
-        }
-        if (assessmentDTO.getSubject() != null) {
-            assessment.setSubject(assessmentDTO.getSubject());
-        }
-        if (assessmentDTO.getDescription() != null) {
-            assessment.setDescription(assessmentDTO.getDescription());
-        }
-        if (assessmentDTO.getAssessmentDate() != null) {
-            assessment.setAssessmentDate(assessmentDTO.getAssessmentDate());
-        }
-        if (assessmentDTO.getDuration() != null) {
-            assessment.setDuration(assessmentDTO.getDuration());
-        }
-        if (assessmentDTO.getStartTime() != null) {
-            assessment.setStartTime(assessmentDTO.getStartTime());
-        }
-        if (assessmentDTO.getEndTime() != null) {
-            assessment.setEndTime(assessmentDTO.getEndTime());
-        }
-        if (assessmentDTO.getIsActive() != null) {
-            assessment.setIsActive(assessmentDTO.getIsActive());
-        }
+        // Use the updateEntityFromDto method from AssessmentMapper for cleaner updates
+        assessmentMapper.updateEntityFromDto(assessmentDTO, assessment);
 
+        // Handle questions separately as the mapper might not handle this complex logic
         if (assessmentDTO.getQuestionIds() != null && !assessmentDTO.getQuestionIds().isEmpty()) {
             List<Question> questions = questionRepository.findAllById(assessmentDTO.getQuestionIds());
 
@@ -142,14 +121,14 @@ public class AssessmentServiceImpl implements AssessmentService {
                 Set<Integer> foundIds = questions.stream()
                         .map(Question::getQuestionId)
                         .collect(Collectors.toSet());
-                
+
                 List<Integer> notFound = assessmentDTO.getQuestionIds().stream()
                         .filter(qid -> !foundIds.contains(qid))
                         .collect(Collectors.toList());
-                
+
                 throw new QuestionNotFoundException("Questions not found with ids: " + notFound);
             }
-            
+
             assessment.setQuestions(questions);
         }
 
@@ -161,7 +140,7 @@ public class AssessmentServiceImpl implements AssessmentService {
     public void deleteAssessment(Integer id) {
         Assessment assessment = assessmentRepository.findById(id)
                 .orElseThrow(() -> new AssessmentNotFoundException("Assessment not found with id: " + id));
-        
+
         assessmentRepository.delete(assessment);
     }
 
@@ -171,7 +150,7 @@ public class AssessmentServiceImpl implements AssessmentService {
         if (!userRepository.existsById(userId.longValue())) {
             throw new UserNotFoundExceptions("User not found with id: " + userId);
         }
-        
+
         return assessmentRepository.findByUserId(userId.longValue(), pageable)
                 .map(assessmentMapper::toDto);
     }
@@ -182,7 +161,7 @@ public class AssessmentServiceImpl implements AssessmentService {
         if (!userRepository.existsById(userId.longValue())) {
             throw new UserNotFoundExceptions("User not found with id: " + userId);
         }
-        
+
         return assessmentRepository.findByUserId(userId.longValue()).stream()
                 .map(assessmentMapper::toDto)
                 .collect(Collectors.toList());
@@ -193,38 +172,39 @@ public class AssessmentServiceImpl implements AssessmentService {
     public Page<AssessmentDTO> searchAssessments(Map<String, String> filters, Pageable pageable) {
         Specification<Assessment> spec = (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
-            
+
             if (filters.containsKey("title")) {
                 predicates.add(criteriaBuilder.like(
-                    criteriaBuilder.lower(root.get("title")), 
-                    "%" + filters.get("title").toLowerCase() + "%"
+                        criteriaBuilder.lower(root.get("title")),
+                        "%" + filters.get("title").toLowerCase() + "%"
                 ));
             }
-            
+
             if (filters.containsKey("subject")) {
                 predicates.add(criteriaBuilder.equal(
-                    criteriaBuilder.lower(root.get("subject")), 
-                    filters.get("subject").toLowerCase()
+                        criteriaBuilder.lower(root.get("subject")),
+                        filters.get("subject").toLowerCase()
                 ));
             }
-            
+
             if (filters.containsKey("createdBy")) {
+                // Assuming 'id' is the primary key for the User entity
                 predicates.add(criteriaBuilder.equal(
-                    root.get("user").get("id"), 
-                    Long.parseLong(filters.get("createdBy"))
+                        root.get("user").get("id"),
+                        Long.parseLong(filters.get("createdBy"))
                 ));
             }
-            
+
             if (filters.containsKey("isActive")) {
                 predicates.add(criteriaBuilder.equal(
-                    root.get("isActive"), 
-                    Boolean.parseBoolean(filters.get("isActive"))
+                        root.get("isActive"),
+                        Boolean.parseBoolean(filters.get("isActive"))
                 ));
             }
-            
+
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
-        
+
         return assessmentRepository.findAll(spec, pageable)
                 .map(assessmentMapper::toDto);
     }
@@ -240,28 +220,40 @@ public class AssessmentServiceImpl implements AssessmentService {
 
         boolean questionExists = assessment.getQuestions().stream()
                 .anyMatch(q -> q.getQuestionId().equals(questionDTO.getQuestionId()));
-        
+
         if (questionExists) {
             throw new DuplicateQuestionInSetException("Question already exists in the assessment: " + questionDTO.getQuestionId());
         }
 
         assessment.getQuestions().add(question);
 
+        // Note: The logic for AssessmentQuestion (points, orderNumber) might need
+        // a dedicated repository if AssessmentQuestion is a separate entity
+        // or a clearer way to manage the ManyToMany with extra columns.
+        // As it stands, this part of the code initializes an AssessmentQuestion
+        // but doesn't persist it or associate it with the ManyToMany relationship
+        // in a standard JPA way without a separate join entity repository.
+        // If AssessmentQuestion is a join entity, you'd need an AssessmentQuestionRepository
+        // and persist it there. If it's merely properties for the join, MapStruct
+        // or manual mapping with specific DTOs would handle it.
         if (questionDTO.getPoints() != null || questionDTO.getOrderNumber() != null) {
-            AssessmentQuestion assessmentQuestion = new AssessmentQuestion();
+            // This part might need refinement based on how you manage AssessmentQuestion as a join entity
+            // or if points/orderNumber are directly managed on the Question entity or in a separate table.
+            AssessmentQuestion assessmentQuestion = new AssessmentQuestion(); // This entity is not directly persisted here
             assessmentQuestion.setAssessment(assessment);
             assessmentQuestion.setQuestion(question);
-            
+
             if (questionDTO.getPoints() != null) {
                 assessmentQuestion.setPoints(questionDTO.getPoints());
             }
-            
+
             if (questionDTO.getOrderNumber() != null) {
                 assessmentQuestion.setOrderNumber(questionDTO.getOrderNumber());
             }
-
+            // If AssessmentQuestion is an actual entity, it would need to be saved via its repository here.
+            // Example: assessmentQuestionRepository.save(assessmentQuestion);
         }
-        
+
         Assessment savedAssessment = assessmentRepository.save(assessment);
         return assessmentMapper.toDto(savedAssessment);
     }
@@ -272,7 +264,7 @@ public class AssessmentServiceImpl implements AssessmentService {
                 .orElseThrow(() -> new AssessmentNotFoundException("Assessment not found with id: " + assessmentId));
 
         boolean questionExists = assessment.getQuestions().removeIf(q -> q.getQuestionId().equals(questionId));
-        
+
         if (!questionExists) {
             throw new QuestionNotFoundException("Question not found in the assessment: " + questionId);
         }
@@ -280,4 +272,6 @@ public class AssessmentServiceImpl implements AssessmentService {
         Assessment savedAssessment = assessmentRepository.save(assessment);
         return assessmentMapper.toDto(savedAssessment);
     }
+
+
 }

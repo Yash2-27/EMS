@@ -87,8 +87,8 @@ public class AssessmentController {
     ) {
         try {
             Sort sort = direction.equalsIgnoreCase("asc") ?
-                Sort.by(sortBy).ascending() :
-                Sort.by(sortBy).descending();
+                    Sort.by(sortBy).ascending() :
+                    Sort.by(sortBy).descending();
 
             Pageable pageable = PageRequest.of(page, size, sort);
             Page<AssessmentDTO> result = assessmentService.getAllAssessments(pageable);
@@ -123,7 +123,7 @@ public class AssessmentController {
 
     @Operation(summary = "Delete an assessment", description = "Deletes an assessment by ID")
     @DeleteMapping("/delete")
-   // @PreAuthorize("hasAuthority('ADMIN')")
+    // @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> deleteAssessment(
             @Parameter(description = "Assessment ID", required = true, example = "1")
             @RequestParam @Min(1) Integer id
@@ -166,7 +166,7 @@ public class AssessmentController {
 
     @Operation(summary = "Remove a question from an assessment", description = "Removes a question from an existing assessment")
     @DeleteMapping("/{assessmentId}/questions/{questionId}")
-   // @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
+    // @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
     public ResponseEntity<ApiResponse<AssessmentDTO>> removeQuestionFromAssessment(
             @Parameter(description = "Assessment ID", required = true, example = "1")
             @PathVariable @Min(1) Integer assessmentId,
@@ -187,7 +187,7 @@ public class AssessmentController {
 
     @Operation(summary = "Get assessments by user ID (creator)", description = "Retrieves assessments created by a specific user")
     @GetMapping("/user/{userId}")
-   // @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER') or (hasAuthority('USER') and #userId == authentication.principal.userId)")
+    // @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER') or (hasAuthority('USER') and #userId == authentication.principal.userId)")
     public ResponseEntity<ApiResponse<Page<AssessmentDTO>>> getAssessmentsByUserId(
             @Parameter(description = "User ID", required = true, example = "1")
             @PathVariable @Min(1) Integer userId,
@@ -201,13 +201,13 @@ public class AssessmentController {
             @RequestParam(defaultValue = "asc") String direction
     ) {
         try {
-            Sort sort = direction.equalsIgnoreCase("asc") ? 
-                Sort.by(sortBy).ascending() : 
-                Sort.by(sortBy).descending();
-            
+            Sort sort = direction.equalsIgnoreCase("asc") ?
+                    Sort.by(sortBy).ascending() :
+                    Sort.by(sortBy).descending();
+
             Pageable pageable = PageRequest.of(page, size, sort);
             Page<AssessmentDTO> result = assessmentService.getAssessmentsByUserId(userId, pageable);
-            
+
             return ResponseEntity.ok(ApiResponse.success("Assessments fetched by user successfully", result));
         } catch (Exception e) {
             return ResponseEntity.badRequest()
@@ -217,7 +217,7 @@ public class AssessmentController {
 
     @Operation(summary = "Search assessments", description = "Searches for assessments based on various criteria")
     @GetMapping("/search")
-   // @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
+    // @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
     public ResponseEntity<ApiResponse<Page<AssessmentDTO>>> searchAssessments(
             @Parameter(description = "Subject", example = "Mathematics")
             @RequestParam(required = false) String subject,
@@ -242,18 +242,19 @@ public class AssessmentController {
             if (title != null) filters.put("title", title);
             if (createdBy != null) filters.put("createdBy", createdBy.toString());
             if (isActive != null) filters.put("isActive", isActive.toString());
-            
-            Sort sort = direction.equalsIgnoreCase("asc") ? 
-                Sort.by(sortBy).ascending() : 
-                Sort.by(sortBy).descending();
-            
+
+            Sort sort = direction.equalsIgnoreCase("asc") ?
+                    Sort.by(sortBy).ascending() :
+                    Sort.by(sortBy).descending();
+
             Pageable pageable = PageRequest.of(page, size, sort);
             Page<AssessmentDTO> result = assessmentService.searchAssessments(filters, pageable);
-            
+
             return ResponseEntity.ok(ApiResponse.success("Assessments found by search criteria", result));
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(ApiResponse.error(HttpStatus.BAD_REQUEST, "Failed to search assessments", e.getMessage()));
         }
     }
+
 }
