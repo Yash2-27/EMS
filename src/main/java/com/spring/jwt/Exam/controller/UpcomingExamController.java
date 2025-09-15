@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/upcoming-exams")
+@RequestMapping("/api/v1")
 public class UpcomingExamController {
 
     @Autowired
@@ -51,7 +51,7 @@ public class UpcomingExamController {
 
     //API for PARENTS //Get details of upcoming exams.
     @Operation(summary = "Get UPCOMING exams by student class (strictly after current time)")
-    @GetMapping("/class/{studentClass}")
+    @GetMapping("/upcomingexams/class/{studentClass}")
     public ResponseEntity<ResponseDto<List<UpcomingExamDetailsDTO>>> getUpcomingExamsByStudentClass(@PathVariable String studentClass) {
         try {
             ResponseDto<List<UpcomingExamDetailsDTO>> response = upcomingExamsService.getUpcomingExamsByStudentClass(studentClass);
@@ -67,7 +67,7 @@ public class UpcomingExamController {
 
     //API for PARENTS //Get details of previous  exams
     @Operation(summary = "Get previous exams by student class (strictly before current time)")
-    @GetMapping("/previous/class/{studentClass}")
+    @GetMapping("/previousexams/class/{studentClass}")
     public ResponseEntity<ResponseDto<List<UpcomingExamDetailsDTO>>> getPreviousExamsByStudentClass(@PathVariable String studentClass) {
         try {
             ResponseDto<List<UpcomingExamDetailsDTO>> response = upcomingExamsService.getPreviousExamsByStudentClass(studentClass);
