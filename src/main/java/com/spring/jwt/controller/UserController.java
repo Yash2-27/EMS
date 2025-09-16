@@ -594,7 +594,7 @@ public class UserController {
                     content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
             )
     })
-    @GetMapping("/{id}/personal-info")
+    @GetMapping("/personal-info/{id}")
     public ResponseEntity<PersonalInfoDTO> getPersonalInfo(@PathVariable Long id) {
         PersonalInfoDTO personalInfo = userService.getPersonalInfo(id);
         if (personalInfo == null) {
@@ -631,9 +631,7 @@ public class UserController {
                     content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
             )
     })
-
-
-    @PostMapping("/{id}/edit-personal-info")
+    @PostMapping("/edit-personal-info/{id}")
     public ResponseEntity<PersonalInfoDTO> editPersonalInfo(
             @PathVariable Long id,
             @RequestBody PersonalInfoDTO dto) {
