@@ -33,4 +33,5 @@ public interface ClassesRepository extends JpaRepository<Classes, Long> {
     // check if teacher already has a class at same date & time
     boolean existsByTeacherIdAndDateAndTime(Integer teacherId, LocalDate date, LocalTime time);
 
+    boolean existsByStudentClass(String studentClass);
 }

@@ -28,7 +28,6 @@ public class ExamResult {
     @ManyToOne
     @JoinColumn(name = "paper_id")
     private Paper paper;
-    
     private String studentClass;
     private LocalDateTime examStartTime;
     private LocalDateTime examEndTime;
@@ -36,11 +35,12 @@ public class ExamResult {
     private Double score;
     private Double negativeCount;
     private Double negativeScore;
-
     private Integer totalQuestions;
     private Integer correctAnswers;
     private Integer incorrectAnswers;
     private Integer unansweredQuestions;
-
     private Integer originalSessionId;
+
+    @Column (name = "total_marks")
+    private Double total_marks;
 } 

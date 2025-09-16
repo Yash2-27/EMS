@@ -1,5 +1,6 @@
 package com.spring.jwt.entity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,23 +16,33 @@ public class Classes {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long classesId;
-    @Column(name = "sub")
+    @Column(name = "sub",nullable = false)
+    @NotBlank
     private String sub;
-    @Column(name = "date")
+    @Column(name = "date",nullable = false)
+    @NotBlank
     private LocalDate date;
-    @Column(name = "duration")
+    @Column(name = "duration",nullable = false)
+    @NotBlank
     private String duration;
-    @Column(name = "student_Class")
+
+    @Column(name = "student_Class", nullable = false)
+    @NotBlank
     private String studentClass;
-    @Column(name = "teacher_Id")
+
+    @Column(name = "teacher_Id",nullable = false)
+    @NotBlank
     private Integer teacherId;
 
     //Newly added columns or fields for Today’s Classes GET API.
-    @Column(name = "topic")
+    @Column(name = "topic",nullable = false)
+    @NotBlank
     private String topic;
-    @Column(name = "time")
+    @Column(name = "time",nullable = false)
+    @NotBlank
     private LocalTime time;
-    @Column(name = "teacherName")
+    @Column(name = "teacherName",nullable = false)
+    @NotBlank
     private String TeacherName;
 
 }
