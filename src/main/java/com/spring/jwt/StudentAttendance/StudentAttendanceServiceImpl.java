@@ -374,48 +374,6 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
         response.setName(anyRecord.getName());
         response.setStudentClass(anyRecord.getStudentClass());
         response.setSubjectWiseSummary(subjectSummaries);
-
         return response;
     }
-
-
-    @Override
-    public ProgressBarDto getMonthlyProgress(Integer userId, String studentClass) {
-        LocalDate today = LocalDate.now();
-        LocalDate monthAgo = today.minusMonths(1);
-
-        //  1. Student’s monthly attendance
-        List<StudentAttendance> studentRecords =
-                repository.findByUserIdAndDateBetween(userId, monthAgo, today);
-        int studentMonthlyScore = calculateAttendancePercentage(studentRecords);
-
-        //  2. Class’s monthly attendance
-        List<StudentAttendance> classRecords =
-                repository.findByStudentClass(studentClass)
-                        .stream()
-                        .filter(a -> a.getDate() != null &&
-                                (a.getDate().isAfter(monthAgo) || a.getDate().isEqual(monthAgo)) &&
-                                (a.getDate().isBefore(today) || a.getDate().isEqual(today)))
-                        .toList();
-
-        int classAverageMonthlyScore = 0;
-        if (!classRecords.isEmpty()) {
-            // group by userId
-            Map<Integer, List<StudentAttendance>> grouped = classRecords.stream()
-                    .collect(Collectors.groupingBy(StudentAttendance::getUserId));
-
-            List<Integer> percentages = grouped.values().stream()
-                    .map(this::calculateAttendancePercentage)
-                    .toList();
-
-            classAverageMonthlyScore = (int) percentages.stream()
-                    .mapToInt(Integer::intValue)
-                    .average()
-                    .orElse(0.0);
-        }
-
-        return new ProgressBarDto(studentMonthlyScore, classAverageMonthlyScore);
-    }
-
-
 }

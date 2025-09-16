@@ -41,4 +41,27 @@ public interface ExamResultRepository extends JpaRepository<ExamResult, Integer>
      * @return The exam result
      */
     ExamResult findByOriginalSessionId(Integer sessionId);
-} 
+
+    /**
+     * Formula for Monthly Percentage
+     * (SUM(score ) / SUM(total_marks )) * 100
+     * @param userId
+     * @return Monthly Percentage
+     */
+    @Query(value = """
+    SELECT 
+        DATE_FORMAT(e.exam_end_time, '%Y-%m') AS month,
+        ROUND(
+            CASE
+                WHEN SUM(e.total_marks) = 0 THEN 0
+                ELSE (SUM(e.score) / SUM(e.total_marks)) * 100
+            END, 2
+        ) AS percentage
+    FROM exam_results e
+    WHERE e.user_id = :userId
+    GROUP BY DATE_FORMAT(e.exam_end_time, '%Y-%m')
+    ORDER BY month
+    """, nativeQuery = true)
+    List<MonthlyPercentageProjection> findMonthlyPercentageByUser(@Param("userId") Long userId);
+}
+

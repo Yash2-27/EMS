@@ -1,15 +1,19 @@
 package com.spring.jwt.Exam.serviceImpl;
 
 import com.spring.jwt.Exam.Dto.ExamResultDTO;
+import com.spring.jwt.Exam.Dto.MonthlyPercentageDTO;
 import com.spring.jwt.Exam.entity.ExamResult;
 import com.spring.jwt.Exam.entity.ExamSession;
 import com.spring.jwt.Exam.entity.UserAnswer;
 import com.spring.jwt.Exam.repository.ExamResultRepository;
 import com.spring.jwt.Exam.repository.ExamSessionRepository;
+import com.spring.jwt.Exam.repository.MonthlyPercentageProjection;
 import com.spring.jwt.Exam.service.ExamResultService;
+import com.spring.jwt.exception.ResourceNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +31,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ExamResultServiceImpl implements ExamResultService {
 
+    @Autowired
+    private ExamResultRepository repository;
     private final ExamSessionRepository examSessionRepository;
     private final ExamResultRepository examResultRepository;
     private final JdbcTemplate jdbcTemplate;
@@ -199,7 +205,7 @@ public class ExamResultServiceImpl implements ExamResultService {
                 .collect(Collectors.toList());
     }
     
-    @Override
+
     public List<ExamResultDTO> getResultsByPaperId(Integer paperId) {
         List<ExamResult> results = examResultRepository.findByPaper_PaperId(paperId);
         return results.stream()
@@ -212,6 +218,22 @@ public class ExamResultServiceImpl implements ExamResultService {
         List<ExamResult> results = examResultRepository.findByStudentClass(studentClass);
         return results.stream()
                 .map(ExamResultDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<MonthlyPercentageDTO> getStudentMonthlyPercentage(Long userId) {
+        List<MonthlyPercentageProjection> results = examResultRepository.findMonthlyPercentageByUser(userId);
+
+        if (results == null || results.isEmpty()) {
+            throw new ResourceNotFoundException("No exam results found for userId: " + userId);
+        }
+
+        return results.stream()
+                .map(r -> new MonthlyPercentageDTO(
+                        r.getMonth(),
+                        r.getPercentage() != null ? r.getPercentage() : 0.0 // replace null with 0
+                ))
                 .collect(Collectors.toList());
     }
 } 

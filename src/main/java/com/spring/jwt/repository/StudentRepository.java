@@ -10,4 +10,7 @@ import java.util.List;
 public interface StudentRepository extends JpaRepository<Student, Integer> {
     Student findByUserId(Integer userId);
     List<Student> findByStudentClass(String studentClass);
+    boolean existsById(Integer id);
 }
+
+
