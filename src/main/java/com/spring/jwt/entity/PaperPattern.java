@@ -16,6 +16,7 @@ public class PaperPattern {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer paperPatternId;
+
     private String subject;
     @Enumerated(EnumType.STRING)
     @Column(name = "type")

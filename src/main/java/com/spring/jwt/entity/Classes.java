@@ -16,12 +16,14 @@ public class Classes {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long classesId;
+
     @Column(name = "sub",nullable = false)
     @NotBlank
     private String sub;
+
     @Column(name = "date",nullable = false)
-    @NotBlank
     private LocalDate date;
+
     @Column(name = "duration",nullable = false)
     @NotBlank
     private String duration;
@@ -31,16 +33,16 @@ public class Classes {
     private String studentClass;
 
     @Column(name = "teacher_Id",nullable = false)
-    @NotBlank
     private Integer teacherId;
 
     //Newly added columns or fields for Today’s Classes GET API.
     @Column(name = "topic",nullable = false)
     @NotBlank
     private String topic;
+
     @Column(name = "time",nullable = false)
-    @NotBlank
     private LocalTime time;
+
     @Column(name = "teacherName",nullable = false)
     @NotBlank
     private String TeacherName;
