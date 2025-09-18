@@ -14,7 +14,6 @@ public class UserFee {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer userFeeId;
-
     private String date;
     private String amount;
     private String totalFees;

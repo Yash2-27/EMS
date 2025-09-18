@@ -5,13 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class PersonalInfoDTO {
     private String firstName;
     private String lastName;
     private String email;
-    private Long phoneNumber;
-    private String relationshipWithStudent; // now mapped correctly
-    private Integer fees;
+    private String phoneNumber;
+    private String relationshipWithStudent;
+    private String totalFees;
+    private String amount;
+    private String remainingFees;
 }

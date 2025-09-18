@@ -37,7 +37,4 @@ public interface UserService {
 
     PersonalInfoDTO updatePersonalInfo(Long userId, PersonalInfoDTO dto);
 
-
-
-
 }

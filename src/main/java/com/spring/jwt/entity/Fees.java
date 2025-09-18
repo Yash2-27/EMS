@@ -24,5 +24,4 @@ public class Fees {
     private Date date;
     private String batch;
 
-
 }

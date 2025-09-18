@@ -22,7 +22,6 @@ public class Student {
     private String batch;
     private String studentcol1;
     private String studentClass;
-
     private Integer userId;
 
 }

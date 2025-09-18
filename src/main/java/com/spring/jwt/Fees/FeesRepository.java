@@ -14,6 +14,5 @@ public interface FeesRepository extends JpaRepository<Fees, Integer> {
 
     Fees findByStudentClassAndBatch(String studentClass, String batch);
 
-    Fees findByStudentClass(String studentClass);
 
 }
