@@ -15,6 +15,7 @@ public class Student {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer studentId;
+
     private String name;
     private String lastName;
     private String dateOfBirth;
@@ -25,4 +26,7 @@ public class Student {
 
     private Integer userId;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parents_id", referencedColumnName = "parents_id")
+    private Parents parent;
 }
