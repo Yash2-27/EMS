@@ -374,8 +374,6 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
         response.setName(anyRecord.getName());
         response.setStudentClass(anyRecord.getStudentClass());
         response.setSubjectWiseSummary(subjectSummaries);
-
         return response;
     }
-
 }

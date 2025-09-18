@@ -1,13 +1,14 @@
 package com.spring.jwt.Exam.controller;
-
+import com.spring.jwt.Exam.Dto.ClassAverageDTO;
 import com.spring.jwt.Exam.Dto.ExamResultDTO;
+import com.spring.jwt.Exam.Dto.MonthlyPercentageDTO;
 import com.spring.jwt.Exam.entity.ExamSession;
 import com.spring.jwt.Exam.repository.ExamSessionRepository;
 import com.spring.jwt.Exam.scheduler.ExamResultScheduler;
 import com.spring.jwt.Exam.service.ExamResultService;
+import com.spring.jwt.dto.ResponseDto;
+import com.spring.jwt.exception.ResourceNotFoundException;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -15,10 +16,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.security.PermitAll;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +33,8 @@ import java.util.Map;
 @Slf4j
 @Tag(name = "Exam Results", description = "APIs for retrieving exam results")
 public class ExamResultController {
-
+    @Autowired
+    private final ExamResultService service;
     private final ExamResultService examResultService;
     private final ExamResultScheduler examResultScheduler;
     private final ExamSessionRepository examSessionRepository;
@@ -168,10 +170,10 @@ public class ExamResultController {
     @PermitAll
     public ResponseEntity<String> fixDateFormat() {
         log.info("Fixing result date format in the database");
-        
+
         // Get the current date/time in the correct format
         LocalDateTime now = LocalDateTime.now();
-        
+
         try {
             // Use a direct JDBC update to fix the date format
             int updated = examResultService.fixResultDateFormat();
@@ -181,4 +183,66 @@ public class ExamResultController {
             return ResponseEntity.status(500).body("Error fixing date format: " + e.getMessage());
         }
     }
-} 
+
+    @GetMapping("/progress/{userId}")
+    @PermitAll
+    @Operation(summary = "Get monthly progress for a student")
+    public ResponseEntity<Map<String, Object>> getStudentProgress(@PathVariable Long userId) {
+        try {
+            List<MonthlyPercentageDTO> dtoList = service.getStudentMonthlyPercentage(userId);
+
+            if (dtoList == null || dtoList.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of(
+                                "message", "No Scores found for userId: " + userId,
+                                "data", List.of()
+                        ));
+            }
+            return ResponseEntity.ok(Map.of(
+                    "message", "Data fetched successfully",
+                    "summary", "The student monthly progress for this user_id :" + userId,
+                    "data", dtoList
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of(
+                            "message", "Something went wrong: " + e.getMessage(),
+                            "data", List.of()
+                    ));
+        }
+    }
+
+//    @GetMapping("/average/class/{studentClass}")
+//    public ResponseEntity<ResponseDto<List<ClassAverageDTO>>> getClassMonthlyAverage(@PathVariable String studentClass) {
+//        try {
+//            List<ClassAverageDTO> averages = examResultService.getClassMonthlyAverage(studentClass);
+//            return ResponseEntity.ok(ResponseDto.success("Class monthly averages fetched successfully", averages));
+//        } catch (ResourceNotFoundException ex) {
+//            return ResponseEntity.status(404).body(ResponseDto.error("No data found", ex.getMessage()));
+//        } catch (Exception ex) {
+//            return ResponseEntity.internalServerError().body(ResponseDto.error("Unexpected error occurred", ex.getMessage()));
+//        }
+//    }
+
+    @GetMapping({ "/average/class","/average/class/{studentClass}"})
+    public ResponseEntity<ResponseDto<List<ClassAverageDTO>>> getClassMonthlyAverage(
+            @PathVariable(required = false) String studentClass) {
+
+        if (studentClass == null || studentClass.isEmpty()) {
+            return ResponseEntity.badRequest().body(
+                    ResponseDto.error("Class parameter is required", "Please provide a student class in the URL")
+            );
+        }
+        try {
+            List<ClassAverageDTO> averages = examResultService.getClassMonthlyAverage(studentClass);
+            return ResponseEntity.ok(ResponseDto.success("Class monthly averages fetched successfully", averages));
+        } catch (ResourceNotFoundException ex) {
+            return ResponseEntity.status(404)
+                    .body(ResponseDto.error("No data found", ex.getMessage()));
+        } catch (Exception ex) {
+            return ResponseEntity.internalServerError()
+                    .body(ResponseDto.error("Unexpected error occurred", ex.getMessage()));
+        }
+    }
+
+}

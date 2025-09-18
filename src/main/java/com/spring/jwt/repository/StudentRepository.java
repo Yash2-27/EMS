@@ -15,6 +15,6 @@ public interface StudentRepository extends JpaRepository<Student, Integer> {
 
     List<Student> findByStudentClass(String studentClass);
 
-
+    boolean existsById(Integer id);
     List<Student> findByParent_ParentsId(Integer parentId);
 }

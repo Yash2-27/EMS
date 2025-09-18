@@ -207,8 +207,6 @@ public class StudentAttendanceController {
         }
     }
 
-
-
     @GetMapping("/attendance")
     @PermitAll
     @Operation(
@@ -246,5 +244,4 @@ public class StudentAttendanceController {
                     .body("Failed to fetch attendance summary. Reason: " + ex.getMessage());
         }
     }
-
 }
