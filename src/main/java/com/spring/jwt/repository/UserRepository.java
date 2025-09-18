@@ -20,4 +20,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     
     @Query(value = "SELECT * FROM users WHERE user_id = :id", nativeQuery = true)
     Map<String, Object> findRawUserById(@Param("id") Long id);
+
+    boolean existsByEmail(String email);
 }

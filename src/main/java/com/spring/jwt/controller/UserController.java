@@ -566,17 +566,13 @@ public class UserController {
         }
     }
 
-
     // ---------------------------------------------------------------------------------------------
-
-
 
     @Operation(
             summary = "Get Personal Information",
             description = "Fetches a user’s personal details including name, email, phone number, parent relationship, and fees.",
-            tags = {"User Management"},
-            security = { @SecurityRequirement(name = "bearer-jwt") }
-    )
+            tags = {"User Management"}
+     )
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
@@ -594,7 +590,7 @@ public class UserController {
                     content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
             )
     })
-    @GetMapping("/personal-info/{id}")
+    @GetMapping("/personalInfo/{id}")
     public ResponseEntity<PersonalInfoDTO> getPersonalInfo(@PathVariable Long id) {
         PersonalInfoDTO personalInfo = userService.getPersonalInfo(id);
         if (personalInfo == null) {
@@ -606,8 +602,7 @@ public class UserController {
     @Operation(
             summary = "Edit Personal Information",
             description = "Updates a user’s personal details including name, email, phone, parent relationship, and fees.",
-            tags = {"User Management"},
-            security = { @SecurityRequirement(name = "bearer-jwt") }
+            tags = {"User Management"}
     )
     @ApiResponses({
             @ApiResponse(
@@ -631,12 +626,11 @@ public class UserController {
                     content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
             )
     })
-    @PostMapping("/edit-personal-info/{id}")
+    @PostMapping("/editPersonalInfo/{id}")
     public ResponseEntity<PersonalInfoDTO> editPersonalInfo(
             @PathVariable Long id,
             @RequestBody PersonalInfoDTO dto) {
         PersonalInfoDTO updatedInfo = userService.updatePersonalInfo(id, dto);
         return ResponseEntity.ok(updatedInfo);
     }
-
 }

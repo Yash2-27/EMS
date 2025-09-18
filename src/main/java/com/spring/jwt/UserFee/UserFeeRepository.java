@@ -1,5 +1,6 @@
 package com.spring.jwt.UserFee;
 
+import com.spring.jwt.entity.Fees;
 import com.spring.jwt.entity.UserFee;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -20,4 +21,10 @@ public interface UserFeeRepository extends JpaRepository<UserFee, Integer> {
     List<UserFee> findByDateBetween(String startDate, String endDate);
 
     List<UserFee> findByStudentClassAndStatus(String studentClass, String status);
+
+    //------------------------
+    UserFee findByUserId(Long userId);
+
+
+
 }
