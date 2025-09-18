@@ -124,4 +124,5 @@ public class ClassesController {
                             "Failed to fetch upcoming classes", e.getMessage()));
         }
     }
+    //=================================
 }
