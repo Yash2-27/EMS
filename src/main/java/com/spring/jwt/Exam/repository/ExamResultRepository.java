@@ -63,5 +63,39 @@ public interface ExamResultRepository extends JpaRepository<ExamResult, Integer>
     ORDER BY month
     """, nativeQuery = true)
     List<MonthlyPercentageProjection> findMonthlyPercentageByUser(@Param("userId") Long userId);
+
+
+    /**
+     * score → marks obtained by students in a class.
+     *
+     * total_marks → maximum marks for those exams.
+     *
+     * SUM(score) → adds up all student scores for that month.
+     *
+     * SUM(total_marks) → adds up total marks of all exams in that month.
+     *
+     * (SUM(score) / SUM(total_marks)) * 100 → gives average percentage of that class in that month.
+     * @param studentClass
+     * @return
+     */
+    @Query(value = """
+    SELECT 
+        DATE_FORMAT(e.exam_end_time, '%Y-%m') AS month,
+        ROUND(
+            CASE
+                WHEN SUM(e.total_marks) = 0 THEN 0
+                ELSE (SUM(e.score) / SUM(e.total_marks)) * 100
+            END, 2
+        ) AS averagePercentage
+    FROM exam_results e
+    WHERE e.student_class = :studentClass
+    GROUP BY DATE_FORMAT(e.exam_end_time, '%Y-%m')
+    ORDER BY month
+    """, nativeQuery = true)
+    List<ClassMonthlyAverageProjection> findMonthlyAverageByClass(@Param("studentClass") String studentClass);
+
+
+    //List<ClassMonthlyAverageProjection> findMonthlyAverageByClass(@Param("studentClass") String studentClass);
+
 }
 

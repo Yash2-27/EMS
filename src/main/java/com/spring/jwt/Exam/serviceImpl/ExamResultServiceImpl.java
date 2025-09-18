@@ -1,10 +1,12 @@
 package com.spring.jwt.Exam.serviceImpl;
 
+import com.spring.jwt.Exam.Dto.ClassAverageDTO;
 import com.spring.jwt.Exam.Dto.ExamResultDTO;
 import com.spring.jwt.Exam.Dto.MonthlyPercentageDTO;
 import com.spring.jwt.Exam.entity.ExamResult;
 import com.spring.jwt.Exam.entity.ExamSession;
 import com.spring.jwt.Exam.entity.UserAnswer;
+import com.spring.jwt.Exam.repository.ClassMonthlyAverageProjection;
 import com.spring.jwt.Exam.repository.ExamResultRepository;
 import com.spring.jwt.Exam.repository.ExamSessionRepository;
 import com.spring.jwt.Exam.repository.MonthlyPercentageProjection;
@@ -236,4 +238,21 @@ public class ExamResultServiceImpl implements ExamResultService {
                 ))
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<ClassAverageDTO> getClassMonthlyAverage(String studentClass) {
+        List<ClassMonthlyAverageProjection> results = examResultRepository.findMonthlyAverageByClass(studentClass);
+
+        if (results == null || results.isEmpty()) {
+            throw new ResourceNotFoundException("No exam results found for class: " + studentClass);
+        }
+
+        return results.stream()
+                .map(r -> new ClassAverageDTO(
+                        r.getMonth(),
+                        r.getAveragePercentage() != null ? r.getAveragePercentage() : 0.0
+                ))
+                .collect(Collectors.toList());
+    }
+
 } 

@@ -1,10 +1,13 @@
 package com.spring.jwt.Exam.controller;
+import com.spring.jwt.Exam.Dto.ClassAverageDTO;
 import com.spring.jwt.Exam.Dto.ExamResultDTO;
 import com.spring.jwt.Exam.Dto.MonthlyPercentageDTO;
 import com.spring.jwt.Exam.entity.ExamSession;
 import com.spring.jwt.Exam.repository.ExamSessionRepository;
 import com.spring.jwt.Exam.scheduler.ExamResultScheduler;
 import com.spring.jwt.Exam.service.ExamResultService;
+import com.spring.jwt.dto.ResponseDto;
+import com.spring.jwt.exception.ResourceNotFoundException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -208,4 +211,38 @@ public class ExamResultController {
                     ));
         }
     }
+
+//    @GetMapping("/average/class/{studentClass}")
+//    public ResponseEntity<ResponseDto<List<ClassAverageDTO>>> getClassMonthlyAverage(@PathVariable String studentClass) {
+//        try {
+//            List<ClassAverageDTO> averages = examResultService.getClassMonthlyAverage(studentClass);
+//            return ResponseEntity.ok(ResponseDto.success("Class monthly averages fetched successfully", averages));
+//        } catch (ResourceNotFoundException ex) {
+//            return ResponseEntity.status(404).body(ResponseDto.error("No data found", ex.getMessage()));
+//        } catch (Exception ex) {
+//            return ResponseEntity.internalServerError().body(ResponseDto.error("Unexpected error occurred", ex.getMessage()));
+//        }
+//    }
+
+    @GetMapping({ "/average/class","/average/class/{studentClass}"})
+    public ResponseEntity<ResponseDto<List<ClassAverageDTO>>> getClassMonthlyAverage(
+            @PathVariable(required = false) String studentClass) {
+
+        if (studentClass == null || studentClass.isEmpty()) {
+            return ResponseEntity.badRequest().body(
+                    ResponseDto.error("Class parameter is required", "Please provide a student class in the URL")
+            );
+        }
+        try {
+            List<ClassAverageDTO> averages = examResultService.getClassMonthlyAverage(studentClass);
+            return ResponseEntity.ok(ResponseDto.success("Class monthly averages fetched successfully", averages));
+        } catch (ResourceNotFoundException ex) {
+            return ResponseEntity.status(404)
+                    .body(ResponseDto.error("No data found", ex.getMessage()));
+        } catch (Exception ex) {
+            return ResponseEntity.internalServerError()
+                    .body(ResponseDto.error("Unexpected error occurred", ex.getMessage()));
+        }
+    }
+
 }

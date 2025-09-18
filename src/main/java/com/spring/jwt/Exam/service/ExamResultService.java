@@ -1,5 +1,6 @@
 package com.spring.jwt.Exam.service;
 
+import com.spring.jwt.Exam.Dto.ClassAverageDTO;
 import com.spring.jwt.Exam.Dto.ExamResultDTO;
 import com.spring.jwt.Exam.Dto.MonthlyPercentageDTO;
 import com.spring.jwt.Exam.entity.ExamResult;
@@ -60,5 +61,7 @@ public interface ExamResultService {
     int fixResultDateFormat();
 
     List<MonthlyPercentageDTO> getStudentMonthlyPercentage(Long userId);
+
+    List<ClassAverageDTO> getClassMonthlyAverage(String studentClass);
 
 }
