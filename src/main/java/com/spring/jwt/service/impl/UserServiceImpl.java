@@ -555,15 +555,9 @@ public class UserServiceImpl implements UserService {
         // ✅ Update UserFee info
         UserFee userFee = userFeeRepository.findByUserId(userId);
         if (userFee != null) {
-            if (dto.getTotalFees() != null) {
-                userFee.setTotalFees(userFee.getTotalFees());
-            }
-            if (dto.getAmount() != null) {
-                userFee.setAmount(userFee.getAmount());
-            }
-            if (dto.getRemainingFees() != null) {
-                userFee.setRemainingFees(userFee.getRemainingFees());
-            }
+            if (dto.getTotalFees() != null) userFee.setTotalFees(dto.getTotalFees());
+            if (dto.getAmount() != null) userFee.setAmount(dto.getAmount());
+            if (dto.getRemainingFees() != null) userFee.setRemainingFees(dto.getRemainingFees());
             userFeeRepository.save(userFee);
         }
 
