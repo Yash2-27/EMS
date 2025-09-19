@@ -76,4 +76,7 @@ public class User {
     private Set<Role> roles;
 
 
+//    @OneToOne(mappedBy = "user")
+//    private Student student;
+
 }

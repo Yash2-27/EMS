@@ -1,5 +1,6 @@
 package com.spring.jwt.Exam.repository;
 
+import com.spring.jwt.Exam.Dto.SubjectScoreReportDto;
 import com.spring.jwt.Exam.entity.ExamResult;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -43,7 +44,7 @@ public interface ExamResultRepository extends JpaRepository<ExamResult, Integer>
     ExamResult findByOriginalSessionId(Integer sessionId);
 
     /**
-     * Formula for Monthly Percentage
+     * query  for get Monthly score of student
      * (SUM(score ) / SUM(total_marks )) * 100
      * @param userId
      * @return Monthly Percentage
@@ -66,16 +67,9 @@ public interface ExamResultRepository extends JpaRepository<ExamResult, Integer>
 
 
     /**
-     * score → marks obtained by students in a class.
+     * query for get Monthly Class Average
      *
-     * total_marks → maximum marks for those exams.
-     *
-     * SUM(score) → adds up all student scores for that month.
-     *
-     * SUM(total_marks) → adds up total marks of all exams in that month.
-     *
-     * (SUM(score) / SUM(total_marks)) * 100 → gives average percentage of that class in that month.
-     * @param studentClass
+      * @param studentClass
      * @return
      */
     @Query(value = """
@@ -94,8 +88,27 @@ public interface ExamResultRepository extends JpaRepository<ExamResult, Integer>
     """, nativeQuery = true)
     List<ClassMonthlyAverageProjection> findMonthlyAverageByClass(@Param("studentClass") String studentClass);
 
-
-    //List<ClassMonthlyAverageProjection> findMonthlyAverageByClass(@Param("studentClass") String studentClass);
+    /** query for get monthly score by subjectwise
+     *
+     * @param studentId
+     * @param month
+     * @param year
+     * @return
+     */
+    @Query("""
+    SELECT new com.spring.jwt.Exam.Dto.SubjectScoreReportDto(pp.subject, ROUND(AVG(er.score), 2))
+    FROM ExamResult er
+    JOIN er.paper p
+    JOIN p.paperPattern pp
+    JOIN Student s ON s.userId = er.user.id
+    WHERE s.studentId = :studentId
+      AND FUNCTION('MONTH', er.examEndTime) = :month
+      AND FUNCTION('YEAR', er.examEndTime) = :year
+    GROUP BY pp.subject
+    """)
+        List<SubjectScoreReportDto> getMonthlySubjectWiseScores(
+                @Param("studentId") Long studentId,
+                @Param("month") int month,
+                @Param("year") int year);
 
 }
-
