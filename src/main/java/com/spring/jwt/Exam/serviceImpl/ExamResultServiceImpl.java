@@ -3,6 +3,7 @@ package com.spring.jwt.Exam.serviceImpl;
 import com.spring.jwt.Exam.Dto.ClassAverageDTO;
 import com.spring.jwt.Exam.Dto.ExamResultDTO;
 import com.spring.jwt.Exam.Dto.MonthlyPercentageDTO;
+import com.spring.jwt.Exam.Dto.SubjectScoreReportDto;
 import com.spring.jwt.Exam.entity.ExamResult;
 import com.spring.jwt.Exam.entity.ExamSession;
 import com.spring.jwt.Exam.entity.UserAnswer;
@@ -11,11 +12,13 @@ import com.spring.jwt.Exam.repository.ExamResultRepository;
 import com.spring.jwt.Exam.repository.ExamSessionRepository;
 import com.spring.jwt.Exam.repository.MonthlyPercentageProjection;
 import com.spring.jwt.Exam.service.ExamResultService;
+import com.spring.jwt.exception.NoExamResultFoundException;
 import com.spring.jwt.exception.ResourceNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -34,7 +37,6 @@ import java.util.stream.Collectors;
 public class ExamResultServiceImpl implements ExamResultService {
 
     @Autowired
-    private ExamResultRepository repository;
     private final ExamSessionRepository examSessionRepository;
     private final ExamResultRepository examResultRepository;
     private final JdbcTemplate jdbcTemplate;
@@ -254,5 +256,31 @@ public class ExamResultServiceImpl implements ExamResultService {
                 ))
                 .collect(Collectors.toList());
     }
+
+//    @Override
+//    public List<SubjectScoreReportDto> getMonthlySubjectWiseScores(Long studentId, int month, int year) {
+//        return examResultRepository.getMonthlySubjectWiseScores(studentId, month, year);
+//    }
+
+@Override
+public List<SubjectScoreReportDto> getMonthlySubjectWiseScores(Long studentId, int month, int year) {
+    try {
+        List<SubjectScoreReportDto> results = examResultRepository.getMonthlySubjectWiseScores(studentId, month, year);
+
+        if (results == null || results.isEmpty()) {
+            throw new NoExamResultFoundException(
+                    "No exam results found for studentId=" + studentId + " in " + month + "/" + year
+            );
+        }
+        return results;
+    } catch (DataAccessException ex) {
+        // Database error handling
+        throw new RuntimeException("Database error while fetching exam results", ex);
+    } catch (Exception ex) {
+        // Fallback error
+        throw new RuntimeException("Unexpected error occurred while fetching exam results", ex);
+    }
+}
+
 
 } 

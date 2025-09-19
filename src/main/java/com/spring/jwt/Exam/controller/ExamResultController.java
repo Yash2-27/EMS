@@ -2,6 +2,7 @@ package com.spring.jwt.Exam.controller;
 import com.spring.jwt.Exam.Dto.ClassAverageDTO;
 import com.spring.jwt.Exam.Dto.ExamResultDTO;
 import com.spring.jwt.Exam.Dto.MonthlyPercentageDTO;
+import com.spring.jwt.Exam.Dto.SubjectScoreReportDto;
 import com.spring.jwt.Exam.entity.ExamSession;
 import com.spring.jwt.Exam.repository.ExamSessionRepository;
 import com.spring.jwt.Exam.scheduler.ExamResultScheduler;
@@ -236,6 +237,43 @@ public class ExamResultController {
         try {
             List<ClassAverageDTO> averages = examResultService.getClassMonthlyAverage(studentClass);
             return ResponseEntity.ok(ResponseDto.success("Class monthly averages fetched successfully", averages));
+        } catch (ResourceNotFoundException ex) {
+            return ResponseEntity.status(404)
+                    .body(ResponseDto.error("No data found", ex.getMessage()));
+        } catch (Exception ex) {
+            return ResponseEntity.internalServerError()
+                    .body(ResponseDto.error("Unexpected error occurred", ex.getMessage()));
+        }
+    }
+
+//    @GetMapping("/subjectScores/{studentId}")
+//    public ResponseEntity<List<SubjectScoreReportDto>> getSubjectWiseScores(
+//            @PathVariable Long studentId,
+//            @RequestParam int month,
+//            @RequestParam int year) {
+//
+//        List<SubjectScoreReportDto> scores = examResultService.getMonthlySubjectWiseScores(studentId, month, year);
+//        return ResponseEntity.ok(scores);
+//    }
+
+    @GetMapping("/subjectScores/{studentId}")
+    public ResponseEntity<ResponseDto<List<SubjectScoreReportDto>>> getSubjectWiseScores(
+            @PathVariable Long studentId,
+            @RequestParam int month,
+            @RequestParam int year) {
+
+        // Input validation (optional)
+        if (studentId == null || month <= 0 || year <= 0) {
+            return ResponseEntity.badRequest().body(
+                    ResponseDto.error("Invalid input", "StudentId, month, and year must be valid")
+            );
+        }
+        try {
+            List<SubjectScoreReportDto> scores = examResultService.getMonthlySubjectWiseScores(studentId, month, year);
+
+            return ResponseEntity.ok(
+                    ResponseDto.success("Subject-wise scores fetched successfully", scores)
+            );
         } catch (ResourceNotFoundException ex) {
             return ResponseEntity.status(404)
                     .body(ResponseDto.error("No data found", ex.getMessage()));

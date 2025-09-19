@@ -1,12 +1,9 @@
 package com.spring.jwt.entity;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDate;
-import java.time.LocalTime;
-
 @Entity
 @Data
 @NoArgsConstructor
@@ -16,35 +13,24 @@ public class Classes {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long classesId;
-
-    @Column(name = "sub",nullable = false)
-    @NotBlank
+    @Column(name = "sub")
     private String sub;
-
-    @Column(name = "date",nullable = false)
+    @Column(name = "date")
     private LocalDate date;
-
-    @Column(name = "duration",nullable = false)
-    @NotBlank
+    @Column(name = "duration")
     private String duration;
-
-    @Column(name = "student_Class", nullable = false)
-    @NotBlank
+    @Column(name = "student_Class")
     private String studentClass;
-
-    @Column(name = "teacher_Id",nullable = false)
+    @Column(name = "teacher_Id")
     private Integer teacherId;
 
-    //Newly added columns or fields for Today’s Classes GET API.
-    @Column(name = "topic",nullable = false)
-    @NotBlank
+    @Column(name = "topic")
     private String topic;
 
-    @Column(name = "time",nullable = false)
-    private LocalTime time;
+    @Column(name = "time")
+    private String time;
 
-    @Column(name = "teacherName",nullable = false)
-    @NotBlank
-    private String TeacherName;
+    @Column(name = "teacher_name")
+    private String teacherName;
 
 }
