@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+//student dto
+
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,6 +21,7 @@ public class StudentDTO {
     private String studentcol1;
     private String studentClass;
     private Integer userId;
+    private Integer parentsId;
 
     public static StudentDTO fromEntity(Student student) {
         if (student == null) {
@@ -34,7 +38,14 @@ public class StudentDTO {
         dto.setStudentcol1(student.getStudentcol1());
         dto.setStudentClass(student.getStudentClass());
         dto.setUserId(student.getUserId());
-        
+
+
+        if (student.getParent() != null) {
+            dto.setParentsId(student.getParent().getParentsId());
+        } else {
+            dto.setParentsId(null);
+        }
+
         return dto;
     }
-} 
+}

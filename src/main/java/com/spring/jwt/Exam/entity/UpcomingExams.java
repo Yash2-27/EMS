@@ -1,5 +1,7 @@
 package com.spring.jwt.Exam.entity;
 
+//upcoming entity
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,7 +27,6 @@ public class UpcomingExams {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "paper_id", referencedColumnName = "paperId", nullable = false, unique = true)
     private Paper paper;
-
 
     @Column(nullable = false)
     private String title;

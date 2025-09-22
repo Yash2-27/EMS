@@ -1,115 +1,145 @@
+//upcoming controller 
+
+
 package com.spring.jwt.Exam.controller;
 
 import com.spring.jwt.Exam.Dto.UpcomingExamDetailsDTO;
 import com.spring.jwt.Exam.service.UpcomingExamsService;
-import com.spring.jwt.dto.ResponseDto;
-import com.spring.jwt.exception.ResourceNotFoundException;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/upcoming-exams")
+@RequestMapping("/api/v1/exam")
 public class UpcomingExamController {
 
     @Autowired
     private UpcomingExamsService upcomingExamsService;
 
-
-
     @Operation(summary = "Get a list of all upcoming exams (After the current time)")
     @GetMapping
-    public ResponseEntity<ResponseDto<List<UpcomingExamDetailsDTO>>> getAllUpcomingExams() {
+    public ResponseEntity<?> getAllUpcomingExams() {
         try {
-            ResponseDto<List<UpcomingExamDetailsDTO>> response = upcomingExamsService.getAllUpcomingExams();
-            return ResponseEntity.ok(response);
-        } catch (ResourceNotFoundException ex) {
-            return ResponseEntity.status(404).body(ResponseDto.error("Not found", ex.getMessage()));
+            List<UpcomingExamDetailsDTO> data = upcomingExamsService.getAllUpcomingExams().getData();
+
+            if (data == null || data.isEmpty()) {
+                return ResponseEntity.status(404).body(Map.of(
+                        "message", "No upcoming exams found."
+                ));
+            }
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "Upcoming exams fetched successfully.",
+                    "data", data
+            ));
+
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(
-                    ResponseDto.error("Failed to retrieve upcoming exams", e.getMessage()));
+            return ResponseEntity.status(500).body(Map.of(
+                    "message", "Something went wrong: " + e.getMessage()
+            ));
         }
     }
-
 
     @Operation(summary = "Get a list of all previous exams (strictly before current time)")
     @GetMapping("/previous")
-    public ResponseEntity<ResponseDto<List<UpcomingExamDetailsDTO>>> getAllPreviousExams() {
+    public ResponseEntity<?> getAllPreviousExams() {
         try {
-            ResponseDto<List<UpcomingExamDetailsDTO>> response = upcomingExamsService.getAllPreviousExams();
-            return ResponseEntity.ok(response);
-        } catch (ResourceNotFoundException ex) { //
-            return ResponseEntity.status(404).body(ResponseDto.error("Not found", ex.getMessage()));
+            List<UpcomingExamDetailsDTO> data = upcomingExamsService.getAllPreviousExams().getData();
+
+            if (data == null || data.isEmpty()) {
+                return ResponseEntity.status(404).body(Map.of(
+                        "message", "No previous exams found."
+                ));
+            }
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "Previous exams fetched successfully.",
+                    "data", data
+            ));
+
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(
-                    ResponseDto.error("Failed to retrieve previous exams for this class", e.getMessage()));
+            return ResponseEntity.status(500).body(Map.of(
+                    "message", "Something went wrong: " + e.getMessage()
+            ));
         }
     }
 
-    //API for PARENTS //Get details of upcoming exams.
+    // by student class
+
     @Operation(summary = "Get UPCOMING exams by student class (strictly after current time)")
-    @GetMapping("/class/{studentClass}")
-    public ResponseEntity<ResponseDto<List<UpcomingExamDetailsDTO>>> getUpcomingExamsByStudentClass(@PathVariable String studentClass) {
+    @GetMapping({"/upcomingExams/class/", "/upcomingExams/class/{studentClass}"})
+    public ResponseEntity<?> getUpcomingExamsByStudentClass(@PathVariable(required = false) String studentClass) {
+        if (studentClass == null || studentClass.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "message", "No Student Class Selected"
+            ));
+        }
+
         try {
-            ResponseDto<List<UpcomingExamDetailsDTO>> response = upcomingExamsService.getUpcomingExamsByStudentClass(studentClass);
-            return ResponseEntity.ok(response);
-        } catch (ResourceNotFoundException ex) {
-            return ResponseEntity.status(404).body(ResponseDto.error("Not found", ex.getMessage()));
+            List<UpcomingExamDetailsDTO> data = upcomingExamsService.getUpcomingExamsByStudentClass(studentClass).getData();
+
+            if (data == null || data.isEmpty()) {
+                return ResponseEntity.status(404).body(Map.of(
+                        "message", "No upcoming exams found for student class: " + studentClass
+                ));
+            }
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "Upcoming exams for class " + studentClass + " fetched successfully.",
+                    "data", data
+            ));
+
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(
-                    ResponseDto.error("Failed to retrieve upcoming exams for student  class", e.getMessage()));
+            return ResponseEntity.status(500).body(Map.of(
+                    "message", "Something went wrong: " + e.getMessage()
+            ));
         }
     }
 
 
-    //API for PARENTS //Get details of previous  exams
     @Operation(summary = "Get previous exams by student class (strictly before current time)")
-    @GetMapping("/previous/class/{studentClass}")
-    public ResponseEntity<ResponseDto<List<UpcomingExamDetailsDTO>>> getPreviousExamsByStudentClass(@PathVariable String studentClass) {
+    @GetMapping("/previousExams/class/{studentClass}")
+    public ResponseEntity<?> getPreviousExamsByStudentClass(@PathVariable String studentClass) {
         try {
-            ResponseDto<List<UpcomingExamDetailsDTO>> response = upcomingExamsService.getPreviousExamsByStudentClass(studentClass);
-            return ResponseEntity.ok(response);
-        } catch (ResourceNotFoundException ex) { // Directly catch the exception
-            return ResponseEntity.status(404).body(ResponseDto.error("Not found", ex.getMessage()));
+            List<UpcomingExamDetailsDTO> data = upcomingExamsService.getPreviousExamsByStudentClass(studentClass).getData();
+
+            if (data == null || data.isEmpty()) {
+                return ResponseEntity.status(404).body(Map.of(
+                        "message", "No previous exams found for student class: " + studentClass
+                ));
+            }
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "Previous exams for class " + studentClass + " fetched successfully.",
+                    "data", data
+            ));
+
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(
-                    ResponseDto.error("Failed to retrieve previous exams for class", e.getMessage()));
+            return ResponseEntity.status(500).body(Map.of(
+                    "message", "Something went wrong: " + e.getMessage()
+            ));
         }
     }
 
-//
-//    @Operation(summary = "Get a specific upcoming exam by its paper ID")
-//    @GetMapping("/{paperId}")
-//    public ResponseEntity<ResponseDto<UpcomingExamDetailsDTO>> getUpcomingExamDetailsById(@PathVariable Integer paperId) {
-//        try {
-//            ResponseDto<UpcomingExamDetailsDTO> response = upcomingExamsService.getUpcomingExamDetailsById(paperId);
-//            if (response.getData() == null) {
-//                return ResponseEntity.status(404).body(response);
-//            }
-//            return ResponseEntity.ok(response);
-//        } catch (Exception e) {
-//            return ResponseEntity.internalServerError().body(
-//                    ResponseDto.error("Failed to retrieve upcoming exam by Paper ID", e.getMessage()));
-//        }
+
+    //
+//    @GetMapping("/previousExams/class")
+//    public ResponseEntity<?> handleMissingStudentClassPrevious() {
+//        return ResponseEntity.badRequest().body(Map.of(
+//                "message", "studenatClass path variable is required"
+//        ));
 //    }
 //
-//    @Operation(summary = "Get a specific upcoming exam by its UpcomingExam ID")
-//    @GetMapping("/details/{upcomingExamId}")
-//    public ResponseEntity<ResponseDto<UpcomingExamDetailsDTO>> getUpcomingExamDetailsByUpcomingExamId(@PathVariable Integer upcomingExamId) {
-//        try {
-//            ResponseDto<UpcomingExamDetailsDTO> response = upcomingExamsService.getUpcomingExamDetailsByUpcomingExamId(upcomingExamId);
-//            if (response.getData() == null) {
-//                return ResponseEntity.status(404).body(response);
-//            }
-//            return ResponseEntity.ok(response);
-//        } catch (Exception e) {
-//            return ResponseEntity.internalServerError().body(
-//                    ResponseDto.error("Failed to retrieve upcoming exam by UpcomingExam ID", e.getMessage()));
-//        }
-//    }
+    @GetMapping("/previousExams/class/")
+    public ResponseEntity<?> handleMissingStudentClassPreviousTrailingSlash() {
+        return ResponseEntity.badRequest().body(Map.of(
+                "message", "No Student class Selected"
+        ));
+    }
 
 
 }

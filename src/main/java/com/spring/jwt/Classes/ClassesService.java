@@ -6,7 +6,7 @@ public interface ClassesService {
     ClassesDto updateClass(Long id, ClassesDto classesDto);
     void deleteClass(Long id);
 
-    List<ClassesDto> getUpcomingClasses(String studentClass);
+    List<ClassesDto> getTodaysClasses(String studentClass);
 
-    List<ClassesDto> getTodaysClassesByStudentClass(String studentClass);
+    List<ClassesDto> getUpcomingClasses(String studentClass);
 }

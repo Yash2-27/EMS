@@ -244,21 +244,4 @@ public class StudentAttendanceController {
                     .body("Failed to fetch attendance summary. Reason: " + ex.getMessage());
         }
     }
-
-    @GetMapping("/dashboard/progress")
-    @PermitAll
-    @Operation(summary = "Get Progress Bar Data",
-            description = "Returns student's monthly score and class average monthly score")
-    public ResponseEntity<ApiResponse<ProgressBarDto>> getProgressBarData(
-            @RequestParam Integer userId,
-            @RequestParam String studentClass) {
-        try {
-            ProgressBarDto dto = studentAttendanceService.getMonthlyProgress(userId, studentClass);
-            return ResponseEntity.ok(ApiResponse.success("Progress bar data fetched successfully", dto));
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(
-                    ApiResponse.error(HttpStatus.BAD_REQUEST, "Failed to fetch progress bar data", e.getMessage())
-            );
-        }
-    }
 }

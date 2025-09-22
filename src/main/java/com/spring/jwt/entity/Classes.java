@@ -4,8 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDate;
-import java.time.LocalTime;
-
 @Entity
 @Data
 @NoArgsConstructor
@@ -26,12 +24,13 @@ public class Classes {
     @Column(name = "teacher_Id")
     private Integer teacherId;
 
-    //Newly added columns or fields for Today’s Classes GET API.
     @Column(name = "topic")
     private String topic;
+
     @Column(name = "time")
-    private LocalTime time;
-    @Column(name = "teacherName")
-    private String TeacherName;
+    private String time;
+
+    @Column(name = "teacher_name")
+    private String teacherName;
 
 }
