@@ -201,6 +201,41 @@ public class GlobalException extends org.springframework.web.servlet.mvc.method.
         );
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    // =========================================================================
+
+    @ExceptionHandler(PersonalInfoResourceNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handlePersonalInfoResourceNotFound(PersonalInfoResourceNotFoundException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", new Date());
+        body.put("status", HttpStatus.NOT_FOUND.value());
+        body.put("error", "Personal Info Not Found");
+        body.put("message", ex.getMessage());
+
+        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(DuplicateEmailException.class)
+    public ResponseEntity<Map<String, Object>> handleDuplicateEmail(DuplicateEmailException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", new Date());
+        body.put("status", HttpStatus.CONFLICT.value());
+        body.put("error", "Duplicate Email");
+        body.put("message", ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(InvalidPhoneNumberException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidPhoneNumber(InvalidPhoneNumberException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", new Date());
+        body.put("status", HttpStatus.CONFLICT.value());
+        body.put("error", "Invalid Phone Number");
+        body.put("message", ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.CONFLICT);
+    }
+
+}
 }
 
 

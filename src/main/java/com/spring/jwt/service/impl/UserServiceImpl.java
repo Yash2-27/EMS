@@ -3,8 +3,7 @@ package com.spring.jwt.service.impl;
 import com.spring.jwt.UserFee.UserFeeRepository;
 import com.spring.jwt.dto.*;
 import com.spring.jwt.entity.*;
-import com.spring.jwt.exception.BaseException;
-import com.spring.jwt.exception.UserNotFoundExceptions;
+import com.spring.jwt.exception.*;
 import com.spring.jwt.repository.RoleRepository;
 import com.spring.jwt.repository.StudentRepository;
 import com.spring.jwt.repository.UserRepository;
@@ -498,40 +497,53 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public PersonalInfoDTO getPersonalInfo(Long userId) {
-        User user = userRepository.findById(userId).orElse(null);
-        if (user == null) return null;
+        // Fetch User or throw exception
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new PersonalInfoResourceNotFoundException("User not found with id: " + userId));
 
+        // Fetch Student or throw exception
         Student student = studentRepository.findByUserId(user.getId());
-        Parents parent = student != null
-                ? parentsRepository.findByStudentId(student.getStudentId())
-                : null;
+        if (student == null) {
+            throw new PersonalInfoResourceNotFoundException("Student not found for user id: " + userId);
+        }
 
+        // Fetch Parent or throw exception
+        Parents parent = parentsRepository.findByStudentId(student.getStudentId());
+        if (parent == null) {
+            throw new PersonalInfoResourceNotFoundException("Parent not found for student id: " + student.getStudentId());
+        }
+
+        // Fetch UserFee or throw exception
         UserFee userFee = userFeeRepository.findByUserId(userId);
+        if (userFee == null) {
+            throw new PersonalInfoResourceNotFoundException("Fee record not found for user id: " + userId);
+        }
 
+        // Return DTO
         return new PersonalInfoDTO(
                 user.getFirstName(),
                 user.getLastName(),
                 user.getEmail(),
                 String.valueOf(user.getMobileNumber()),
-                parent != null ? parent.getRelationshipWithStudent() : null,
-                userFee != null ? String.valueOf(userFee.getTotalFees()) : "0",
-                userFee != null ? String.valueOf(userFee.getAmount()) : "0",
-                userFee != null ? String.valueOf(userFee.getRemainingFees()) : "0"
+                parent.getRelationshipWithStudent(),
+                String.valueOf(userFee.getTotalFees()),
+                String.valueOf(userFee.getAmount()),
+                String.valueOf(userFee.getRemainingFees())
         );
-
     }
 
 
     @Override
     @Transactional
     public PersonalInfoDTO updatePersonalInfo(Long userId, PersonalInfoDTO dto) {
+        // Fetch User or throw exception
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+                .orElseThrow(() -> new PersonalInfoResourceNotFoundException("User not found with id: " + userId));
 
         // ✅ Check for duplicate email before updating
         if (dto.getEmail() != null && !user.getEmail().equals(dto.getEmail())) {
             if (userRepository.existsByEmail(dto.getEmail())) {
-                throw new RuntimeException("Email already in use: " + dto.getEmail());
+                throw new DuplicateEmailException("Email already in use: " + dto.getEmail());
             }
             user.setEmail(dto.getEmail());
         }
@@ -539,7 +551,22 @@ public class UserServiceImpl implements UserService {
         // ✅ Update User basic info
         user.setFirstName(dto.getFirstName());
         user.setLastName(dto.getLastName());
-        user.setMobileNumber(dto.getPhoneNumber() != null ? Long.parseLong(dto.getPhoneNumber()) : null);
+
+        if (dto.getPhoneNumber() != null) {
+            String phone = dto.getPhoneNumber().trim();
+
+            if (phone.length() < 10) {
+                throw new InvalidPhoneNumberException("Mobile number must be at least 10 digits long");
+            }
+            if (!phone.matches("\\d+")) {
+                throw new InvalidPhoneNumberException("Mobile number must contain only digits");
+            }
+
+            user.setMobileNumber(Long.parseLong(phone));
+        } else {
+            user.setMobileNumber(null);
+        }
+
         userRepository.save(user);
 
         // ✅ Update Parent info (if student exists)
