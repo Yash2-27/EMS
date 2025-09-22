@@ -1,5 +1,7 @@
 package com.spring.jwt.Classes;
 import com.spring.jwt.entity.Classes;
+import com.spring.jwt.entity.Teacher;
+import com.spring.jwt.repository.TeacherRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,15 +18,65 @@ public class ClassesServiceImpl implements ClassesService {
     private ClassesRepository classesRepository;
     @Autowired
     private ClassMapper mapper;
+    @Autowired
+    private TeacherRepository teacherRepository;
+
 
     @Override
     public ClassesDto createClass(ClassesDto classesDto) {
         if (classesDto == null) {
             throw new IllegalArgumentException("Class data cannot be null");
         }
+
+        // Validate required fields
+        if (classesDto.getSub() == null || classesDto.getSub().trim().isEmpty()) {
+            throw new IllegalArgumentException("Subject is required");
+        }
+        if (classesDto.getDate() == null) {
+            throw new IllegalArgumentException("Date is required");
+        }
+        if (classesDto.getDuration() == null || classesDto.getDuration().trim().isEmpty()) {
+            throw new IllegalArgumentException("Duration is required");
+        }
+        if (classesDto.getStudentClass() == null || classesDto.getStudentClass().trim().isEmpty()) {
+            throw new IllegalArgumentException("Student class is required");
+        }
+        if (classesDto.getTeacherId() == null) {
+            throw new IllegalArgumentException("Teacher ID is required");
+        }
+        if (classesDto.getTime() == null || classesDto.getTime().trim().isEmpty()) {
+            throw new IllegalArgumentException("Time is required");
+        }
+        if (classesDto.getTopic() == null || classesDto.getTopic().trim().isEmpty()) {
+            throw new IllegalArgumentException("Topic is required");
+        }
+
+        // Fetch teacher from teacher table
+        Teacher teacher = teacherRepository.findById(classesDto.getTeacherId())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Teacher with ID " + classesDto.getTeacherId() + " not found"));
+
+        // Check if teacher already has a class at the same date/time
+        boolean exists = classesRepository.existsClassForTeacherAtTime(
+                classesDto.getTeacherId(), classesDto.getDate(), classesDto.getTime());
+        if (exists) {
+            throw new IllegalStateException("Teacher already has a class scheduled at this time");
+        }
+
+        // Map DTO → Entity
         Classes entity = mapper.toEntity(classesDto);
+
+        // Set teacherName from Teacher table
+        entity.setTeacherName(teacher.getName());
+
         Classes savedClass = classesRepository.save(entity);
+
+        // Map back to DTO
         ClassesDto dto = mapper.toDto(savedClass);
+
+        // ✅ Ensure teacherName is set in DTO
+        dto.setTeacherName(teacher.getName());
+
         return dto;
     }
 
@@ -96,54 +148,30 @@ public class ClassesServiceImpl implements ClassesService {
     @Override
     public List<ClassesDto> getUpcomingClasses(String studentClass) {
         if (studentClass == null || studentClass.trim().isEmpty()) {
-            throw new ClassesNotFoundException("Student class not provided");
+            throw new ClassesNotFoundException("Student class is required");
         }
 
         LocalDate today = LocalDate.now();
-        LocalDateTime now = LocalDateTime.now(); // current date and time
-        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+        String currentTime = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
 
-        List<ClassesDto> classes = classesRepository.findUpcomingClasses(studentClass.trim(), today)
+        List<ClassesDto> classes = classesRepository
+                .findUpcomingClasses(studentClass.trim(), today, currentTime)
                 .stream()
                 .map(mapper::toDto)
-                .filter(c -> {
-                    if (c.getDate() == null) return false;
-
-                    // Parse class time
-                    LocalTime classTime;
-                    try {
-                        classTime = (c.getTime() != null && !c.getTime().trim().isEmpty())
-                                ? LocalTime.parse(c.getTime().trim(), timeFormatter)
-                                : LocalTime.MIN; // default to start of day if time missing
-                    } catch (Exception e) {
-                        classTime = LocalTime.MIN;
-                    }
-
-                    // Combine date + time
-                    LocalDateTime classDateTime = LocalDateTime.of(c.getDate(), classTime);
-
-                    // Include only if classDateTime >= now
-                    return !classDateTime.isBefore(now);
-                })
-                // Sort by date and time
-                .sorted(Comparator.comparing((ClassesDto c) -> {
-                    LocalTime classTime;
-                    try {
-                        classTime = (c.getTime() != null && !c.getTime().trim().isEmpty())
-                                ? LocalTime.parse(c.getTime().trim(), timeFormatter)
-                                : LocalTime.MAX;
-                    } catch (Exception e) {
-                        classTime = LocalTime.MAX;
-                    }
-                    return LocalDateTime.of(c.getDate(), classTime);
-                }))
                 .collect(Collectors.toList());
 
         if (classes.isEmpty()) {
-            throw new ClassesNotFoundException("No upcoming classes found");
+            throw new ClassesNotFoundException("No upcoming classes found for " + studentClass);
         }
 
         return classes;
     }
 
 }
+
+/**
+ *
+ *
+ *
+ *
+ */

@@ -280,7 +280,5 @@ public List<SubjectScoreReportDto> getMonthlySubjectWiseScores(Long studentId, i
         // Fallback error
         throw new RuntimeException("Unexpected error occurred while fetching exam results", ex);
     }
-}
-
-
+   }
 } 
