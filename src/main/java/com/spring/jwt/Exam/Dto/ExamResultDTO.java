@@ -31,7 +31,7 @@ public class ExamResultDTO {
     // Fields for backward compatibility
     private Integer sessionId;
     private String status;
-    
+    private Double totalMarks;
     /**
      * Convert ExamResult entity to DTO
      * @param result The exam result entity
@@ -59,10 +59,10 @@ public class ExamResultDTO {
         dto.setIncorrectAnswers(result.getIncorrectAnswers());
         dto.setUnansweredQuestions(result.getUnansweredQuestions());
         dto.setOriginalSessionId(result.getOriginalSessionId());
-        
         // Set backward compatibility fields
         dto.setSessionId(result.getResultId());
         dto.setStatus("Completed");
+        dto.setTotalMarks(result.getTotalMarks());
         
         return dto;
     }
