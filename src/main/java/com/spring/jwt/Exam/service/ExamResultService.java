@@ -7,6 +7,7 @@ import com.spring.jwt.Exam.Dto.SubjectScoreReportDto;
 import com.spring.jwt.Exam.entity.ExamResult;
 import com.spring.jwt.Exam.entity.ExamSession;
 import com.spring.jwt.Exam.repository.MonthlyPercentageProjection;
+import org.apache.coyote.BadRequestException;
 
 import java.util.List;
 
@@ -66,5 +67,6 @@ public interface ExamResultService {
     List<ClassAverageDTO> getClassMonthlyAverage(String studentClass);
 
     List<SubjectScoreReportDto> getMonthlySubjectWiseScores(Long studentId, int month, int year);
+
 
 }
