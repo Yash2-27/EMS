@@ -590,9 +590,9 @@ public class UserController {
                     content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
             )
     })
-    @GetMapping("/personalInfo/{id}")
-    public ResponseEntity<PersonalInfoDTO> getPersonalInfo(@PathVariable Long id) {
-        PersonalInfoDTO personalInfo = userService.getPersonalInfo(id);
+    @GetMapping("/personalInfo")
+    public ResponseEntity<PersonalInfoDTO> getPersonalInfo(@RequestParam Long userId) {
+        PersonalInfoDTO personalInfo = userService.getPersonalInfo(userId);
         if (personalInfo == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
@@ -626,11 +626,9 @@ public class UserController {
                     content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
             )
     })
-    @PostMapping("/editPersonalInfo/{id}")
-    public ResponseEntity<PersonalInfoDTO> editPersonalInfo(
-            @PathVariable Long id,
-            @RequestBody PersonalInfoDTO dto) {
-        PersonalInfoDTO updatedInfo = userService.updatePersonalInfo(id, dto);
+    @PostMapping("/editPersonalInfo")
+    public ResponseEntity<PersonalInfoDTO> editPersonalInfo(@RequestParam Long userId,@RequestBody PersonalInfoDTO dto) {
+        PersonalInfoDTO updatedInfo = userService.updatePersonalInfo(userId, dto);
         return ResponseEntity.ok(updatedInfo);
     }
 }

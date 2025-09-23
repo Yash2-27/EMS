@@ -529,12 +529,10 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new PersonalInfoResourceNotFoundException("User not found with id: " + userId));
 
-        user.setFirstName(dto.getFirstName().trim());
         if (dto.getFirstName()== null || dto.getFirstName().trim().isEmpty()){
             throw new InvalidPersonalInfoException("Enter the first name");
         }
 
-        user.setLastName(dto.getLastName().trim());
         if (dto.getLastName() == null || dto.getLastName().trim().isEmpty()){
             throw new InvalidPersonalInfoException("Enter the last name");
         }
@@ -561,6 +559,8 @@ public class UserServiceImpl implements UserService {
             user.setMobileNumber(null);
         }
 
+        user.setFirstName(dto.getFirstName().trim());
+        user.setLastName(dto.getLastName().trim());
         userRepository.save(user);
 
         if (dto.getRelationshipWithStudent() == null || dto.getRelationshipWithStudent().trim().isEmpty()) {
