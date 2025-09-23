@@ -497,60 +497,54 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public PersonalInfoDTO getPersonalInfo(Long userId) {
+
         // Fetch User or throw exception
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new PersonalInfoResourceNotFoundException("User not found with id: " + userId));
 
-        // Fetch Student or throw exception
         Student student = studentRepository.findByUserId(user.getId());
-        if (student == null) {
-            throw new PersonalInfoResourceNotFoundException("Student not found for user id: " + userId);
-        }
+        Parents parent = student != null
+                ? parentsRepository.findByStudentId(student.getStudentId())
+                : null;
 
-        // Fetch Parent or throw exception
-        Parents parent = parentsRepository.findByStudentId(student.getStudentId());
-        if (parent == null) {
-            throw new PersonalInfoResourceNotFoundException("Parent not found for student id: " + student.getStudentId());
-        }
-
-        // Fetch UserFee or throw exception
         UserFee userFee = userFeeRepository.findByUserId(userId);
-        if (userFee == null) {
-            throw new PersonalInfoResourceNotFoundException("Fee record not found for user id: " + userId);
-        }
 
-        // Return DTO
         return new PersonalInfoDTO(
                 user.getFirstName(),
                 user.getLastName(),
                 user.getEmail(),
                 String.valueOf(user.getMobileNumber()),
-                parent.getRelationshipWithStudent(),
-                String.valueOf(userFee.getTotalFees()),
-                String.valueOf(userFee.getAmount()),
-                String.valueOf(userFee.getRemainingFees())
+                parent != null ? parent.getRelationshipWithStudent() : null,
+                userFee != null ? String.valueOf(userFee.getTotalFees()) : "0",
+                userFee != null ? String.valueOf(userFee.getAmount()) : "0",
+                userFee != null ? String.valueOf(userFee.getRemainingFees()) : "0"
         );
-    }
 
+    }
 
     @Override
     @Transactional
     public PersonalInfoDTO updatePersonalInfo(Long userId, PersonalInfoDTO dto) {
-        // Fetch User or throw exception
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new PersonalInfoResourceNotFoundException("User not found with id: " + userId));
 
-        // ✅ Check for duplicate email before updating
+        user.setFirstName(dto.getFirstName().trim());
+        if (dto.getFirstName()== null || dto.getFirstName().trim().isEmpty()){
+            throw new InvalidPersonalInfoException("Enter the first name");
+        }
+
+        user.setLastName(dto.getLastName().trim());
+        if (dto.getLastName() == null || dto.getLastName().trim().isEmpty()){
+            throw new InvalidPersonalInfoException("Enter the last name");
+        }
+
         if (dto.getEmail() != null && !user.getEmail().equals(dto.getEmail())) {
             if (userRepository.existsByEmail(dto.getEmail())) {
                 throw new DuplicateEmailException("Email already in use: " + dto.getEmail());
             }
             user.setEmail(dto.getEmail());
         }
-
-        // ✅ Update User basic info
-        user.setFirstName(dto.getFirstName());
-        user.setLastName(dto.getLastName());
 
         if (dto.getPhoneNumber() != null) {
             String phone = dto.getPhoneNumber().trim();
@@ -569,17 +563,32 @@ public class UserServiceImpl implements UserService {
 
         userRepository.save(user);
 
-        // ✅ Update Parent info (if student exists)
+        if (dto.getRelationshipWithStudent() == null || dto.getRelationshipWithStudent().trim().isEmpty()) {
+           throw new InvalidPersonalInfoException("Enter the relationship with student 'Mother', 'Father', etc.");
+        }
+
+        if (dto.getTotalFees() == null || dto.getTotalFees().trim().isEmpty()) {
+            throw new InvalidPersonalInfoException("Enter the total fees");
+        }
+
+        if (dto.getAmount() == null || dto.getAmount().trim().isEmpty()) {
+            throw new InvalidPersonalInfoException("Enter the paid amount");
+        }
+
+        if (dto.getRemainingFees() == null || dto.getRemainingFees().trim().isEmpty()) {
+            throw new InvalidPersonalInfoException("Enter the remaining fees");
+        }
+
         Student student = studentRepository.findByUserId(user.getId());
+
         if (student != null) {
             Parents parent = parentsRepository.findByStudentId(student.getStudentId());
-            if (parent != null && dto.getRelationshipWithStudent() != null) {
-                parent.setRelationshipWithStudent(dto.getRelationshipWithStudent());
+            if (parent != null) {
+                parent.setRelationshipWithStudent(dto.getRelationshipWithStudent().trim());
                 parentsRepository.save(parent);
             }
         }
 
-        // ✅ Update UserFee info
         UserFee userFee = userFeeRepository.findByUserId(userId);
         if (userFee != null) {
             if (dto.getTotalFees() != null) userFee.setTotalFees(dto.getTotalFees());
@@ -587,8 +596,6 @@ public class UserServiceImpl implements UserService {
             if (dto.getRemainingFees() != null) userFee.setRemainingFees(dto.getRemainingFees());
             userFeeRepository.save(userFee);
         }
-
-        // ✅ Return updated data by reusing getPersonalInfo
         return getPersonalInfo(userId);
     }
 }
