@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.time.LocalDateTime;
@@ -35,25 +34,6 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 @Slf4j
 public class GlobalException extends ResponseEntityExceptionHandler {
-
-    @ExceptionHandler(BaseException.class)
-    public ResponseEntity<BaseResponseDTO> handleBaseException(BaseException e) {
-        log.error("Base exception occurred: {}", e.getMessage());
-
-        BaseResponseDTO response = BaseResponseDTO.builder()
-                .code(e.getCode())
-                .message(e.getMessage())
-                .build();
-
-        HttpStatus status;
-        try {
-            status = HttpStatus.valueOf(Integer.parseInt(e.getCode()));
-        } catch (Exception ex) {
-            status = HttpStatus.INTERNAL_SERVER_ERROR;
-        }
-
-        return new ResponseEntity<>(response, status);
-    }
 
     @ExceptionHandler(UserNotFoundExceptions.class)
     public ResponseEntity<ErrorResponseDto> handleUserNotFoundException(UserNotFoundExceptions exception, WebRequest webRequest){
@@ -77,54 +57,6 @@ public class GlobalException extends ResponseEntityExceptionHandler {
                 LocalDateTime.now()
         );
         return new ResponseEntity<>(errorResponseDto, HttpStatus.NOT_FOUND);
-    }
-
-    @ExceptionHandler({EmptyFieldException.class, UserAlreadyExistException.class})
-    public ResponseEntity<ErrorResponseDto> handleCommonExceptions(RuntimeException exception, WebRequest webRequest) {
-        log.error("Validation error: {}", exception.getMessage());
-        ErrorResponseDto errorResponseDto = new ErrorResponseDto(
-                webRequest.getDescription(false),
-                HttpStatus.BAD_REQUEST,
-                exception.getMessage(),
-                LocalDateTime.now()
-        );
-        return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(InvalidOtpException.class)
-    public ResponseEntity<ErrorResponseDto> handleInvalidOtpException(InvalidOtpException exception, WebRequest webRequest){
-        log.error("Invalid OTP: {}", exception.getMessage());
-        ErrorResponseDto errorResponseDto = new ErrorResponseDto(
-                webRequest.getDescription(false),
-                HttpStatus.BAD_REQUEST,
-                exception.getMessage(),
-                LocalDateTime.now()
-        );
-        return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(OtpExpiredException.class)
-    public ResponseEntity<ErrorResponseDto> handleOtpExpiredException(OtpExpiredException exception, WebRequest webRequest){
-        log.error("OTP expired: {}", exception.getMessage());
-        ErrorResponseDto errorResponseDto = new ErrorResponseDto(
-                webRequest.getDescription(false),
-                HttpStatus.BAD_REQUEST,
-                exception.getMessage(),
-                LocalDateTime.now()
-        );
-        return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(EmailNotVerifiedException.class)
-    public ResponseEntity<ErrorResponseDto> handleEmailNotVerifiedException(EmailNotVerifiedException exception, WebRequest webRequest){
-        log.error("Email not verified: {}", exception.getMessage());
-        ErrorResponseDto errorResponseDto = new ErrorResponseDto(
-                webRequest.getDescription(false),
-                HttpStatus.BAD_REQUEST,
-                exception.getMessage(),
-                LocalDateTime.now()
-        );
-        return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(AuthenticationException.class)
@@ -175,24 +107,6 @@ public class GlobalException extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(errorResponseDto, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    // KEEP ONLY ONE handler for MethodArgumentTypeMismatchException!
-    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<ErrorResponseDto> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException exception, WebRequest request) {
-        log.error("Type mismatch: {}", exception.getMessage());
-        String error;
-        if (exception.getRequiredType() != null) {
-            error = exception.getName() + " should be of type " + exception.getRequiredType().getName();
-        } else {
-            error = exception.getName() + " has an invalid type";
-        }
-        ErrorResponseDto errorResponseDto = new ErrorResponseDto(
-                request.getDescription(false),
-                HttpStatus.BAD_REQUEST,
-                error,
-                LocalDateTime.now()
-        );
-        return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
-    }
 
     @Override
     protected ResponseEntity<Object> handleMissingServletRequestParameter(
@@ -233,15 +147,6 @@ public class GlobalException extends ResponseEntityExceptionHandler {
                 ));
     }
 
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<Object> handleResourceNotFound(ResourceNotFoundException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", HttpStatus.NOT_FOUND.value());
-        body.put("error", "Resource Not Found");
-        body.put("message", ex.getMessage());
-        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
-    }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDto> handleAllUncaughtException(Exception exception, WebRequest webRequest) {
@@ -255,74 +160,7 @@ public class GlobalException extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(errorResponseDto, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ExceptionHandler(ExamTimeWindowException.class)
-    public ResponseEntity<ErrorResponseDto> handleExamTimeWindowException(ExamTimeWindowException exception, WebRequest webRequest){
-        log.error("Exam time window error: {}", exception.getMessage());
-        ErrorResponseDto errorResponseDto = new ErrorResponseDto(
-                webRequest.getDescription(false),
-                HttpStatus.BAD_REQUEST,
-                exception.getMessage(),
-                LocalDateTime.now()
-        );
-        return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
-    }
 
-    @ExceptionHandler(InvalidPaginationParameterException.class)
-    public ResponseEntity<Map<String, Object>> handleInvalidPagination(InvalidPaginationParameterException ex) {
-        Map<String, Object> error = new HashMap<>();
-        error.put("error", "Invalid pagination parameters");
-        error.put("message", ex.getMessage());
-        error.put("status", HttpStatus.BAD_REQUEST.value());
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
-    }
-
-    // In your GlobalExceptionHandler.java
-    @ExceptionHandler(NotesNotCreatedException.class)
-    public ResponseEntity<Map<String, Object>> handleNotesNotCreatedException(NotesNotCreatedException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", new Date());
-        body.put("status", HttpStatus.BAD_REQUEST.value());
-        body.put("error", "Notes Not Created");
-        body.put("message", ex.getMessage());
-        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
-    }
-    @ExceptionHandler(TeacherNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleTeacherNotFoundException(TeacherNotFoundException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", new Date());
-        body.put("status", HttpStatus.NOT_FOUND.value());
-        body.put("error", "Teacher Not Found");
-        body.put("message", ex.getMessage());
-        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
-    }
-
-
-    @ExceptionHandler(PaperFetchException.class)
-    public ResponseEntity<ResponseDto> handlePaperFetchException(PaperFetchException ex) {
-        return new ResponseEntity<>(new ResponseDto("Error", null, ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    @ExceptionHandler(ExamOnHolidayException.class)
-    public ResponseEntity<Map<String, Object>> handleExamOnHolidayException(ExamOnHolidayException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", new Date());
-        body.put("status", HttpStatus.BAD_REQUEST.value());
-        body.put("error", "Invalid Event Scheduling");
-        body.put("message", ex.getMessage());
-
-        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(PaperPatternNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handlePaperPatternNotFoundException(PaperPatternNotFoundException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", new Date());
-        body.put("status", HttpStatus.NOT_FOUND.value());
-        body.put("error", "Paper Pattern Not Found");
-        body.put("message", ex.getMessage());
-
-        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
-    }
 
     // =========================================================================
 

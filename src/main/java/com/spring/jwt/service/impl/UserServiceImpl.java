@@ -526,29 +526,45 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new PersonalInfoResourceNotFoundException("User not found with id: " + userId));
 
-        if (dto.getFirstName()== null || dto.getFirstName().trim().isEmpty()){
+        // ✅ First Name Validation
+        if (dto.getFirstName() == null || dto.getFirstName().trim().isEmpty()) {
             throw new InvalidPersonalInfoException("Enter the first name");
         }
-
-        if (dto.getLastName() == null || dto.getLastName().trim().isEmpty()){
-            throw new InvalidPersonalInfoException("Enter the last name");
+        if (!dto.getFirstName().matches("^[A-Za-z]+$")) {
+            throw new InvalidPersonalInfoException("First name must contain only alphabets");
         }
 
+        // ✅ Last Name Validation
+        if (dto.getLastName() == null || dto.getLastName().trim().isEmpty()) {
+            throw new InvalidPersonalInfoException("Enter the last name");
+        }
+        if (!dto.getLastName().matches("^[A-Za-z]+$")) {
+            throw new InvalidPersonalInfoException("Last name must contain only alphabets");
+        }
+
+        // ✅ Email Validation
         if (dto.getEmail() != null && !user.getEmail().equals(dto.getEmail())) {
+
+            // Email format check
+            if (!dto.getEmail().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+                throw new InvalidPersonalInfoException("Invalid email format");
+            }
+
+            // Duplicate email check
             if (userRepository.existsByEmail(dto.getEmail())) {
                 throw new DuplicateEmailException("Email already in use: " + dto.getEmail());
             }
-            user.setEmail(dto.getEmail());
+
+            user.setEmail(dto.getEmail().trim());
         }
 
+        // ✅ Phone Number Validation
         if (dto.getPhoneNumber() != null) {
             String phone = dto.getPhoneNumber().trim();
 
-            if (phone.length() < 10) {
-                throw new InvalidPhoneNumberException("Mobile number must be at least 10 digits long");
-            }
-            if (!phone.matches("\\d+")) {
-                throw new InvalidPhoneNumberException("Mobile number must contain only digits");
+            // Only digits, 10–15 digits
+            if (!phone.matches("\\d{10,15}")) {
+                throw new InvalidPhoneNumberException("Mobile number must contain only digits (10–15 digits allowed)");
             }
 
             user.setMobileNumber(Long.parseLong(phone));
@@ -556,16 +572,21 @@ public class UserServiceImpl implements UserService {
             user.setMobileNumber(null);
         }
 
+        // ✅ Update User Details
         user.setFirstName(dto.getFirstName().trim());
         user.setLastName(dto.getLastName().trim());
         userRepository.save(user);
 
+        // ✅ Relationship Validation
         if (dto.getRelationshipWithStudent() == null || dto.getRelationshipWithStudent().trim().isEmpty()) {
-           throw new InvalidPersonalInfoException("Enter the relationship with student 'Mother', 'Father', etc.");
+            throw new InvalidPersonalInfoException("Enter the relationship with student 'Mother', 'Father', etc.");
+        }
+        if (!dto.getRelationshipWithStudent().matches("^[A-Za-z]+$")) {
+            throw new InvalidPersonalInfoException("Relationship must contain only alphabets");
         }
 
+        // ✅ Update Parent Relationship
         Student student = studentRepository.findByUserId(user.getId());
-
         if (student != null) {
             Parents parent = parentsRepository.findByStudentId(student.getStudentId());
             if (parent != null) {
@@ -576,4 +597,5 @@ public class UserServiceImpl implements UserService {
 
         return getPersonalInfo(userId);
     }
+
 }
