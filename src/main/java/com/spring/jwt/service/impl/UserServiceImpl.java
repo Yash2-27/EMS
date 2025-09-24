@@ -562,9 +562,9 @@ public class UserServiceImpl implements UserService {
         if (dto.getPhoneNumber() != null) {
             String phone = dto.getPhoneNumber().trim();
 
-            // Only digits, 10–15 digits
-            if (!phone.matches("\\d{10,15}")) {
-                throw new InvalidPhoneNumberException("Mobile number must contain only digits (10–15 digits allowed)");
+            // Only digits, exactly 10 digits
+            if (!phone.matches("\\d{10}")) {
+                throw new InvalidPhoneNumberException("Mobile number must contain exactly 10 digits");
             }
 
             user.setMobileNumber(Long.parseLong(phone));
