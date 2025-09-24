@@ -1,13 +1,13 @@
-//upcoming controller 
-
-
+//upcoming controller
 package com.spring.jwt.Exam.controller;
 
 import com.spring.jwt.Exam.Dto.UpcomingExamDetailsDTO;
 import com.spring.jwt.Exam.service.UpcomingExamsService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MissingPathVariableException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -78,7 +78,6 @@ public class UpcomingExamController {
                     "message", "No Student Class Selected"
             ));
         }
-
         try {
             List<UpcomingExamDetailsDTO> data = upcomingExamsService.getUpcomingExamsByStudentClass(studentClass).getData();
 
@@ -105,7 +104,15 @@ public class UpcomingExamController {
     @GetMapping("/previousExams/class/{studentClass}")
     public ResponseEntity<?> getPreviousExamsByStudentClass(@PathVariable String studentClass) {
         try {
-            List<UpcomingExamDetailsDTO> data = upcomingExamsService.getPreviousExamsByStudentClass(studentClass).getData();
+            if (studentClass == null || studentClass.isBlank()) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "message", "Student class is missing or blank."
+                ));
+            }
+
+            List<UpcomingExamDetailsDTO> data = upcomingExamsService
+                    .getPreviousExamsByStudentClass(studentClass)
+                    .getData();
 
             if (data == null || data.isEmpty()) {
                 return ResponseEntity.status(404).body(Map.of(
@@ -124,6 +131,7 @@ public class UpcomingExamController {
             ));
         }
     }
+
 
 
     //
