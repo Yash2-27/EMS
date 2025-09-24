@@ -43,7 +43,6 @@ import com.spring.jwt.mapper.UserMapper;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    private final UserFeeRepository userFeeRepository;
     private final StudentRepository studentRepository;
 
     private final TeacherRepository teacherRepository;
@@ -497,19 +496,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public PersonalInfoDTO getPersonalInfo(Long userId) {
-
-        // Fetch User or throw exception
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new PersonalInfoResourceNotFoundException("User not found with id: " + userId));
-
-        // Fetch Student
         Student student = studentRepository.findByUserId(user.getId());
-
-        // Fetch Parent if student exists
         Parents parent = student != null
                 ? parentsRepository.findByStudentId(student.getStudentId())
                 : null;
-
         return new PersonalInfoDTO(
                 user.getFirstName(),
                 user.getLastName(),
@@ -522,7 +514,6 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public PersonalInfoDTO updatePersonalInfo(Long userId, PersonalInfoDTO dto) {
-
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new PersonalInfoResourceNotFoundException("User not found with id: " + userId));
 
@@ -532,7 +523,6 @@ public class UserServiceImpl implements UserService {
         if (!dto.getFirstName().matches("^[A-Za-z]+$")) {
             throw new InvalidPersonalInfoException("First name must contain only alphabets");
         }
-
         if (dto.getLastName() == null || dto.getLastName().trim().isEmpty()) {
             throw new InvalidPersonalInfoException("Enter the last name");
         }
@@ -541,44 +531,35 @@ public class UserServiceImpl implements UserService {
         }
 
         if (dto.getEmail() != null && !user.getEmail().equals(dto.getEmail())) {
-
-            // Email format check
             if (!dto.getEmail().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
                 throw new InvalidPersonalInfoException("Invalid email format");
             }
 
-            // Duplicate email check
             if (userRepository.existsByEmail(dto.getEmail())) {
                 throw new DuplicateEmailException("Email already in use: " + dto.getEmail());
             }
 
             user.setEmail(dto.getEmail().trim());
         }
-
         if (dto.getPhoneNumber() != null) {
             String phone = dto.getPhoneNumber().trim();
 
-            // Only digits, exactly 10 digits
             if (!phone.matches("\\d{10}")) {
                 throw new InvalidPhoneNumberException("Mobile number must contain exactly 10 digits");
             }
-
             user.setMobileNumber(Long.parseLong(phone));
         } else {
             user.setMobileNumber(null);
         }
-
         user.setFirstName(dto.getFirstName().trim());
         user.setLastName(dto.getLastName().trim());
         userRepository.save(user);
-
         if (dto.getRelationshipWithStudent() == null || dto.getRelationshipWithStudent().trim().isEmpty()) {
             throw new InvalidPersonalInfoException("Enter the relationship with student 'Mother', 'Father', etc.");
         }
         if (!dto.getRelationshipWithStudent().matches("^[A-Za-z]+$")) {
             throw new InvalidPersonalInfoException("Relationship must contain only alphabets");
         }
-
         Student student = studentRepository.findByUserId(user.getId());
         if (student != null) {
             Parents parent = parentsRepository.findByStudentId(student.getStudentId());
