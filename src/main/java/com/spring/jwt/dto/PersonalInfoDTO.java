@@ -13,7 +13,4 @@ public class PersonalInfoDTO {
     private String email;
     private String phoneNumber;
     private String relationshipWithStudent;
-    private String totalFees;
-    private String amount;
-    private String remainingFees;
 }
