@@ -1,13 +1,13 @@
-//upcoming controller 
-
-
+//upcoming controller
 package com.spring.jwt.Exam.controller;
 
 import com.spring.jwt.Exam.Dto.UpcomingExamDetailsDTO;
 import com.spring.jwt.Exam.service.UpcomingExamsService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MissingPathVariableException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -71,13 +71,9 @@ public class UpcomingExamController {
     // by student class
 
     @Operation(summary = "Get UPCOMING exams by student class (strictly after current time)")
-    @GetMapping({"/upcomingExams/class/", "/upcomingExams/class/{studentClass}"})
-    public ResponseEntity<?> getUpcomingExamsByStudentClass(@PathVariable(required = false) String studentClass) {
-        if (studentClass == null || studentClass.isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "message", "No Student Class Selected"
-            ));
-        }
+    @GetMapping({ "/upcomingExams/class/{studentClass}"})
+    public ResponseEntity<?> getUpcomingExamsByStudentClass(@RequestParam(required = false) String studentClass) {
+
 
         try {
             List<UpcomingExamDetailsDTO> data = upcomingExamsService.getUpcomingExamsByStudentClass(studentClass).getData();
@@ -102,16 +98,19 @@ public class UpcomingExamController {
 
 
     @Operation(summary = "Get previous exams by student class (strictly before current time)")
-    @GetMapping("/previousExams/class/{studentClass}")
-    public ResponseEntity<?> getPreviousExamsByStudentClass(@PathVariable String studentClass) {
+    @GetMapping("/previousExams/class")
+    public ResponseEntity<?> getPreviousExamsByStudentClass(@RequestParam(required = false) String studentClass) {
         try {
-            List<UpcomingExamDetailsDTO> data = upcomingExamsService.getPreviousExamsByStudentClass(studentClass).getData();
-
-            if (data == null || data.isEmpty()) {
-                return ResponseEntity.status(404).body(Map.of(
-                        "message", "No previous exams found for student class: " + studentClass
+            // Check if studentClass is provided
+            if (studentClass == null || studentClass.isBlank()) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "message", "Missing required request parameter: studentClass"
                 ));
             }
+
+            List<UpcomingExamDetailsDTO> data = upcomingExamsService
+                    .getPreviousExamsByStudentClass(studentClass)
+                    .getData();
 
             return ResponseEntity.ok(Map.of(
                     "message", "Previous exams for class " + studentClass + " fetched successfully.",
@@ -134,12 +133,12 @@ public class UpcomingExamController {
 //        ));
 //    }
 //
-    @GetMapping("/previousExams/class/")
-    public ResponseEntity<?> handleMissingStudentClassPreviousTrailingSlash() {
-        return ResponseEntity.badRequest().body(Map.of(
-                "message", "No Student class Selected"
-        ));
-    }
+//    @GetMapping("/previousExams/class/")
+//    public ResponseEntity<?> handleMissingStudentClassPreviousTrailingSlash() {
+//        return ResponseEntity.badRequest().body(Map.of(
+//                "message", "No Student class Selected"
+//        ));
+//    }
 
 
 }

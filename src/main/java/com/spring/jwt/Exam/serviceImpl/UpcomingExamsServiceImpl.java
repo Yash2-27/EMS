@@ -59,11 +59,16 @@ public class UpcomingExamsServiceImpl implements UpcomingExamsService {
     @Override
     @Transactional(readOnly = true)
     public ResponseDto<List<UpcomingExamDetailsDTO>> getUpcomingExamsByStudentClass(String studentClass) {
-        List<UpcomingExams> allMatchingClassExams = upcomingExamsRepository.findByStudentClassOrderByStartTimeAsc(studentClass);
 
-        List<UpcomingExams> upcomingExams = allMatchingClassExams.stream()
-                .filter(exam -> exam.getStartTime().isAfter(LocalDateTime.now()))
-                .collect(Collectors.toList());
+        boolean studentClassExists = upcomingExamsRepository.existsByStudentClass(studentClass);
+
+        if (!studentClassExists) {
+            throw new ResourceNotFoundException("Student class '" + studentClass + "' not found in the database.");
+        }
+
+
+        List<UpcomingExams> upcomingExams = upcomingExamsRepository
+                .findByStudentClassAndStartTimeAfterOrderByStartTimeAsc(studentClass, LocalDateTime.now());
 
         if (upcomingExams.isEmpty()) {
             throw new ResourceNotFoundException("No upcoming exams found for student class: " + studentClass);
@@ -72,8 +77,10 @@ public class UpcomingExamsServiceImpl implements UpcomingExamsService {
         List<UpcomingExamDetailsDTO> dtos = upcomingExams.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
+
         return ResponseDto.success("Upcoming exams for class " + studentClass + " fetched successfully", dtos);
     }
+
 
     @Override
     @Transactional(readOnly = true)
@@ -95,18 +102,23 @@ public class UpcomingExamsServiceImpl implements UpcomingExamsService {
     @Override
     @Transactional(readOnly = true)
     public ResponseDto<List<UpcomingExamDetailsDTO>> getPreviousExamsByStudentClass(String studentClass) {
+
+        boolean StudentclassExists = upcomingExamsRepository.existsByStudentClass(studentClass);
+
+        if (!StudentclassExists) {
+            throw new ResourceNotFoundException("Student class '" + studentClass + "' not found in the database.");
+        }
+
         List<UpcomingExams> foundPreviousExams = upcomingExamsRepository
                 .findByStudentClassAndStartTimeBeforeOrderByStartTimeDesc(studentClass, LocalDateTime.now());
 
         if (foundPreviousExams.isEmpty()) {
-
             throw new ResourceNotFoundException("No previous exams found for student class: " + studentClass);
         }
 
         List<UpcomingExamDetailsDTO> previousExamDTOs = foundPreviousExams.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
-
 
         return ResponseDto.success("Previous exams for class " + studentClass + " fetched successfully", previousExamDTOs);
     }
