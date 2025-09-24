@@ -526,7 +526,6 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new PersonalInfoResourceNotFoundException("User not found with id: " + userId));
 
-        // ✅ First Name Validation
         if (dto.getFirstName() == null || dto.getFirstName().trim().isEmpty()) {
             throw new InvalidPersonalInfoException("Enter the first name");
         }
@@ -534,7 +533,6 @@ public class UserServiceImpl implements UserService {
             throw new InvalidPersonalInfoException("First name must contain only alphabets");
         }
 
-        // ✅ Last Name Validation
         if (dto.getLastName() == null || dto.getLastName().trim().isEmpty()) {
             throw new InvalidPersonalInfoException("Enter the last name");
         }
@@ -542,7 +540,6 @@ public class UserServiceImpl implements UserService {
             throw new InvalidPersonalInfoException("Last name must contain only alphabets");
         }
 
-        // ✅ Email Validation
         if (dto.getEmail() != null && !user.getEmail().equals(dto.getEmail())) {
 
             // Email format check
@@ -558,7 +555,6 @@ public class UserServiceImpl implements UserService {
             user.setEmail(dto.getEmail().trim());
         }
 
-        // ✅ Phone Number Validation
         if (dto.getPhoneNumber() != null) {
             String phone = dto.getPhoneNumber().trim();
 
@@ -572,12 +568,10 @@ public class UserServiceImpl implements UserService {
             user.setMobileNumber(null);
         }
 
-        // ✅ Update User Details
         user.setFirstName(dto.getFirstName().trim());
         user.setLastName(dto.getLastName().trim());
         userRepository.save(user);
 
-        // ✅ Relationship Validation
         if (dto.getRelationshipWithStudent() == null || dto.getRelationshipWithStudent().trim().isEmpty()) {
             throw new InvalidPersonalInfoException("Enter the relationship with student 'Mother', 'Father', etc.");
         }
@@ -585,7 +579,6 @@ public class UserServiceImpl implements UserService {
             throw new InvalidPersonalInfoException("Relationship must contain only alphabets");
         }
 
-        // ✅ Update Parent Relationship
         Student student = studentRepository.findByUserId(user.getId());
         if (student != null) {
             Parents parent = parentsRepository.findByStudentId(student.getStudentId());
