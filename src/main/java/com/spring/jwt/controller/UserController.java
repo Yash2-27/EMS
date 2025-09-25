@@ -626,7 +626,7 @@ public class UserController {
                     content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
             )
     })
-    @PostMapping("/editPersonalInfo")
+    @PatchMapping("/editPersonalInfo")
     public ResponseEntity<PersonalInfoDTO> editPersonalInfo(@RequestParam Long userId,@RequestBody PersonalInfoDTO dto) {
         PersonalInfoDTO updatedInfo = userService.updatePersonalInfo(userId, dto);
         return ResponseEntity.ok(updatedInfo);

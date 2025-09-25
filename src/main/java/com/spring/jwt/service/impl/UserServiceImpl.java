@@ -496,77 +496,107 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public PersonalInfoDTO getPersonalInfo(Long userId) {
+        // Fetch user or throw exception
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new PersonalInfoResourceNotFoundException("User not found with id: " + userId));
+                .orElseThrow(() -> new PersonalInfoResourceNotFoundException(
+                        "User not found with id: " + userId));
+
+        // Fetch student linked to the user
         Student student = studentRepository.findByUserId(user.getId());
-        Parents parent = student != null
-                ? parentsRepository.findByStudentId(student.getStudentId())
-                : null;
-        return new PersonalInfoDTO(
-                user.getFirstName(),
-                user.getLastName(),
-                user.getEmail(),
-                String.valueOf(user.getMobileNumber()),
-                parent != null ? parent.getRelationshipWithStudent() : null
-        );
+
+        // Fetch parent linked to the student
+        Parents parent = null;
+        if (student != null) {
+            parent = parentsRepository.findByStudentId(student.getStudentId());
+        }
+
+        // If parent exists, use parent info; otherwise fallback to user
+        String firstName = parent != null ? parent.getFirstName() : user.getFirstName();
+        String lastName = parent != null ? parent.getLastName() : user.getLastName();
+        String email = parent != null ? parent.getEmail() : user.getEmail();
+        String mobile = parent != null && parent.getMobileNumber() != null
+                ? String.valueOf(parent.getMobileNumber())
+                : (user.getMobileNumber() != null ? String.valueOf(user.getMobileNumber()) : null);
+        String relationship = parent != null ? parent.getRelationshipWithStudent() : null;
+
+        // Build DTO
+        return new PersonalInfoDTO(firstName, lastName, email, mobile, relationship);
     }
 
     @Override
     @Transactional
     public PersonalInfoDTO updatePersonalInfo(Long userId, PersonalInfoDTO dto) {
+        // Fetch user
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new PersonalInfoResourceNotFoundException("User not found with id: " + userId));
 
+        // Fetch student and parent
+        Student student = studentRepository.findByUserId(user.getId());
+        Parents parent = null;
+        if (student != null) {
+            parent = parentsRepository.findByStudentId(student.getStudentId());
+        }
+
+        // Validate mandatory fields
+
+        // First Name
         if (dto.getFirstName() == null || dto.getFirstName().trim().isEmpty()) {
             throw new InvalidPersonalInfoException("Enter the first name");
         }
-        if (!dto.getFirstName().matches("^[A-Za-z]+$")) {
+        if (!dto.getFirstName().trim().matches("^[A-Za-z]+$")) {
             throw new InvalidPersonalInfoException("First name must contain only alphabets");
         }
+
+        // Last Name
         if (dto.getLastName() == null || dto.getLastName().trim().isEmpty()) {
             throw new InvalidPersonalInfoException("Enter the last name");
         }
-        if (!dto.getLastName().matches("^[A-Za-z]+$")) {
+        if (!dto.getLastName().trim().matches("^[A-Za-z]+$")) {
             throw new InvalidPersonalInfoException("Last name must contain only alphabets");
         }
 
-        if (dto.getEmail() != null && !user.getEmail().equals(dto.getEmail())) {
-            if (!dto.getEmail().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
-                throw new InvalidPersonalInfoException("Invalid email format");
-            }
-
-            if (userRepository.existsByEmail(dto.getEmail())) {
-                throw new DuplicateEmailException("Email already in use: " + dto.getEmail());
-            }
-
-            user.setEmail(dto.getEmail().trim());
+        // Phone Number
+        if (dto.getPhoneNumber() == null || dto.getPhoneNumber().trim().isEmpty()) {
+            throw new InvalidPhoneNumberException("Enter the mobile number");
         }
-        if (dto.getPhoneNumber() != null) {
-            String phone = dto.getPhoneNumber().trim();
-
-            if (!phone.matches("\\d{10}")) {
-                throw new InvalidPhoneNumberException("Mobile number must contain exactly 10 digits");
-            }
-            user.setMobileNumber(Long.parseLong(phone));
-        } else {
-            user.setMobileNumber(null);
+        if (!dto.getPhoneNumber().trim().matches("\\d{10}")) {
+            throw new InvalidPhoneNumberException("Mobile number must contain exactly 10 digits");
         }
-        user.setFirstName(dto.getFirstName().trim());
-        user.setLastName(dto.getLastName().trim());
-        userRepository.save(user);
+
+        // Email
+        if (dto.getEmail() == null || dto.getEmail().trim().isEmpty()) {
+            throw new InvalidPersonalInfoException("Enter the email");
+        }
+        if (!dto.getEmail().trim().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+            throw new InvalidPersonalInfoException("Invalid email format");
+        }
+        if (userRepository.existsByEmail(dto.getEmail().trim())) {
+            throw new DuplicateEmailException("Email already in use: " + dto.getEmail());
+        }
+
+        // Relationship with student
         if (dto.getRelationshipWithStudent() == null || dto.getRelationshipWithStudent().trim().isEmpty()) {
             throw new InvalidPersonalInfoException("Enter the relationship with student 'Mother', 'Father', etc.");
         }
-        if (!dto.getRelationshipWithStudent().matches("^[A-Za-z]+$")) {
+        if (!dto.getRelationshipWithStudent().trim().matches("^[A-Za-z]+$")) {
             throw new InvalidPersonalInfoException("Relationship must contain only alphabets");
         }
-        Student student = studentRepository.findByUserId(user.getId());
-        if (student != null) {
-            Parents parent = parentsRepository.findByStudentId(student.getStudentId());
-            if (parent != null) {
-                parent.setRelationshipWithStudent(dto.getRelationshipWithStudent().trim());
-                parentsRepository.save(parent);
-            }
+
+        // Update parent if exists
+        if (parent != null) {
+            parent.setFirstName(dto.getFirstName().trim());
+            parent.setLastName(dto.getLastName().trim());
+            parent.setMobileNumber(Long.parseLong(dto.getPhoneNumber().trim()));
+            parent.setEmail(dto.getEmail().trim());
+            parent.setRelationshipWithStudent(dto.getRelationshipWithStudent().trim());
+            parentsRepository.save(parent);
+        } else {
+            // Update user if parent not exists
+            user.setFirstName(dto.getFirstName().trim());
+            user.setLastName(dto.getLastName().trim());
+            user.setMobileNumber(Long.parseLong(dto.getPhoneNumber().trim()));
+            user.setEmail(dto.getEmail().trim());
+            userRepository.save(user);
         }
 
         return getPersonalInfo(userId);
