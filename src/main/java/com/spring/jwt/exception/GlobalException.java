@@ -194,9 +194,6 @@ public class GlobalException extends ResponseEntityExceptionHandler {
         body.put("message", ex.getMessage());
         return new ResponseEntity<>(body, HttpStatus.CONFLICT);
     }
-}
-
-
 
 
 //package com.spring.jwt.exception;
