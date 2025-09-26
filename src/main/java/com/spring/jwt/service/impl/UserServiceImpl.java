@@ -523,83 +523,78 @@ public class UserServiceImpl implements UserService {
         return new PersonalInfoDTO(firstName, lastName, email, mobile, relationship);
     }
 
+
     @Override
     @Transactional
     public PersonalInfoDTO updatePersonalInfo(Long userId, PersonalInfoDTO dto) {
-        // Fetch user
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new PersonalInfoResourceNotFoundException("User not found with id: " + userId));
 
-        // Fetch student and parent
         Student student = studentRepository.findByUserId(user.getId());
-        Parents parent = null;
-        if (student != null) {
-            parent = parentsRepository.findByStudentId(student.getStudentId());
+        Parents parent = student != null ? parentsRepository.findByStudentId(student.getStudentId()) : null;
+
+        if (dto.getFirstName() != null) {
+            if (dto.getFirstName().trim().isEmpty()) {
+                throw new InvalidPersonalInfoException("First name cannot be empty");
+            }
+            if (!dto.getFirstName().trim().matches("^[A-Za-z]+$")) {
+                throw new InvalidPersonalInfoException("First name must contain only alphabets");
+            }
+            if (parent != null) parent.setFirstName(dto.getFirstName().trim());
+            else user.setFirstName(dto.getFirstName().trim());
         }
 
-        // Validate mandatory fields
-
-        // First Name
-        if (dto.getFirstName() == null || dto.getFirstName().trim().isEmpty()) {
-            throw new InvalidPersonalInfoException("Enter the first name");
-        }
-        if (!dto.getFirstName().trim().matches("^[A-Za-z]+$")) {
-            throw new InvalidPersonalInfoException("First name must contain only alphabets");
-        }
-
-        // Last Name
-        if (dto.getLastName() == null || dto.getLastName().trim().isEmpty()) {
-            throw new InvalidPersonalInfoException("Enter the last name");
-        }
-        if (!dto.getLastName().trim().matches("^[A-Za-z]+$")) {
-            throw new InvalidPersonalInfoException("Last name must contain only alphabets");
+        if (dto.getLastName() != null) {
+            if (dto.getLastName().trim().isEmpty()) {
+                throw new InvalidPersonalInfoException("Last name cannot be empty");
+            }
+            if (!dto.getLastName().trim().matches("^[A-Za-z]+$")) {
+                throw new InvalidPersonalInfoException("Last name must contain only alphabets");
+            }
+            if (parent != null) parent.setLastName(dto.getLastName().trim());
+            else user.setLastName(dto.getLastName().trim());
         }
 
-        // Phone Number
-        if (dto.getPhoneNumber() == null || dto.getPhoneNumber().trim().isEmpty()) {
-            throw new InvalidPhoneNumberException("Enter the mobile number");
-        }
-        if (!dto.getPhoneNumber().trim().matches("\\d{10}")) {
-            throw new InvalidPhoneNumberException("Mobile number must contain exactly 10 digits");
-        }
-
-        // Email
-        if (dto.getEmail() == null || dto.getEmail().trim().isEmpty()) {
-            throw new InvalidPersonalInfoException("Enter the email");
-        }
-        if (!dto.getEmail().trim().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
-            throw new InvalidPersonalInfoException("Invalid email format");
-        }
-        if (userRepository.existsByEmail(dto.getEmail().trim())) {
-            throw new DuplicateEmailException("Email already in use: " + dto.getEmail());
+        if (dto.getPhoneNumber() != null) {
+            if (dto.getPhoneNumber().trim().isEmpty()) {
+                throw new InvalidPhoneNumberException("Mobile number cannot be empty");
+            }
+            if (!dto.getPhoneNumber().trim().matches("\\d{10}")) {
+                throw new InvalidPhoneNumberException("Mobile number must contain exactly 10 digits");
+            }
+            if (parent != null) parent.setMobileNumber(Long.parseLong(dto.getPhoneNumber().trim()));
+            else user.setMobileNumber(Long.parseLong(dto.getPhoneNumber().trim()));
         }
 
-        // Relationship with student
-        if (dto.getRelationshipWithStudent() == null || dto.getRelationshipWithStudent().trim().isEmpty()) {
-            throw new InvalidPersonalInfoException("Enter the relationship with student 'Mother', 'Father', etc.");
-        }
-        if (!dto.getRelationshipWithStudent().trim().matches("^[A-Za-z]+$")) {
-            throw new InvalidPersonalInfoException("Relationship must contain only alphabets");
+        if (dto.getEmail() != null) {
+            if (dto.getEmail().trim().isEmpty()) {
+                throw new InvalidPersonalInfoException("Email cannot be empty");
+            }
+            if (!dto.getEmail().trim().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+                throw new InvalidPersonalInfoException("Invalid email format");
+            }
+            if (userRepository.existsByEmail(dto.getEmail().trim())) {
+                throw new DuplicateEmailException("Email already in use: " + dto.getEmail());
+            }
+            if (parent != null) parent.setEmail(dto.getEmail().trim());
+            else user.setEmail(dto.getEmail().trim());
         }
 
-        // Update parent if exists
-        if (parent != null) {
-            parent.setFirstName(dto.getFirstName().trim());
-            parent.setLastName(dto.getLastName().trim());
-            parent.setMobileNumber(Long.parseLong(dto.getPhoneNumber().trim()));
-            parent.setEmail(dto.getEmail().trim());
-            parent.setRelationshipWithStudent(dto.getRelationshipWithStudent().trim());
-            parentsRepository.save(parent);
-        } else {
-            // Update user if parent not exists
-            user.setFirstName(dto.getFirstName().trim());
-            user.setLastName(dto.getLastName().trim());
-            user.setMobileNumber(Long.parseLong(dto.getPhoneNumber().trim()));
-            user.setEmail(dto.getEmail().trim());
-            userRepository.save(user);
+        if (dto.getRelationshipWithStudent() != null) {
+            if (dto.getRelationshipWithStudent().trim().isEmpty()) {
+                throw new InvalidPersonalInfoException("Relationship cannot be empty");
+            }
+            if (!dto.getRelationshipWithStudent().trim().matches("^[A-Za-z]+$")) {
+                throw new InvalidPersonalInfoException("Relationship must contain only alphabets");
+            }
+            if (parent != null) parent.setRelationshipWithStudent(dto.getRelationshipWithStudent().trim());
         }
+
+        if (parent != null) parentsRepository.save(parent);
+        else userRepository.save(user);
 
         return getPersonalInfo(userId);
     }
+
 
 }
