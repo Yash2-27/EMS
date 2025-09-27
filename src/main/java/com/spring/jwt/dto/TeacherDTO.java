@@ -14,7 +14,10 @@ public class TeacherDTO {
     private String sub;
     private String deg;
     private String status;
+    private String email;
+    private Long mobileNumber;
     private Integer userId;
+
 
     public static TeacherDTO fromEntity(Teacher teacher) {
         if (teacher == null) {
