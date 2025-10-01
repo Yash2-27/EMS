@@ -9,7 +9,6 @@ import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import jakarta.persistence.*;
-import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Data
@@ -39,7 +38,8 @@ public class Question {
     private String option2;
     private String option3;
     private String option4;
-    private String StudentClass;
+
+    private String studentClass;
     @Lob
     @Column(columnDefinition = "LONGTEXT")
     private String hintAndSol;
@@ -50,12 +50,10 @@ public class Question {
     @NotNull
     private boolean deleted;
 
-
     // Store the answer, e.g. "option1", "option2", etc. or the text itself
     private String answer;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "paper_id")
     private Paper paper;
-
 
 }
