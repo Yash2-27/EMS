@@ -1,11 +1,11 @@
 package com.spring.jwt.exception;
 
-import com.spring.jwt.PaperPattern.PaperPatternNotFoundException;
-import com.spring.jwt.dto.ResponseDto;
-import com.spring.jwt.utils.BaseResponseDTO;
+
+import com.spring.jwt.Teachers.PapersAndTeacherException;
 import com.spring.jwt.utils.ErrorResponseDto;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.xmlbeans.impl.xb.xsdschema.Public;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;

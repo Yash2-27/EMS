@@ -1,7 +1,8 @@
 package com.spring.jwt.Teachers.service;
 
 
-import com.spring.jwt.dto.TeacherDTO;
+import com.spring.jwt.Teachers.dto.PapersAndTeacherInfoDto;
+import com.spring.jwt.Teachers.dto.TeacherInfoDto;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,7 +11,8 @@ import java.util.List;
 @Service
 public interface TeacherService {
 
-    List<TeacherDTO> getAllTeachers();
-    TeacherDTO getTeacherById(Integer teacherId);
+    List<TeacherInfoDto> getAllTeachers();
+    TeacherInfoDto getTeacherById(Integer teacherId);
 
+    List<PapersAndTeacherInfoDto> getPapersByTeacherId(Integer teacherId);
 }
