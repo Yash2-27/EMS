@@ -1,11 +1,10 @@
 package com.spring.jwt.exception;
 
-
-import com.spring.jwt.Teachers.PapersAndTeacherException;
+import com.spring.jwt.Teachers.exception.PapersAndTeacherException;
+import com.spring.jwt.dto.ErrorResponse;
 import com.spring.jwt.utils.ErrorResponseDto;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.xmlbeans.impl.xb.xsdschema.Public;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -30,6 +29,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+
+
+
 
 @RestControllerAdvice
 @Slf4j
@@ -204,5 +207,12 @@ public class GlobalException extends ResponseEntityExceptionHandler {
         body.put("message", ex.getMessage());
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(PapersAndTeacherException.class)
+    public ResponseEntity<?> handlePapersAndTeacher(PapersAndTeacherException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(LocalDateTime.now(), ex.getMessage(), "NOT_FOUND");
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
 
 }
