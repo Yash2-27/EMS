@@ -1,13 +1,12 @@
 package com.spring.jwt.Teachers.service;
 
 import com.spring.jwt.Teachers.dto.TeacherQuestionFlatDto;
-import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public interface DropdownService {
-
-    List<TeacherQuestionFlatDto> getQuestionPaper(String studentClass, Integer teacherId, String subject, String title);
 
     List<String> getAllClasses();
 
@@ -16,4 +15,7 @@ public interface DropdownService {
     List<String> getSubjects(String studentClass, Integer teacherId);
 
     List<String> getTitles(String studentClass, Integer teacherId, String subject);
+
+    List<TeacherQuestionFlatDto> getQuestionPaper(String studentClass, Integer teacherId, String subject, String title);
+
 }

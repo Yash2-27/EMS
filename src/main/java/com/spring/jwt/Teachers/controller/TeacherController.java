@@ -14,8 +14,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TeacherController {
 
-    @Autowired
-    private TeacherService teacherService;
+    private final TeacherService teacherService;
 
     @GetMapping("/allTeacher")
     public List<TeacherInfoDto> getAllTeachers() {

@@ -23,7 +23,6 @@ public class DropdownController {
         return dropdownService.getTeachersByClasses(studentClass);
     }
 
-
     @GetMapping("/subjects")
     public List<String> getSubjects(@RequestParam String studentClass,
                                     @RequestParam Integer teacherId) {
