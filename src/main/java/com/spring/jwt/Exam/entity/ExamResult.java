@@ -40,7 +40,6 @@ public class ExamResult {
     private Integer incorrectAnswers;
     private Integer unansweredQuestions;
     private Integer originalSessionId;
+    private Double totalMarks;
 
-    @Column (name = "total_marks")
-    private Double total_marks;
-} 
+}

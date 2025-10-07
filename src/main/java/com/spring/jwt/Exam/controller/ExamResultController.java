@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.security.PermitAll;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -185,6 +186,7 @@ public class ExamResultController {
         }
     }
 
+    // Case 1: userId provided → existing method
     @GetMapping("/progress/{userId}")
     @PermitAll
     @Operation(summary = "Get monthly progress for a student")
@@ -199,39 +201,38 @@ public class ExamResultController {
                                 "data", List.of()
                         ));
             }
+
             return ResponseEntity.ok(Map.of(
                     "message", "Data fetched successfully",
                     "summary", "The student monthly progress for this user_id :" + userId,
                     "data", dtoList
             ));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of(
                             "message", "Something went wrong: " + e.getMessage(),
                             "data", List.of()
                     ));
         }
     }
+    // Case 2: userId NOT provided → custom message
+    @GetMapping("/progress/")
+    @PermitAll
+    public ResponseEntity<Map<String, Object>> getStudentProgressWithoutUserId() {
+        return ResponseEntity.badRequest()
+                .body(Map.of(
+                        "message", "User ID is required",
+                        "hint", "Please enter User ID "
+                ));
+    }
 
-//    @GetMapping("/average/class/{studentClass}")
-//    public ResponseEntity<ResponseDto<List<ClassAverageDTO>>> getClassMonthlyAverage(@PathVariable String studentClass) {
-//        try {
-//            List<ClassAverageDTO> averages = examResultService.getClassMonthlyAverage(studentClass);
-//            return ResponseEntity.ok(ResponseDto.success("Class monthly averages fetched successfully", averages));
-//        } catch (ResourceNotFoundException ex) {
-//            return ResponseEntity.status(404).body(ResponseDto.error("No data found", ex.getMessage()));
-//        } catch (Exception ex) {
-//            return ResponseEntity.internalServerError().body(ResponseDto.error("Unexpected error occurred", ex.getMessage()));
-//        }
-//    }
-
-    @GetMapping({ "/average/class","/average/class/{studentClass}"})
+    @GetMapping({ "/average/class/","/average/class/{studentClass}"})
     public ResponseEntity<ResponseDto<List<ClassAverageDTO>>> getClassMonthlyAverage(
             @PathVariable(required = false) String studentClass) {
 
         if (studentClass == null || studentClass.isEmpty()) {
             return ResponseEntity.badRequest().body(
-                    ResponseDto.error("Class parameter is required", "Please provide a student class in the URL")
+                    ResponseDto.error("Class parameter is required", "Please provide a student class ")
             );
         }
         try {
@@ -245,16 +246,6 @@ public class ExamResultController {
                     .body(ResponseDto.error("Unexpected error occurred", ex.getMessage()));
         }
     }
-
-//    @GetMapping("/subjectScores/{studentId}")
-//    public ResponseEntity<List<SubjectScoreReportDto>> getSubjectWiseScores(
-//            @PathVariable Long studentId,
-//            @RequestParam int month,
-//            @RequestParam int year) {
-//
-//        List<SubjectScoreReportDto> scores = examResultService.getMonthlySubjectWiseScores(studentId, month, year);
-//        return ResponseEntity.ok(scores);
-//    }
 
     @GetMapping("/subjectScores/{studentId}")
     public ResponseEntity<ResponseDto<List<SubjectScoreReportDto>>> getSubjectWiseScores(
@@ -282,5 +273,4 @@ public class ExamResultController {
                     .body(ResponseDto.error("Unexpected error occurred", ex.getMessage()));
         }
     }
-
 }

@@ -95,20 +95,26 @@ public interface ExamResultRepository extends JpaRepository<ExamResult, Integer>
      * @param year
      * @return
      */
-    @Query("""
-    SELECT new com.spring.jwt.Exam.Dto.SubjectScoreReportDto(pp.subject, ROUND(AVG(er.score), 2))
-    FROM ExamResult er
-    JOIN er.paper p
-    JOIN p.paperPattern pp
-    JOIN Student s ON s.userId = er.user.id
-    WHERE s.studentId = :studentId
-      AND FUNCTION('MONTH', er.examEndTime) = :month
-      AND FUNCTION('YEAR', er.examEndTime) = :year
-    GROUP BY pp.subject
-    """)
+        @Query("""
+        SELECT new com.spring.jwt.Exam.Dto.SubjectScoreReportDto(
+            pp.subject,
+            ROUND(
+                CASE WHEN SUM(er.totalMarks) = 0 THEN 0
+                     ELSE (SUM(er.score) / SUM(er.totalMarks)) * 100
+                END, 2
+            )
+        )
+        FROM ExamResult er
+        JOIN er.paper p
+        JOIN p.paperPattern pp
+        JOIN Student s ON s.userId = er.user.id
+        WHERE s.studentId = :studentId
+          AND FUNCTION('MONTH', er.examEndTime) = :month
+          AND FUNCTION('YEAR', er.examEndTime) = :year
+        GROUP BY pp.subject
+        """)
         List<SubjectScoreReportDto> getMonthlySubjectWiseScores(
                 @Param("studentId") Long studentId,
                 @Param("month") int month,
                 @Param("year") int year);
-
 }

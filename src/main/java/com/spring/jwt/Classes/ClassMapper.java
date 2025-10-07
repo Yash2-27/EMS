@@ -1,10 +1,12 @@
 package com.spring.jwt.Classes;
 import com.spring.jwt.entity.Classes;
+import com.spring.jwt.repository.TeacherRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class ClassMapper {
+    private final TeacherRepository teacherRepository;
     public ClassesDto toDto(Classes classes){
         if(classes==null){
             return null;
@@ -16,11 +18,17 @@ public class ClassMapper {
         dto.setDuration(classes.getDuration());
         dto.setDate(classes.getDate());
         dto.setTeacherId(classes.getTeacherId());
-        dto.setTeacherName(classes.getTeacherName());
         dto.setTopic(classes.getTopic());
         dto.setTime(classes.getTime());
+
+        // Fetch teacher name based on teacherId
+        if (classes.getTeacherId() != null) {
+            teacherRepository.findById(classes.getTeacherId())
+                    .ifPresent(teacher -> dto.setTeacherName(teacher.getName()));
+        }
         return dto;
-    }    public Classes toEntity(ClassesDto dto){
+    }
+    public Classes toEntity(ClassesDto dto){
         if(dto==null){
             return null;
         }
@@ -31,7 +39,6 @@ public class ClassMapper {
         entity.setDuration(dto.getDuration());
         entity.setDate(dto.getDate());
         entity.setTeacherId(dto.getTeacherId());
-        entity.setTeacherName(dto.getTeacherName());
         entity.setTopic(dto.getTopic());
         entity.setTime(dto.getTime());
         return entity;
