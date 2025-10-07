@@ -1,15 +1,12 @@
 package com.spring.jwt.Teachers.service.impl;
-import com.spring.jwt.Teachers.dto.PapersAndTeacherInfoDto;
 import com.spring.jwt.Teachers.dto.TeacherInfoDto;
 import com.spring.jwt.Teachers.service.TeacherService;
-import com.spring.jwt.entity.Question;
 import com.spring.jwt.entity.Teacher;
 import com.spring.jwt.entity.User;
-import com.spring.jwt.exception.TeacherNotFoundException;
 import com.spring.jwt.repository.TeacherRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,23 +38,10 @@ public class TeacherServiceImpl implements TeacherService {
     }
 
     @Override
-    public TeacherInfoDto getTeacherById(Integer teacherId) {
-            Teacher teacher = teacherRepository.findById(teacherId)
-                    .orElseThrow(() -> new TeacherNotFoundException("Teacher not found with id: " + teacherId));
-            return mapToDTO(teacher);
+    public Optional<TeacherInfoDto> findById(Integer teacherId) {
+        return teacherRepository.findById(teacherId)
+                .map(this::mapToDTO);
     }
 
-    @Override
-    public List<PapersAndTeacherInfoDto> getPapersByTeacherId(Integer teacherId) {
-        if (!teacherRepository.existsById(teacherId)) {
-            return List.of();
-        }
-        try{
-            return teacherRepository.findByTeacherId(teacherId);
-        }catch (Exception e){
-            System.out.println("Unexpected error: " + e.getMessage());
-            return List.of();
-        }
-    }
 
 }
