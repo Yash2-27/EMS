@@ -22,14 +22,16 @@ import java.util.Optional;
 public interface QuestionRepository extends JpaRepository<Question, Integer>, JpaSpecificationExecutor<Question> {
     /**
      * Finds all questions by user id with pagination and sorting
-     * @param userId the user ID
+     *
+     * @param userId   the user ID
      * @param pageable pagination and sorting parameters
      * @return page of questions
      */
     Page<Question> findByUserId(Integer userId, Pageable pageable);
-    
+
     /**
      * Finds all questions by user id without pagination
+     *
      * @param userId the user ID
      * @return list of questions
      */
@@ -37,14 +39,16 @@ public interface QuestionRepository extends JpaRepository<Question, Integer>, Jp
 
     /**
      * Finds all questions matching the given specification with pagination
-     * @param spec the specification to apply
+     *
+     * @param spec     the specification to apply
      * @param pageable pagination and sorting parameters
      * @return page of questions
      */
     Page<Question> findAll(Specification<Question> spec, Pageable pageable);
-    
+
     /**
      * Finds all questions matching the given specification without pagination
+     *
      * @param spec the specification to apply
      * @return list of questions
      */
@@ -52,6 +56,7 @@ public interface QuestionRepository extends JpaRepository<Question, Integer>, Jp
 
     /**
      * Finds a question by its id
+     *
      * @param questionId the question ID
      * @return optional question
      */
@@ -59,10 +64,11 @@ public interface QuestionRepository extends JpaRepository<Question, Integer>, Jp
 
     /**
      * Finds questions by optional subject, type, level, and marks with pagination
-     * @param subject the subject (optional)
-     * @param type the type (optional)
-     * @param level the level (optional)
-     * @param marks the marks (optional)
+     *
+     * @param subject  the subject (optional)
+     * @param type     the type (optional)
+     * @param level    the level (optional)
+     * @param marks    the marks (optional)
      * @param pageable pagination and sorting parameters
      * @return page of questions
      */
@@ -78,13 +84,14 @@ public interface QuestionRepository extends JpaRepository<Question, Integer>, Jp
             @Param("marks") Integer marks,
             Pageable pageable
     );
-    
+
     /**
      * Finds questions by optional subject, type, level, and marks without pagination
+     *
      * @param subject the subject (optional)
-     * @param type the type (optional)
-     * @param level the level (optional)
-     * @param marks the marks (optional)
+     * @param type    the type (optional)
+     * @param level   the level (optional)
+     * @param marks   the marks (optional)
      * @return list of questions
      */
     @Query("SELECT q FROM Question q WHERE " +
@@ -116,6 +123,30 @@ public interface QuestionRepository extends JpaRepository<Question, Integer>, Jp
     @Query("SELECT new com.spring.jwt.Exam.Dto.QuestionSummaryDTO(q.questionId, q.marks, q.isDescriptive) " +
             "FROM Question q WHERE q.questionId IN :questionIds")
     List<QuestionSummaryDTO> findQuestionSummariesByQuestionIds(@Param("questionIds") List<Integer> questionIds);
+
+
+    @Query("SELECT q FROM Question q WHERE q.subject = :subject AND q.StudentClass = :studentClass")
+    List<Question> findBySubjectAndStudentClass(@Param("subject") String subject,
+                                                @Param("studentClass") String studentClass);
+
+
+    @Query("""
+    SELECT new com.spring.jwt.Question.QuestionBankQuestionsDTO(
+        q.questionId, q.questionText, q.option1, q.option2, q.option3, q.option4, q.topic, q.level
+    )
+    FROM Question q
+    JOIN Teacher t ON q.userId = t.userId
+    WHERE (:studentClass IS NULL OR q.StudentClass = :studentClass)
+      AND (:name IS NULL OR t.name = :name)
+      AND (:subject IS NULL OR q.subject = :subject)
+      AND (:topic IS NULL OR q.topic = :topic)
+    """)
+    List<QuestionBankQuestionsDTO> findFilteredQuestions(
+            @Param("studentClass") String studentClass,
+            @Param("name") String name,
+            @Param("subject") String subject,
+            @Param("topic") String topic
+    );
 
 
 }

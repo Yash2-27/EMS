@@ -33,4 +33,9 @@ public class Classes {
     @Column(name = "teacher_name")
     private String teacherName;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "teacher_id", insertable = false, updatable = false)
+    private Teacher teacher;
+
+
 }

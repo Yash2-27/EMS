@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -29,10 +28,8 @@ public class Teacher {
     @Column(name = "user_id", insertable = false, updatable = false)
     private Integer userId;
 
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "user_id")
 
-    private User user;
-    **/
+    @OneToMany(mappedBy = "teacher", fetch = FetchType.LAZY)
+    private List<Classes> classes;
 
 }

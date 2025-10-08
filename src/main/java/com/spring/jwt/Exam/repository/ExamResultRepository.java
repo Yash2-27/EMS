@@ -14,28 +14,28 @@ import java.util.List;
  */
 @Repository
 public interface ExamResultRepository extends JpaRepository<ExamResult, Integer> {
-    
+
     /**
      * Find all results for a specific user
      * @param userId The user ID
      * @return List of exam results
      */
     List<ExamResult> findByUser_Id(Long userId);
-    
+
     /**
      * Find all results for a specific paper
      * @param paperId The paper ID
      * @return List of exam results
      */
     List<ExamResult> findByPaper_PaperId(Integer paperId);
-    
+
     /**
      * Find all results for a specific student class
      * @param studentClass The student class
      * @return List of exam results
      */
     List<ExamResult> findByStudentClass(String studentClass);
-    
+
     /**
      * Find results by original session ID
      * @param sessionId The original exam session ID
@@ -65,11 +65,9 @@ public interface ExamResultRepository extends JpaRepository<ExamResult, Integer>
     """, nativeQuery = true)
     List<MonthlyPercentageProjection> findMonthlyPercentageByUser(@Param("userId") Long userId);
 
-
     /**
      * query for get Monthly Class Average
-     *
-      * @param studentClass
+     * @param studentClass
      * @return
      */
     @Query(value = """
@@ -89,14 +87,13 @@ public interface ExamResultRepository extends JpaRepository<ExamResult, Integer>
     List<ClassMonthlyAverageProjection> findMonthlyAverageByClass(@Param("studentClass") String studentClass);
 
     /** query for get monthly score by subjectwise
-     *
      * @param studentId
      * @param month
      * @param year
      * @return
      */
-        @Query("""
-        SELECT new com.spring.jwt.Exam.Dto.SubjectScoreReportDto(
+    @Query("""
+        SELECT (
             pp.subject,
             ROUND(
                 CASE WHEN SUM(er.totalMarks) = 0 THEN 0
@@ -112,9 +109,16 @@ public interface ExamResultRepository extends JpaRepository<ExamResult, Integer>
           AND FUNCTION('MONTH', er.examEndTime) = :month
           AND FUNCTION('YEAR', er.examEndTime) = :year
         GROUP BY pp.subject
-        """)
-        List<SubjectScoreReportDto> getMonthlySubjectWiseScores(
-                @Param("studentId") Long studentId,
-                @Param("month") int month,
-                @Param("year") int year);
+    """)
+    List<SubjectScoreReportDto> getMonthlySubjectWiseScores(
+            @Param("studentId") Long studentId,
+            @Param("month") int month,
+            @Param("year") int year);
+
+    /**
+     * Find results for multiple users
+     * Corrected to accept List<Long>
+     */
+
+    List<ExamResult> findByUser_IdIn(List<Integer> userIds);
 }
