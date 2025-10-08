@@ -1,6 +1,5 @@
-package com.spring.jwt.Teachers.service.impl;
+package com.spring.jwt.Teachers;
 import com.spring.jwt.Teachers.dto.TeacherInfoDto;
-import com.spring.jwt.Teachers.service.TeacherService;
 import com.spring.jwt.entity.Teacher;
 import com.spring.jwt.entity.User;
 import com.spring.jwt.repository.TeacherRepository;
@@ -15,6 +14,7 @@ public class TeacherServiceImpl implements TeacherService {
 
     private final TeacherRepository teacherRepository;
 
+    /**
     private TeacherInfoDto mapToDTO(Teacher teacher) {
         User user = teacher.getUser(); // Assuming Teacher entity has a getUser() method
         return new TeacherInfoDto(
@@ -42,6 +42,6 @@ public class TeacherServiceImpl implements TeacherService {
         return teacherRepository.findById(teacherId)
                 .map(this::mapToDTO);
     }
-
+    **/
 
 }
