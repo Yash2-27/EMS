@@ -76,8 +76,10 @@ public class User {
     private Set<Role> roles;
 
 
+    /**
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Teacher teacher;
+    **/
 
 //    @OneToOne(mappedBy = "user")
 //    private Student student;
