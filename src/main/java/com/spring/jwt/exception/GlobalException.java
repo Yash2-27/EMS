@@ -293,19 +293,6 @@ public class GlobalException extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.CONFLICT);
     }
 
-
-    @ExceptionHandler(InvalidPersonalInfoException.class)
-    public ResponseEntity<Map<String, Object>> handleInvalidPersonalInfo(InvalidPersonalInfoException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", new Date());
-        body.put("status", HttpStatus.BAD_REQUEST.value());
-        body.put("error", "Invalid Personal Info");
-        body.put("message", ex.getMessage());
-        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
-    }
-
-
-
     @ExceptionHandler(AttendanceAlreadyExistsException.class)
     public ResponseEntity<ApiResponse<Object>> handleAttendanceAlreadyExists(AttendanceAlreadyExistsException ex) {
         // Log the error if you want
@@ -331,6 +318,30 @@ public class GlobalException extends ResponseEntityExceptionHandler {
         ErrorResponse errorResponse = new ErrorResponse(LocalDateTime.now(), ex.getMessage(), "NOT_FOUND");
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler(InvalidPersonalInfoException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidPersonalInfo(InvalidPersonalInfoException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", new Date());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("error", "Invalid Personal Info");
+        body.put("message", ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, Object>> handleIllegalArgumentException(
+            IllegalArgumentException ex, HttpServletRequest request) {
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("errorCode", "INVALID_INPUT");
+        body.put("errorMessage", ex.getMessage());
+        body.put("errorTime", LocalDateTime.now());
+
+        log.error("IllegalArgumentException: {}", ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
 
 
 //package com.spring.jwt.exception;
@@ -682,29 +693,6 @@ public class GlobalException extends ResponseEntityExceptionHandler {
 //        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
 //    }
 //}
-
-    @ExceptionHandler(InvalidPersonalInfoException.class)
-    public ResponseEntity<Map<String, Object>> handleInvalidPersonalInfo(InvalidPersonalInfoException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", new Date());
-        body.put("status", HttpStatus.BAD_REQUEST.value());
-        body.put("error", "Invalid Personal Info");
-        body.put("message", ex.getMessage());
-        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, Object>> handleIllegalArgumentException(
-            IllegalArgumentException ex, HttpServletRequest request) {
-
-        Map<String, Object> body = new HashMap<>();
-        body.put("errorCode", "INVALID_INPUT");
-        body.put("errorMessage", ex.getMessage());
-        body.put("errorTime", LocalDateTime.now());
-
-        log.error("IllegalArgumentException: {}", ex.getMessage());
-        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
-    }
 
 }
 

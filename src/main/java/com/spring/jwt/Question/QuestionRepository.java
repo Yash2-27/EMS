@@ -125,7 +125,7 @@ public interface QuestionRepository extends JpaRepository<Question, Integer>, Jp
     List<QuestionSummaryDTO> findQuestionSummariesByQuestionIds(@Param("questionIds") List<Integer> questionIds);
 
 
-    @Query("SELECT q FROM Question q WHERE q.subject = :subject AND q.StudentClass = :studentClass")
+    @Query("SELECT q FROM Question q WHERE q.subject = :subject AND q.studentClass = :studentClass")
     List<Question> findBySubjectAndStudentClass(@Param("subject") String subject,
                                                 @Param("studentClass") String studentClass);
 
@@ -136,7 +136,7 @@ public interface QuestionRepository extends JpaRepository<Question, Integer>, Jp
     )
     FROM Question q
     JOIN Teacher t ON q.userId = t.userId
-    WHERE (:studentClass IS NULL OR q.StudentClass = :studentClass)
+    WHERE (:studentClass IS NULL OR q.studentClass = :studentClass)
       AND (:name IS NULL OR t.name = :name)
       AND (:subject IS NULL OR q.subject = :subject)
       AND (:topic IS NULL OR q.topic = :topic)

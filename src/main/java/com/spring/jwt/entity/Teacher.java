@@ -28,7 +28,7 @@ public class Teacher {
     @Column(name = "user_id", insertable = false, updatable = false)
     private Integer userId;
 
-
+**/
     @OneToMany(mappedBy = "teacher", fetch = FetchType.LAZY)
     private List<Classes> classes;
 
