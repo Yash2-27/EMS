@@ -1,7 +1,11 @@
 package com.spring.jwt.exception;
 
+
+import com.spring.jwt.utils.ApiResponse;
+
 import com.spring.jwt.Teachers.exception.PapersAndTeacherException;
 import com.spring.jwt.dto.ErrorResponse;
+
 import com.spring.jwt.utils.ErrorResponseDto;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +21,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -208,11 +213,35 @@ public class GlobalException extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
+
+
+    @ExceptionHandler(AttendanceAlreadyExistsException.class)
+    public ResponseEntity<ApiResponse<Object>> handleAttendanceAlreadyExists(AttendanceAlreadyExistsException ex) {
+        // Log the error if you want
+        log.error("Attendance already exists: {}", ex.getMessage());
+        // Return ApiResponse with BAD_REQUEST
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(HttpStatus.BAD_REQUEST, ex.getMessage(), null));
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<Object> handleResourceNotFound(ResourceNotFoundException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.NOT_FOUND.value());
+        body.put("error", "Resource Not Found");
+        body.put("message", ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND); // 404 status
+    }
+}
+
     @ExceptionHandler(PapersAndTeacherException.class)
     public ResponseEntity<?> handlePapersAndTeacher(PapersAndTeacherException ex) {
         ErrorResponse errorResponse = new ErrorResponse(LocalDateTime.now(), ex.getMessage(), "NOT_FOUND");
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
+
 
 
 }
