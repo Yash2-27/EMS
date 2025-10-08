@@ -509,7 +509,6 @@ public class UserServiceImpl implements UserService {
             parent = parentsRepository.findByStudentId(student.getStudentId());
         }
 
-        // If parent exists, use parent info; otherwise fallback to user
         String firstName = parent != null ? parent.getFirstName() : user.getFirstName();
         String lastName = parent != null ? parent.getLastName() : user.getLastName();
         String email = parent != null ? parent.getEmail() : user.getEmail();
@@ -518,7 +517,6 @@ public class UserServiceImpl implements UserService {
                 : (user.getMobileNumber() != null ? String.valueOf(user.getMobileNumber()) : null);
         String relationship = parent != null ? parent.getRelationshipWithStudent() : null;
 
-        // Build DTO
         return new PersonalInfoDTO(firstName, lastName, email, mobile, relationship);
     }
 

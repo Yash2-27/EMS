@@ -152,8 +152,6 @@ public class AppConfig {
 
         log.debug("Configuring URL-based security rules");
         http.authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/api/v1/users/personalInfo/**").permitAll() // ✅ Added here
-                .requestMatchers("/api/v1/users/editPersonalInfo/**").permitAll() // ✅ Added here
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/v1/users/register").permitAll()
                 .requestMatchers("/api/v1/users/password/**").permitAll()
@@ -178,12 +176,9 @@ public class AppConfig {
                 .requestMatchers("/api/public/**").permitAll()
                 .requestMatchers("/user/**").permitAll()
                 .requestMatchers("/api/v1/fees//**").permitAll()
-
                 .requestMatchers("/api/v1/questions/**").permitAll()
                 .requestMatchers("/questions/search").permitAll()
-
                 .requestMatchers("/questions/**").permitAll()
-
                 .requestMatchers("/assessments/**").permitAll()
                 .requestMatchers("/api/v1/exam/**").permitAll()
                 .requestMatchers("/api/v1/papers/solutions/pdf").permitAll()
@@ -199,14 +194,21 @@ public class AppConfig {
                 .requestMatchers("api/v1/students/**").permitAll()
                 .requestMatchers("/api/v1/teacherAttendance/**").permitAll()
 
+                .requestMatchers("/api/v1/users/personalInfo/**").permitAll()
+                .requestMatchers("/api/v1/users/editPersonalInfo/**").permitAll()
+                .requestMatchers("/api/v1/teachers/allTeacher/**").permitAll()
+                .requestMatchers("/api/v1/teachers/getTeachers/**").permitAll()
+                .requestMatchers("/api/v1/dropdown/getAllStudentClass/**").permitAll()
+                .requestMatchers("/api/v1/dropdown/teachers/**").permitAll()
+                .requestMatchers("/api/v1/dropdown/subjects/**").permitAll()
+                .requestMatchers("/api/v1/dropdown/titles/**").permitAll()
+                .requestMatchers("/api/v1/dropdown/paper/**").permitAll()
+
                 .anyRequest().authenticated());
 
         // Create a request matcher for public URLs
         org.springframework.security.web.util.matcher.RequestMatcher publicUrls =
             new org.springframework.security.web.util.matcher.OrRequestMatcher(
-                new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/users/personalInfo/**"), // ✅ Added here
-                new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/users/editPersonalInfo/**"), // ✅ Added here
-
                 new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/auth/**"),
                 new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/public/**"),
                 new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/users/register"),
@@ -225,7 +227,7 @@ public class AppConfig {
                 new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/questions/**"),
 
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/attendance/**"),
-                new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/questions/search"),
+                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/questions/search"),
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/papers/**"),
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/exam/**"),
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/papers/solutions/pdf"),
@@ -237,9 +239,22 @@ public class AppConfig {
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/Classes/**"),
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/userFee/**"),
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/students/**"),
+
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/teacherAttendance/**"),
 
-                new org.springframework.security.web.util.matcher.AntPathRequestMatcher(jwtConfig.getUrl()),
+                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher(jwtConfig.getUrl()),
+
+                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/users/personalInfo/**"),
+                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/users/editPersonalInfo/**"),
+                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/teachers/allTeacher/**"),
+                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/teachers/getTeachers/**"),
+                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/dropdown/getAllStudentClass/**"),
+                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/dropdown/teachers/**"),
+                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/dropdown/subjects/**"),
+                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/dropdown/titles/**"),
+                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/dropdown/paper/**"),
+
+                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher(jwtConfig.getUrl()),
                 new org.springframework.security.web.util.matcher.AntPathRequestMatcher(jwtConfig.getRefreshUrl())
             );
 

@@ -619,11 +619,6 @@ public class UserController {
                     responseCode = "404",
                     description = "User not found",
                     content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Internal server error",
-                    content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
             )
     })
     @PatchMapping("/editPersonalInfo")

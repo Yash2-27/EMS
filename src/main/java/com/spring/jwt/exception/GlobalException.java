@@ -1,6 +1,11 @@
 package com.spring.jwt.exception;
 
+
 import com.spring.jwt.utils.ApiResponse;
+
+import com.spring.jwt.Teachers.exception.PapersAndTeacherException;
+import com.spring.jwt.dto.ErrorResponse;
+
 import com.spring.jwt.utils.ErrorResponseDto;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +34,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+
+
+
 
 @RestControllerAdvice
 @Slf4j
@@ -205,6 +214,7 @@ public class GlobalException extends ResponseEntityExceptionHandler {
     }
 
 
+
     @ExceptionHandler(AttendanceAlreadyExistsException.class)
     public ResponseEntity<ApiResponse<Object>> handleAttendanceAlreadyExists(AttendanceAlreadyExistsException ex) {
         // Log the error if you want
@@ -226,3 +236,12 @@ public class GlobalException extends ResponseEntityExceptionHandler {
     }
 }
 
+    @ExceptionHandler(PapersAndTeacherException.class)
+    public ResponseEntity<?> handlePapersAndTeacher(PapersAndTeacherException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(LocalDateTime.now(), ex.getMessage(), "NOT_FOUND");
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+
+
+}

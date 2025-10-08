@@ -15,6 +15,7 @@ public class TeacherDTO {
     private String deg;
     private String status;
 
+
     public static TeacherDTO fromEntity(Teacher teacher) {
         if (teacher == null) {
             return null;
