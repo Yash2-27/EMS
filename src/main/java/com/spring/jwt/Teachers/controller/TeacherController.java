@@ -1,12 +1,8 @@
 package com.spring.jwt.Teachers.controller;
 
-import com.spring.jwt.Teachers.exception.PapersAndTeacherException;
-import com.spring.jwt.Teachers.dto.TeacherInfoDto;
-import com.spring.jwt.Teachers.TeacherService;
+import com.spring.jwt.Teachers.service.TeacherService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/teachers")

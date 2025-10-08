@@ -234,7 +234,6 @@ public class GlobalException extends ResponseEntityExceptionHandler {
         body.put("message", ex.getMessage());
         return new ResponseEntity<>(body, HttpStatus.NOT_FOUND); // 404 status
     }
-}
 
     @ExceptionHandler(PapersAndTeacherException.class)
     public ResponseEntity<?> handlePapersAndTeacher(PapersAndTeacherException ex) {

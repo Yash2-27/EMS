@@ -1,12 +1,8 @@
-package com.spring.jwt.Teachers;
-import com.spring.jwt.Teachers.dto.TeacherInfoDto;
-import com.spring.jwt.entity.Teacher;
-import com.spring.jwt.entity.User;
+package com.spring.jwt.Teachers.service.impl;
+import com.spring.jwt.Teachers.service.TeacherService;
 import com.spring.jwt.repository.TeacherRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
