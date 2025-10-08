@@ -14,20 +14,18 @@ public class TeacherDTO {
     private String sub;
     private String deg;
     private String status;
-    private Integer userId;
+
 
     public static TeacherDTO fromEntity(Teacher teacher) {
         if (teacher == null) {
             return null;
         }
-
         TeacherDTO dto = new TeacherDTO();
         dto.setTeacherId(teacher.getTeacherId());
         dto.setName(teacher.getName());
         dto.setSub(teacher.getSub());
         dto.setDeg(teacher.getDeg());
         dto.setStatus(teacher.getStatus());
-        dto.setUserId(teacher.getUserId());
         
         return dto;
     }

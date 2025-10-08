@@ -1,8 +1,11 @@
 package com.spring.jwt.exception;
 
-import com.spring.jwt.PaperPattern.PaperPatternNotFoundException;
-import com.spring.jwt.dto.ResponseDto;
-import com.spring.jwt.utils.BaseResponseDTO;
+
+import com.spring.jwt.utils.ApiResponse;
+
+import com.spring.jwt.Teachers.exception.PapersAndTeacherException;
+import com.spring.jwt.dto.ErrorResponse;
+
 import com.spring.jwt.utils.ErrorResponseDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -19,11 +22,11 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.time.LocalDateTime;
@@ -33,28 +36,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+
+
+
+
 @RestControllerAdvice
 @Slf4j
 public class GlobalException extends ResponseEntityExceptionHandler {
-
-    @ExceptionHandler(BaseException.class)
-    public ResponseEntity<BaseResponseDTO> handleBaseException(BaseException e) {
-        log.error("Base exception occurred: {}", e.getMessage());
-
-        BaseResponseDTO response = BaseResponseDTO.builder()
-                .code(e.getCode())
-                .message(e.getMessage())
-                .build();
-
-        HttpStatus status;
-        try {
-            status = HttpStatus.valueOf(Integer.parseInt(e.getCode()));
-        } catch (Exception ex) {
-            status = HttpStatus.INTERNAL_SERVER_ERROR;
-        }
-
-        return new ResponseEntity<>(response, status);
-    }
 
     @ExceptionHandler(UserNotFoundExceptions.class)
     public ResponseEntity<ErrorResponseDto> handleUserNotFoundException(UserNotFoundExceptions exception, WebRequest webRequest) {
@@ -176,24 +164,6 @@ public class GlobalException extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(errorResponseDto, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    // KEEP ONLY ONE handler for MethodArgumentTypeMismatchException!
-    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<ErrorResponseDto> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException exception, WebRequest request) {
-        log.error("Type mismatch: {}", exception.getMessage());
-        String error;
-        if (exception.getRequiredType() != null) {
-            error = exception.getName() + " should be of type " + exception.getRequiredType().getName();
-        } else {
-            error = exception.getName() + " has an invalid type";
-        }
-        ErrorResponseDto errorResponseDto = new ErrorResponseDto(
-                request.getDescription(false),
-                HttpStatus.BAD_REQUEST,
-                error,
-                LocalDateTime.now()
-        );
-        return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
-    }
 
     @Override
     protected ResponseEntity<Object> handleMissingServletRequestParameter(
@@ -234,15 +204,6 @@ public class GlobalException extends ResponseEntityExceptionHandler {
                 ));
     }
 
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<Object> handleResourceNotFound(ResourceNotFoundException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", HttpStatus.NOT_FOUND.value());
-        body.put("error", "Resource Not Found");
-        body.put("message", ex.getMessage());
-        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
-    }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDto> handleAllUncaughtException(Exception exception, WebRequest webRequest) {
@@ -299,33 +260,6 @@ public class GlobalException extends ResponseEntityExceptionHandler {
     }
 
 
-    @ExceptionHandler(PaperFetchException.class)
-    public ResponseEntity<ResponseDto> handlePaperFetchException(PaperFetchException ex) {
-        return new ResponseEntity<>(new ResponseDto("Error", null, ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    @ExceptionHandler(ExamOnHolidayException.class)
-    public ResponseEntity<Map<String, Object>> handleExamOnHolidayException(ExamOnHolidayException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", new Date());
-        body.put("status", HttpStatus.BAD_REQUEST.value());
-        body.put("error", "Invalid Event Scheduling");
-        body.put("message", ex.getMessage());
-
-        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(PaperPatternNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handlePaperPatternNotFoundException(PaperPatternNotFoundException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", new Date());
-        body.put("status", HttpStatus.NOT_FOUND.value());
-        body.put("error", "Paper Pattern Not Found");
-        body.put("message", ex.getMessage());
-
-        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
-    }
-
     // =========================================================================
 
     @ExceptionHandler(PersonalInfoResourceNotFoundException.class)
@@ -360,7 +294,43 @@ public class GlobalException extends ResponseEntityExceptionHandler {
     }
 
 
+    @ExceptionHandler(InvalidPersonalInfoException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidPersonalInfo(InvalidPersonalInfoException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", new Date());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("error", "Invalid Personal Info");
+        body.put("message", ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
 
+
+
+    @ExceptionHandler(AttendanceAlreadyExistsException.class)
+    public ResponseEntity<ApiResponse<Object>> handleAttendanceAlreadyExists(AttendanceAlreadyExistsException ex) {
+        // Log the error if you want
+        log.error("Attendance already exists: {}", ex.getMessage());
+        // Return ApiResponse with BAD_REQUEST
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(HttpStatus.BAD_REQUEST, ex.getMessage(), null));
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<Object> handleResourceNotFound(ResourceNotFoundException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.NOT_FOUND.value());
+        body.put("error", "Resource Not Found");
+        body.put("message", ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND); // 404 status
+    }
+
+    @ExceptionHandler(PapersAndTeacherException.class)
+    public ResponseEntity<?> handlePapersAndTeacher(PapersAndTeacherException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(LocalDateTime.now(), ex.getMessage(), "NOT_FOUND");
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
 
 
 //package com.spring.jwt.exception;

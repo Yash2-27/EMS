@@ -1,5 +1,4 @@
 package com.spring.jwt.entity;
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,7 +21,11 @@ public class Teacher {
     private String sub;
     private String deg;
     private String status;
+    private Integer userId;
 
+    /**
+
+    @Column(name = "user_id", insertable = false, updatable = false)
     private Integer userId;
 
 

@@ -619,14 +619,9 @@ public class UserController {
                     responseCode = "404",
                     description = "User not found",
                     content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Internal server error",
-                    content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
             )
     })
-    @PostMapping("/editPersonalInfo")
+    @PatchMapping("/editPersonalInfo")
     public ResponseEntity<PersonalInfoDTO> editPersonalInfo(@RequestParam Long userId,@RequestBody PersonalInfoDTO dto) {
         PersonalInfoDTO updatedInfo = userService.updatePersonalInfo(userId, dto);
         return ResponseEntity.ok(updatedInfo);
