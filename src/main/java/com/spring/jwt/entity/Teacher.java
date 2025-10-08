@@ -1,5 +1,4 @@
 package com.spring.jwt.entity;
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -32,6 +31,7 @@ public class Teacher {
 
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
+
     private User user;
     **/
 
