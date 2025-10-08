@@ -17,22 +17,10 @@ public class Teacher {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer teacherId;
-
     private String name;
     private String sub;
     private String deg;
     private String status;
     private Integer userId;
-
-    /**
-
-    @Column(name = "user_id", insertable = false, updatable = false)
-    private Integer userId;
-
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "user_id")
-
-    private User user;
-    **/
 
 }

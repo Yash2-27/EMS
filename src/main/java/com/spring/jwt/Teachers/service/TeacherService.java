@@ -11,9 +11,8 @@ import java.util.Optional;
 @Service
 public interface TeacherService {
 
-    /**
     List<TeacherInfoDto> getAllTeachers();
 
     Optional<TeacherInfoDto> findById(Integer teacherId);
-     **/
+
 }
