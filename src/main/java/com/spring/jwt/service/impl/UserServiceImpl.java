@@ -157,7 +157,6 @@ public class UserServiceImpl implements UserService {
         teacher.setSub(userDTO.getBatch());
         teacher.setDeg(userDTO.getStudentcol1());
         teacher.setStatus("Active");
-        teacher.setUserId(user.getId().intValue());
 
         teacherRepository.save(teacher);
         log.info("Created teacher profile for user ID: {}", user.getId());
