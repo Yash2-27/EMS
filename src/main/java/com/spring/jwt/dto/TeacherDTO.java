@@ -16,6 +16,7 @@ public class TeacherDTO {
     private String status;
     private Integer userId;
 
+
     public static TeacherDTO fromEntity(Teacher teacher) {
         if (teacher == null) {
             return null;

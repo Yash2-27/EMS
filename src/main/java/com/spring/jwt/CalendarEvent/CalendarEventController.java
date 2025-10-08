@@ -39,7 +39,7 @@ public class CalendarEventController {
     @Operation(summary = "Update calendar event", description = "Updates the details of an existing calendar event using its ID")
     public CalendarEventDTO update(@PathVariable Long id, @RequestBody CalendarEventDTO dto) {
         return calendarEventService.updateEvent(id, dto);
-    }
+}
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete calendar event", description = "Removes a calendar event from the system using its ID")
