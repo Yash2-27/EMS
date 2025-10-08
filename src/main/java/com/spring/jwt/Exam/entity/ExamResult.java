@@ -42,4 +42,5 @@ public class ExamResult {
     private Integer originalSessionId;
     private Double totalMarks;
 
+
 }

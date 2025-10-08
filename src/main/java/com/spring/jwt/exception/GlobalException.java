@@ -4,6 +4,7 @@ import com.spring.jwt.PaperPattern.PaperPatternNotFoundException;
 import com.spring.jwt.dto.ResponseDto;
 import com.spring.jwt.utils.BaseResponseDTO;
 import com.spring.jwt.utils.ErrorResponseDto;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
@@ -719,6 +720,19 @@ public class GlobalException extends ResponseEntityExceptionHandler {
         body.put("status", HttpStatus.BAD_REQUEST.value());
         body.put("error", "Invalid Personal Info");
         body.put("message", ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, Object>> handleIllegalArgumentException(
+            IllegalArgumentException ex, HttpServletRequest request) {
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("errorCode", "INVALID_INPUT");
+        body.put("errorMessage", ex.getMessage());
+        body.put("errorTime", LocalDateTime.now());
+
+        log.error("IllegalArgumentException: {}", ex.getMessage());
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 

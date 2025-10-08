@@ -3,6 +3,7 @@ package com.spring.jwt.Exam.controller;
 
 import com.spring.jwt.Exam.Dto.UpcomingExamDetailsDTO;
 import com.spring.jwt.Exam.service.UpcomingExamsService;
+import com.spring.jwt.dto.ResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -70,35 +71,41 @@ public class UpcomingExamController {
 
     // by student class
 
-    @Operation(summary = "Get UPCOMING exams by student class (strictly after current time)")
-    @GetMapping({"/upcomingExams/class/", "/upcomingExams/class/{studentClass}"})
-    public ResponseEntity<?> getUpcomingExamsByStudentClass(@PathVariable(required = false) String studentClass) {
-        if (studentClass == null || studentClass.isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "message", "No Student Class Selected"
-            ));
-        }
-        try {
-            List<UpcomingExamDetailsDTO> data = upcomingExamsService.getUpcomingExamsByStudentClass(studentClass).getData();
+//    @Operation(summary = "Get UPCOMING exams by student class (strictly after current time)")
+//    @GetMapping({"/upcomingExams/class/", "/upcomingExams/class/{studentClass}"})
+//    public ResponseEntity<?> getUpcomingExamsByStudentClass(@PathVariable(required = false) String studentClass) {
+//        if (studentClass == null || studentClass.isEmpty()) {
+//            return ResponseEntity.badRequest().body(Map.of(
+//                    "message", "No Student Class Selected"
+//            ));
+//        }
+//        try {
+//            List<UpcomingExamDetailsDTO> data = upcomingExamsService.getUpcomingExamsByStudentClass(studentClass).getData();
+//
+//            if (data == null || data.isEmpty()) {
+//                return ResponseEntity.status(404).body(Map.of(
+//                        "message", "No upcoming exams found for student class: " + studentClass
+//                ));
+//            }
+//
+//            return ResponseEntity.ok(Map.of(
+//                    "message", "Upcoming exams for class " + studentClass + " fetched successfully.",
+//                    "data", data
+//            ));
+//
+//        } catch (Exception e) {
+//            return ResponseEntity.status(500).body(Map.of(
+//                    "message", "Something went wrong: " + e.getMessage()
+//            ));
+//        }
+//    }
 
-            if (data == null || data.isEmpty()) {
-                return ResponseEntity.status(404).body(Map.of(
-                        "message", "No upcoming exams found for student class: " + studentClass
-                ));
-            }
+    @GetMapping("/upcomingExams/class/{studentClass}")
+    public ResponseDto<List<UpcomingExamDetailsDTO>> getUpcomingExamsByStudentClass(
+            @PathVariable String studentClass) {
 
-            return ResponseEntity.ok(Map.of(
-                    "message", "Upcoming exams for class " + studentClass + " fetched successfully.",
-                    "data", data
-            ));
-
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of(
-                    "message", "Something went wrong: " + e.getMessage()
-            ));
-        }
+        return upcomingExamsService.getUpcomingExamsByStudentClass(studentClass);
     }
-
 
     @Operation(summary = "Get previous exams by student class (strictly before current time)")
     @GetMapping("/previousExams/class/{studentClass}")

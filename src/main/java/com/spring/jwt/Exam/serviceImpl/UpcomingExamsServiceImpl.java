@@ -60,13 +60,18 @@ public class UpcomingExamsServiceImpl implements UpcomingExamsService {
     @Transactional(readOnly = true)
     public ResponseDto<List<UpcomingExamDetailsDTO>> getUpcomingExamsByStudentClass(String studentClass) {
 
-        boolean studentClassExists = upcomingExamsRepository.existsByStudentClass(studentClass);
+        // Validate input
+        if (studentClass == null || studentClass.isBlank()) {
+            throw new IllegalArgumentException("Student class must be provided");
+        }
 
+        // Check if class exists in the repository
+        boolean studentClassExists = upcomingExamsRepository.existsByStudentClass(studentClass);
         if (!studentClassExists) {
             throw new ResourceNotFoundException("Student class '" + studentClass + "' not found in the database.");
         }
 
-
+        // Fetch upcoming exams
         List<UpcomingExams> upcomingExams = upcomingExamsRepository
                 .findByStudentClassAndStartTimeAfterOrderByStartTimeAsc(studentClass, LocalDateTime.now());
 
@@ -74,12 +79,14 @@ public class UpcomingExamsServiceImpl implements UpcomingExamsService {
             throw new ResourceNotFoundException("No upcoming exams found for student class: " + studentClass);
         }
 
+        // Convert to DTO
         List<UpcomingExamDetailsDTO> dtos = upcomingExams.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
 
         return ResponseDto.success("Upcoming exams for class " + studentClass + " fetched successfully", dtos);
     }
+
 
 
     @Override
@@ -107,6 +114,11 @@ public class UpcomingExamsServiceImpl implements UpcomingExamsService {
 
         if (!StudentclassExists) {
             throw new ResourceNotFoundException("Student class '" + studentClass + "' not found in the database.");
+        }
+
+
+        if (studentClass == null || studentClass.isBlank()) {
+            throw new IllegalArgumentException("Student class must be provided");
         }
 
         List<UpcomingExams> foundPreviousExams = upcomingExamsRepository
