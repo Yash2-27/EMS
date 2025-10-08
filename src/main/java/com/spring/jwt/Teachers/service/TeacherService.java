@@ -1,4 +1,4 @@
-package com.spring.jwt.Teachers;
+package com.spring.jwt.Teachers.service;
 
 
 import com.spring.jwt.Teachers.dto.TeacherInfoDto;
