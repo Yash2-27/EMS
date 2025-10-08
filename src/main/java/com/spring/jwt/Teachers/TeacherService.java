@@ -1,4 +1,4 @@
-package com.spring.jwt.Teachers.service;
+package com.spring.jwt.Teachers;
 
 
 import com.spring.jwt.Teachers.dto.TeacherInfoDto;
@@ -11,7 +11,9 @@ import java.util.Optional;
 @Service
 public interface TeacherService {
 
+    /**
     List<TeacherInfoDto> getAllTeachers();
 
     Optional<TeacherInfoDto> findById(Integer teacherId);
+     **/
 }

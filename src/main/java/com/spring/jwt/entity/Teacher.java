@@ -22,10 +22,9 @@ public class Teacher {
     private String sub;
     private String deg;
     private String status;
+    private Integer userId;
 
-
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    /**
 
     @Column(name = "user_id", insertable = false, updatable = false)
     private Integer userId;
@@ -34,4 +33,6 @@ public class Teacher {
     @JoinColumn(name = "user_id")
 
     private User user;
+    **/
+
 }
