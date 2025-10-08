@@ -8,14 +8,12 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-
 @Repository
 public interface UpcomingExamsRepository extends JpaRepository<UpcomingExams, Integer> {
     Optional<UpcomingExams> findByPaper_PaperId(Integer paperId);
     List<UpcomingExams> findByStartTimeAfterOrderByStartTimeAsc(LocalDateTime dateTime);
     List<UpcomingExams> findByStartTimeBeforeOrderByStartTimeDesc(LocalDateTime dateTime);
-    List<UpcomingExams> findByStudentClassOrderByStartTimeAsc(String studentClass);
+    List<UpcomingExams> findByStudentClassAndStartTimeAfterOrderByStartTimeAsc(String studentClass, LocalDateTime startTime);
     List<UpcomingExams> findByStudentClassAndStartTimeBeforeOrderByStartTimeDesc(String studentClass, LocalDateTime dateTime);
-    // New method to find exams by subject
-    List<UpcomingExams> findBySubject(String subject);
+    boolean existsByStudentClass(String studentClass);
 }

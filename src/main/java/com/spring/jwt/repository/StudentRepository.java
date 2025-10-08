@@ -1,5 +1,3 @@
-//student repo
-
 package com.spring.jwt.repository;
 
 import com.spring.jwt.entity.Student;
@@ -17,4 +15,5 @@ public interface StudentRepository extends JpaRepository<Student, Integer> {
 
     boolean existsById(Integer id);
     List<Student> findByParent_ParentsId(Integer parentId);
+    List<Student> findByStudentClassAndBatch(String studentClass, String batch);
 }
