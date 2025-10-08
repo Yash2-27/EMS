@@ -26,6 +26,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.security.web.header.writers.XXssProtectionHeaderWriter;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.filter.ForwardedHeaderFilter;
@@ -126,6 +127,7 @@ public class AppConfig {
                 "api/v1/userFee",
                 "/api/v1/fees",
                 "/api/v1/students",
+                "/api/v1/teacherAttendance/**",
 
                 jwtConfig.getUrl(),
                 jwtConfig.getRefreshUrl()
@@ -195,6 +197,7 @@ public class AppConfig {
                 .requestMatchers("/api/v1/Classes/**").permitAll()
                 .requestMatchers("/api/v1/userFee/**").permitAll()
                 .requestMatchers("api/v1/students/**").permitAll()
+                .requestMatchers("/api/v1/teacherAttendance/**").permitAll()
 
                 .anyRequest().authenticated());
 
@@ -234,6 +237,8 @@ public class AppConfig {
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/Classes/**"),
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/userFee/**"),
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/students/**"),
+                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/teacherAttendance/**"),
+
                 new org.springframework.security.web.util.matcher.AntPathRequestMatcher(jwtConfig.getUrl()),
                 new org.springframework.security.web.util.matcher.AntPathRequestMatcher(jwtConfig.getRefreshUrl())
             );
