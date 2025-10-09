@@ -14,8 +14,8 @@ public interface DropdownService {
 
     List<String> getSubjects(String studentClass, Integer teacherId);
 
-    List<String> getTitles(String studentClass, Integer teacherId, String subject);
+   // List<String> getTitles(String studentClass, Integer teacherId, String subject);
 
-    List<TeacherQuestionFlatDto> getQuestionPaper(String studentClass, Integer teacherId, String subject, String title);
+    List<TeacherQuestionFlatDto> getQuestionPaper(String studentClass, Integer teacherId, String subject);
 
 }
