@@ -202,6 +202,16 @@ public class AppConfig {
                 .requestMatchers("/api/ceo/**").permitAll()
                 .requestMatchers("/api/v1/questionBank/**").permitAll()
 
+                .requestMatchers("/api/v1/users/personalInfo/**").permitAll()
+                .requestMatchers("/api/v1/users/editPersonalInfo/**").permitAll()
+                .requestMatchers("/api/v1/teachers/allTeacher/**").permitAll()
+                .requestMatchers("/api/v1/teachers/getTeachers/**").permitAll()
+                .requestMatchers("/api/v1/dropdown/getAllStudentClass/**").permitAll()
+                .requestMatchers("/api/v1/dropdown/teachers/**").permitAll()
+                .requestMatchers("/api/v1/dropdown/subjects/**").permitAll()
+                .requestMatchers("/api/v1/dropdown/titles/**").permitAll()
+                .requestMatchers("/api/v1/dropdown/paper/**").permitAll()
+
                 .anyRequest().authenticated());
 
         // Create a request matcher for public URLs
@@ -242,7 +252,18 @@ public class AppConfig {
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/students/**"),
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/ceo/**"),
                 new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/questionBank/**"),
-                new org.springframework.security.web.util.matcher.AntPathRequestMatcher(jwtConfig.getUrl()),
+
+                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/users/personalInfo/**"),
+                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/users/editPersonalInfo/**"),
+                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/teachers/allTeacher/**"),
+                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/teachers/getTeachers/**"),
+                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/dropdown/getAllStudentClass/**"),
+                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/dropdown/teachers/**"),
+                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/dropdown/subjects/**"),
+                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/dropdown/titles/**"),
+                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/dropdown/paper/**"),
+
+                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher(jwtConfig.getUrl()),
                 new org.springframework.security.web.util.matcher.AntPathRequestMatcher(jwtConfig.getRefreshUrl())
             );
 
