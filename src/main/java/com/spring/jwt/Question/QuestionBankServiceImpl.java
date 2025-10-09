@@ -37,8 +37,7 @@ public class QuestionBankServiceImpl implements QuestionBankService {
 
             if (teachers == null || teachers.isEmpty()) {
                 throw new ResourceNotFoundException(
-                        "No teachers found for student class: '" + studentClass + "'"
-                );
+                        "No teachers found for student class: '" + studentClass);
             }
 
 
@@ -50,8 +49,7 @@ public class QuestionBankServiceImpl implements QuestionBankService {
         } catch (Exception e) {
 
             throw new ServiceException(
-                    "Unexpected error occurred while fetching teachers for student class: " + studentClass, e
-            );
+                    "Unexpected error occurred while fetching teachers for student class: " + studentClass);
         }
     }
 
@@ -72,8 +70,7 @@ public class QuestionBankServiceImpl implements QuestionBankService {
           if (questions.isEmpty()) {
 
               throw new ResourceNotFoundException(
-                      "No topics found for subject: '" + subject + "' and student class: '" + studentClass + "'"
-              );
+                      "No topics found for subject: '" + subject + "' and student class: '" + studentClass );
           }
 
           return questions.stream()
@@ -89,8 +86,7 @@ public class QuestionBankServiceImpl implements QuestionBankService {
       catch (Exception e){
 
           throw new ServiceException(
-                  "Unexpected error occurred while fetching teachers for student class: " + studentClass, e
-          );
+                  "Unexpected error occurred while fetching topics  for student class: " + studentClass);
 
       }
 
@@ -129,8 +125,7 @@ public class QuestionBankServiceImpl implements QuestionBankService {
         }
         catch (Exception e) {
             throw new ServiceException(
-                    "Unexpected error occurred while fetching teachers for student class: " + studentClass, e
-            );
+                    "Unexpected error occurred while fetching question bank  for student class: " + studentClass);
         }
 
 

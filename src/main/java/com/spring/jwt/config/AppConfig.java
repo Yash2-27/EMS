@@ -26,7 +26,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.security.web.header.writers.XXssProtectionHeaderWriter;
-import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.filter.ForwardedHeaderFilter;
@@ -155,6 +154,8 @@ public class AppConfig {
 
         log.debug("Configuring URL-based security rules");
         http.authorizeHttpRequests(authorize -> authorize
+                .requestMatchers("/api/v1/users/personalInfo/**").permitAll() // ✅ Added here
+                .requestMatchers("/api/v1/users/editPersonalInfo/**").permitAll() // ✅ Added here
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/v1/users/register").permitAll()
                 .requestMatchers("/api/v1/users/password/**").permitAll()
@@ -179,9 +180,12 @@ public class AppConfig {
                 .requestMatchers("/api/public/**").permitAll()
                 .requestMatchers("/user/**").permitAll()
                 .requestMatchers("/api/v1/fees//**").permitAll()
+
                 .requestMatchers("/api/v1/questions/**").permitAll()
                 .requestMatchers("/questions/search").permitAll()
+
                 .requestMatchers("/questions/**").permitAll()
+
                 .requestMatchers("/assessments/**").permitAll()
                 .requestMatchers("/api/v1/exam/**").permitAll()
                 .requestMatchers("/api/v1/papers/solutions/pdf").permitAll()
@@ -213,6 +217,9 @@ public class AppConfig {
         // Create a request matcher for public URLs
         org.springframework.security.web.util.matcher.RequestMatcher publicUrls =
             new org.springframework.security.web.util.matcher.OrRequestMatcher(
+                new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/users/personalInfo/**"), // ✅ Added here
+                new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/users/editPersonalInfo/**"), // ✅ Added here
+
                 new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/auth/**"),
                 new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/public/**"),
                 new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/users/register"),
@@ -231,7 +238,7 @@ public class AppConfig {
                 new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/questions/**"),
 
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/attendance/**"),
-                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/questions/search"),
+                new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/questions/search"),
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/papers/**"),
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/exam/**"),
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/papers/solutions/pdf"),
