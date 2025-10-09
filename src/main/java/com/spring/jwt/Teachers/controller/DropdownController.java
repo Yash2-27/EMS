@@ -3,6 +3,7 @@ package com.spring.jwt.Teachers.controller;
 import com.spring.jwt.Teachers.service.DropdownService;
 import com.spring.jwt.Teachers.dto.TeacherQuestionFlatDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -19,30 +20,36 @@ public class DropdownController {
     }
 
     @GetMapping("/teachers")
-    public List<Object> getTeachersByClasses(@RequestParam String studentClass) {
-        return dropdownService.getTeachersByClasses(studentClass);
+    public ResponseEntity<List<Object>> getTeachersByClasses(@RequestParam String studentClass) {
+        List<Object> teachers = dropdownService.getTeachersByClasses(studentClass);
+        return ResponseEntity.ok(teachers);
     }
 
     @GetMapping("/subjects")
-    public List<String> getSubjects(@RequestParam String studentClass,
+    public ResponseEntity<List<String>> getSubjects(@RequestParam String studentClass,
                                     @RequestParam Integer teacherId) {
-        return dropdownService.getSubjects(studentClass,teacherId);
+        List<String> subjects = dropdownService.getSubjects(studentClass, teacherId);
+        return ResponseEntity.ok(subjects);
     }
 
+    /**
     @GetMapping("/titles")
     public List<String> getTitles(@RequestParam String studentClass,
                                   @RequestParam Integer teacherId,
                                   @RequestParam String subject) {
         return dropdownService.getTitles(studentClass,teacherId,subject);
     }
+     **/
 
     @GetMapping("/paper")
-    public List<TeacherQuestionFlatDto> getQuestionPaper(@RequestParam String studentClass,
-                                                         @RequestParam Integer teacherId,
-                                                         @RequestParam String subject,
-                                                         @RequestParam String title) {
-        return dropdownService.getQuestionPaper(studentClass, teacherId, subject, title);
-    }
+    public ResponseEntity<List<TeacherQuestionFlatDto>> getQuestionPaper(
+            @RequestParam String studentClass,
+            @RequestParam Integer teacherId,
+            @RequestParam String subject) {
 
+        List<TeacherQuestionFlatDto> questions = dropdownService.getQuestionPaper(studentClass, teacherId, subject);
+
+        return ResponseEntity.ok(questions);
+    }
 
 }

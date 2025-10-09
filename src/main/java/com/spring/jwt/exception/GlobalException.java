@@ -1,6 +1,7 @@
 package com.spring.jwt.exception;
 
 
+import com.spring.jwt.Teachers.exception.DropdownResourceNotFoundException;
 import com.spring.jwt.utils.ApiResponse;
 
 import com.spring.jwt.Teachers.exception.PapersAndTeacherException;
@@ -342,6 +343,16 @@ public class GlobalException extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(DropdownResourceNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleDropdownNotFound(DropdownResourceNotFoundException ex) {
+        log.error("Dropdown data not found: {}", ex.getMessage());
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.NOT_FOUND.value());
+        body.put("error", "Not Found");
+        body.put("message", ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+    }
 
 
 //package com.spring.jwt.exception;

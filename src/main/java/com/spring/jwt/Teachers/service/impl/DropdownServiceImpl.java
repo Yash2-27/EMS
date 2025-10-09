@@ -27,32 +27,24 @@ public class DropdownServiceImpl implements DropdownService {
 
     @Override
     public List<Object> getTeachersByClasses(String studentClass) {
-        try {
-            List<Object> teachers = teacherRepository.findTeachersByClasses(studentClass);
-            if (teachers.isEmpty()) {
-                throw new DropdownResourceNotFoundException("No teachers found for class: " + studentClass);
-            }
-            return teachers;
-        } catch (Exception e) {
-            logger.error("Error fetching teachers for class {}: {}", studentClass, e.getMessage());
-            throw new RuntimeException("Unable to fetch teachers. Please try again later.");
+        List<Object> teachers = teacherRepository.findTeachersByClasses(studentClass);
+        if (teachers == null || teachers.isEmpty()) {
+            throw new DropdownResourceNotFoundException("No teachers found for class: " + studentClass);
         }
+        return teachers;
     }
 
     @Override
     public List<String> getSubjects(String studentClass, Integer teacherId) {
-        try {
-            List<String> subjects = teacherRepository.findTeachersBySubject(studentClass, teacherId);
-            if (subjects.isEmpty()) {
-                throw new DropdownResourceNotFoundException("No subjects found for teacher ID: " + teacherId);
-            }
-            return subjects;
-        } catch (Exception e) {
-            logger.error("Error fetching subjects: {}", e.getMessage());
-            throw new RuntimeException("Unable to fetch subjects. Please try again later.");
+        List<String> subjects = teacherRepository.findTeachersBySubject(studentClass, teacherId);
+        if (subjects == null || subjects.isEmpty()) {
+            throw new DropdownResourceNotFoundException("No subjects found for class: " + studentClass + " and teacher ID: " + teacherId);
         }
+        return subjects;
     }
 
+
+    /**
     @Override
     public List<String> getTitles(String studentClass, Integer teacherId, String subject) {
         try {
@@ -66,19 +58,17 @@ public class DropdownServiceImpl implements DropdownService {
             throw new RuntimeException("Unable to fetch titles. Please try again later.");
         }
     }
+    **/
 
     @Override
-    public List<TeacherQuestionFlatDto> getQuestionPaper(String studentClass, Integer teacherId, String subject, String title) {
-        try {
-            List<TeacherQuestionFlatDto> questions = teacherRepository.findByQuestionPaper(studentClass, teacherId, subject, title);
-            if (questions.isEmpty()) {
-                throw new DropdownResourceNotFoundException("No questions found for title: " + title);
-            }
-            return questions;
-        } catch (Exception e) {
-            logger.error("Error fetching question paper: {}", e.getMessage());
-            throw new RuntimeException("Unable to fetch question paper. Please try again later.");
+    public List<TeacherQuestionFlatDto> getQuestionPaper(String studentClass, Integer teacherId, String subject) {
+        List<TeacherQuestionFlatDto> questions = teacherRepository.findByQuestionPaper(studentClass, teacherId, subject);
+
+        if (questions == null || questions.isEmpty()) {
+            throw new DropdownResourceNotFoundException("No questions found for subject: " + subject);
         }
+
+        return questions;
     }
 
 }

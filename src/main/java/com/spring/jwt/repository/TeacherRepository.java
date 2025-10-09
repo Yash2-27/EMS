@@ -21,13 +21,11 @@ public interface TeacherRepository extends JpaRepository<Teacher, Integer> {
             "JOIN Paper p ON q.paper = p " +
             "WHERE p.studentClass = :studentClass " +
             "AND t.teacherId = :teacherId " +
-            "AND q.subject = :subject " +
-            "AND p.title = :title")
+            "AND q.subject = :subject ")
     List<TeacherQuestionFlatDto> findByQuestionPaper(
             @Param("studentClass") String studentClass,
             @Param("teacherId") Integer teacherId,
-            @Param("subject") String subject,
-            @Param("title") String title
+            @Param("subject") String subject
     );
 
     @Query("SELECT DISTINCT t.studentClass FROM Question t")
@@ -41,10 +39,12 @@ public interface TeacherRepository extends JpaRepository<Teacher, Integer> {
                                        @Param("teacherId") Integer teacherId
     );
 
+    /**
     @Query("SELECT DISTINCT q.paper.title FROM Teacher t JOIN Question q ON t.userId = q.userId WHERE q.studentClass = :studentClass AND t.teacherId = :teacherId AND q.subject = :subject")
     List<String> findSubjectByTitles(@Param("studentClass") String studentClass,
                                      @Param("teacherId") Integer teacherId,
                                      @Param("subject") String subject
     );
+     **/
 
 }
