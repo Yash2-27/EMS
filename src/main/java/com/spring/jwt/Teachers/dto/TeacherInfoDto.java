@@ -14,8 +14,8 @@ public class TeacherInfoDto {
     private String sub;
     private String deg;
     private String status;
+    private Integer userId;
     private String email;
     private Long mobileNumber;
-    private Integer userId;
 
 }

@@ -1,11 +1,12 @@
 package com.spring.jwt.Teachers.controller;
 
-import com.spring.jwt.Teachers.exception.PapersAndTeacherException;
 import com.spring.jwt.Teachers.dto.TeacherInfoDto;
-import com.spring.jwt.Teachers.TeacherService;
+import com.spring.jwt.Teachers.exception.PapersAndTeacherException;
+import com.spring.jwt.Teachers.service.TeacherService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -15,7 +16,6 @@ public class TeacherController {
 
     private final TeacherService teacherService;
 
-    /**
     @GetMapping("/allTeacher")
     public List<TeacherInfoDto> getAllTeachers() {
         return teacherService.getAllTeachers();
@@ -27,6 +27,5 @@ public class TeacherController {
                     .orElseThrow(() -> new PapersAndTeacherException("Teacher not found with id: " + teacherId));
             return ResponseEntity.ok(teacherInfoDto);
     }
-    **/
 
 }
