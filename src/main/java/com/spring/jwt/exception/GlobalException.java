@@ -1,12 +1,6 @@
 package com.spring.jwt.exception;
 
-
-import com.spring.jwt.Teachers.exception.DropdownResourceNotFoundException;
 import com.spring.jwt.utils.ApiResponse;
-
-import com.spring.jwt.Teachers.exception.PapersAndTeacherException;
-import com.spring.jwt.dto.ErrorResponse;
-
 import com.spring.jwt.utils.ErrorResponseDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -23,7 +17,6 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -36,10 +29,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-
-
-
 
 @RestControllerAdvice
 @Slf4j
@@ -167,18 +156,6 @@ public class GlobalException extends ResponseEntityExceptionHandler {
 
 
     @Override
-    protected ResponseEntity<Object> handleMissingServletRequestParameter(
-            MissingServletRequestParameterException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        log.error("Missing parameter: {}", ex.getMessage());
-        String error = ex.getParameterName() + " parameter is missing";
-
-        Map<String, String> errors = new HashMap<>();
-        errors.put(ex.getParameterName(), error);
-
-        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
-    }
-
-    @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
             MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         log.error("Validation error: {}", ex.getMessage());
@@ -191,6 +168,18 @@ public class GlobalException extends ResponseEntityExceptionHandler {
             validationErrors.put(fieldName, validationMsg);
         });
         return new ResponseEntity<>(validationErrors, HttpStatus.BAD_REQUEST);
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleMissingServletRequestParameter(
+            MissingServletRequestParameterException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        log.error("Missing parameter: {}", ex.getMessage());
+        String error = ex.getParameterName() + " parameter is missing";
+
+        Map<String, String> errors = new HashMap<>();
+        errors.put(ex.getParameterName(), error);
+
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -316,7 +305,12 @@ public class GlobalException extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(PapersAndTeacherException.class)
     public ResponseEntity<?> handlePapersAndTeacher(PapersAndTeacherException ex) {
-        ErrorResponse errorResponse = new ErrorResponse(LocalDateTime.now(), ex.getMessage(), "NOT_FOUND");
+        ErrorResponseDto errorResponse = new ErrorResponseDto(
+                "Papers and Teacher Error",
+                HttpStatus.NOT_FOUND,
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 

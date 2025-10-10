@@ -1,4 +1,4 @@
-package com.spring.jwt.Teachers.exception;
+package com.spring.jwt.exception;
 
 public class PapersAndTeacherException extends RuntimeException {
     public PapersAndTeacherException(String message) {
