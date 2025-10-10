@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,62 +27,127 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
 
     private DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
 
+
     @Override
     public TeachersAttendanceResponseDto createAttendance(TeachersAttendanceDto dto) {
-        try {
-            // Validate teacher ID
-            if (dto.getTeacherId() == null) {
-                throw new IllegalArgumentException("Teacher ID must not be null");
-            }
-            // Get today's date
-            String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-            // Fetch existing attendance for today
-            TeachersAttendance attendance = attendanceRepo.findByTeacherIdAndDate(dto.getTeacherId(), today)
-                    .orElseGet(() -> {
-                        TeachersAttendance a = new TeachersAttendance();
-                        a.setTeacherId(dto.getTeacherId());
-                        // Fetch real teacher name from Teacher table
-                        Teacher teacher = teacherRepo.findById(dto.getTeacherId())
-                                .orElseThrow(() -> new RuntimeException(
-                                        "Teacher not found with id: " + dto.getTeacherId()));
-                        a.setTeacherName(teacher.getName());
-                        a.setDate(today);
-                        a.setMonth(LocalDate.now().getMonth().name());
-                        return a;
-                    });
-            // Current punch time
-            String nowTime = LocalTime.now().format(timeFormatter);
-            // Set first inTime if null
-            if (attendance.getInTime() == null) {
-                attendance.setInTime(nowTime);
-            }
-            // Always update last outTime
-            attendance.setOutTime(nowTime);
-            // Calculate hours
-            double hours = calculateHours(attendance.getInTime(), attendance.getOutTime());
-            // Set mark with 15–20 min grace
-            attendance.setMark(getMark(hours));
-            // Save to DB
-            attendanceRepo.save(attendance);
-            // Map to response DTO
-            TeachersAttendanceResponseDto response = new TeachersAttendanceResponseDto();
-            response.setAttendanceId(attendance.getTeachersAttendanceId());
-            response.setTeacherId(attendance.getTeacherId());
-            response.setTeacherName(attendance.getTeacherName());
-            response.setDate(attendance.getDate());
-            response.setMonth(attendance.getMonth());
-            response.setInTime(attendance.getInTime());
-            response.setOutTime(attendance.getOutTime());
-            response.setMark(attendance.getMark());
-            return response;
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Invalid request: " + e.getMessage(), e);
-        } catch (RuntimeException e) {
-            throw new RuntimeException("Error while creating attendance: " + e.getMessage(), e);
-        } catch (Exception e) {
-            throw new RuntimeException("Unexpected error occurred while saving attendance", e);
+
+        if (dto.getTeacherId() == null) {
+            throw new IllegalArgumentException("Teacher ID cannot be null");
         }
+
+        // Get teacher info from DB
+        Teacher teacher = teacherRepo.findById(dto.getTeacherId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Teacher not found with ID: " + dto.getTeacherId()
+                ));
+
+        //  Format Date in dd-MM-yyyy (Asia/Kolkata timezone)
+        LocalDate currentDate = LocalDate.now(ZoneId.of("Asia/Kolkata"));
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        String formattedDate = currentDate.format(dateFormatter);
+
+        //  Current time in Asia/Kolkata
+        LocalTime currentTime = LocalTime.now(ZoneId.of("Asia/Kolkata"));
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+        String formattedTime = currentTime.format(timeFormatter);
+
+        // Check if attendance exists today
+        TeachersAttendance attendance = attendanceRepo
+                .findByTeacherIdAndDate(dto.getTeacherId(), formattedDate)
+                .orElseGet(() -> {
+                    TeachersAttendance a = new TeachersAttendance();
+                    a.setTeacherId(teacher.getTeacherId());
+                    a.setTeacherName(teacher.getName());
+                    a.setDate(formattedDate);
+                    a.setMonth(currentDate.getMonth().name());
+                    return a;
+                });
+
+        // Set inTime if not set
+        if (attendance.getInTime() == null) {
+            attendance.setInTime(formattedTime);
+        }
+        // Always update last outTime
+        attendance.setOutTime(formattedTime);
+
+        // Calculate hours
+        double hours = calculateHours(attendance.getInTime(), attendance.getOutTime());
+
+        // Mark attendance with 15–20 min grace
+        attendance.setMark(getMark(hours));
+
+        // Save attendance
+        TeachersAttendance saved = attendanceRepo.save(attendance);
+
+        // Map to response DTO
+        TeachersAttendanceResponseDto response = new TeachersAttendanceResponseDto();
+        response.setAttendanceId(saved.getTeachersAttendanceId());
+        response.setTeacherId(saved.getTeacherId());
+        response.setTeacherName(saved.getTeacherName());
+        response.setDate(saved.getDate());
+        response.setMonth(saved.getMonth());
+        response.setInTime(saved.getInTime());
+        response.setOutTime(saved.getOutTime());
+        response.setMark(saved.getMark());
+
+        return response;
     }
+    //    @Override
+//    public TeachersAttendanceResponseDto createAttendance(TeachersAttendanceDto dto) {
+//        try {
+//            // Validate teacher ID
+//            if (dto.getTeacherId() == null) {
+//                throw new IllegalArgumentException("Teacher ID must not be null");
+//            }
+//            // Get today's date
+//            String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+//            // Fetch existing attendance for today
+//            TeachersAttendance attendance = attendanceRepo.findByTeacherIdAndDate(dto.getTeacherId(), today)
+//                    .orElseGet(() -> {
+//                        TeachersAttendance a = new TeachersAttendance();
+//                        a.setTeacherId(dto.getTeacherId());
+//                        // Fetch real teacher name from Teacher table
+//                        Teacher teacher = teacherRepo.findById(dto.getTeacherId())
+//                                .orElseThrow(() -> new RuntimeException(
+//                                        "Teacher not found with id: " + dto.getTeacherId()));
+//                        a.setTeacherName(teacher.getName());
+//                        a.setDate(today);
+//                        a.setMonth(LocalDate.now().getMonth().name());
+//                        return a;
+//                    });
+//            // Current punch time
+//            String nowTime = LocalTime.now().format(timeFormatter);
+//            // Set first inTime if null
+//            if (attendance.getInTime() == null) {
+//                attendance.setInTime(nowTime);
+//            }
+//            // Always update last outTime
+//            attendance.setOutTime(nowTime);
+//            // Calculate hours
+//            double hours = calculateHours(attendance.getInTime(), attendance.getOutTime());
+//            // Set mark with 15–20 min grace
+//            attendance.setMark(getMark(hours));
+//            // Save to DB
+//            attendanceRepo.save(attendance);
+//            // Map to response DTO
+//            TeachersAttendanceResponseDto response = new TeachersAttendanceResponseDto();
+//            response.setAttendanceId(attendance.getTeachersAttendanceId());
+//            response.setTeacherId(attendance.getTeacherId());
+//            response.setTeacherName(attendance.getTeacherName());
+//            response.setDate(attendance.getDate());
+//            response.setMonth(attendance.getMonth());
+//            response.setInTime(attendance.getInTime());
+//            response.setOutTime(attendance.getOutTime());
+//            response.setMark(attendance.getMark());
+//            return response;
+//        } catch (IllegalArgumentException e) {
+//            throw new RuntimeException("Invalid request: " + e.getMessage(), e);
+//        } catch (RuntimeException e) {
+//            throw new RuntimeException("Error while creating attendance: " + e.getMessage(), e);
+//        } catch (Exception e) {
+//            throw new RuntimeException("Unexpected error occurred while saving attendance", e);
+//        }
+//    }
     private double calculateHours(String inTime, String outTime) {
         LocalTime in = LocalTime.parse(inTime, timeFormatter);
         LocalTime out = LocalTime.parse(outTime, timeFormatter);
@@ -155,11 +221,24 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
         if (date == null || date.trim().isEmpty()) {
             throw new IllegalArgumentException("Date cannot be null or empty");
         }
-        List<TeachersAttendance> attendances = attendanceRepo.findByDate(date);
+
+        // Ensure date is in dd/MM/yyyy format
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        LocalDate parsedDate;
+        try {
+            parsedDate = LocalDate.parse(date, formatter);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid date format. Please use dd/MM/yyyy");
+        }
+
+        String formattedDate = parsedDate.format(formatter); // same format as DB
+
+        List<TeachersAttendance> attendances = attendanceRepo.findByDate(formattedDate);
 
         if (attendances == null || attendances.isEmpty()) {
             throw new ResourceNotFoundException("No attendance records found for date: " + date);
         }
+
         return attendances.stream().map(att -> {
             TeachersAttendanceResponseDto dto = new TeachersAttendanceResponseDto();
             dto.setAttendanceId(att.getTeachersAttendanceId());
@@ -174,6 +253,7 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
         }).collect(Collectors.toList());
     }
 
+
     @Override
     public List<TeachersAttendanceResponseDto> getAttendanceByMonth(String month, String year) {
         if (month == null || year == null) {
@@ -184,7 +264,9 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
         List<TeachersAttendance> filtered = attendances.stream()
                 .filter(att -> {
                     try {
-                        LocalDate date = LocalDate.parse(att.getDate()); // Parse date string
+//                        LocalDate date = LocalDate.parse(att.getDate()); // Parse date string
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+                        LocalDate date = LocalDate.parse(att.getDate(), formatter);
                         return date.getMonthValue() == Integer.parseInt(month)
                                 && date.getYear() == Integer.parseInt(year);
                     } catch (Exception e) {
@@ -247,8 +329,6 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
 
         return summary;
     }
-
-
 }
 
 

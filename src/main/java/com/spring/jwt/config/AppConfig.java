@@ -122,13 +122,14 @@ public class AppConfig {
                 "/api/v1/calendar-events/**",
                 "api/v1/exam-results/**",
                 "api/v1/exam/session",
-                "api/v1/Classes",
+                "api/v1/Classes/**",
                 "api/v1/userFee",
                 "/api/v1/fees",
                 "/api/v1/students",
                 "/api/ceo/dash",
                     "/api/ceo",
                 "/api/v1/questionBank",
+                    "/api/v1/teacherAttendance/**",
 
 
                 jwtConfig.getUrl(),
@@ -201,6 +202,7 @@ public class AppConfig {
                 .requestMatchers("api/v1/students/**").permitAll()
                 .requestMatchers("/api/ceo/**").permitAll()
                 .requestMatchers("/api/v1/questionBank/**").permitAll()
+                .requestMatchers("/api/v1/teacherAttendance/**").permitAll()
 
                 .requestMatchers("/api/v1/users/personalInfo/**").permitAll()
                 .requestMatchers("/api/v1/users/editPersonalInfo/**").permitAll()
@@ -252,6 +254,7 @@ public class AppConfig {
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/students/**"),
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/ceo/**"),
                 new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/questionBank/**"),
+                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/teacherAttendance/**"),
 
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/users/personalInfo/**"),
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/users/editPersonalInfo/**"),

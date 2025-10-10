@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "teachers_attendance") // table name should follow DB naming conventions
+@Table(name = "teachers_attendance")
 public class TeachersAttendance {
 
     @Id
@@ -24,9 +24,9 @@ public class TeachersAttendance {
 
     private String date;
 
-    private String inTime;   // first punch IN
+    private String inTime;
 
-    private String outTime;  // last punch OUT
+    private String outTime;
 
-    private String mark;     // FULL_DAY, HALF_DAY, ABSENT
+    private String mark;
 }
