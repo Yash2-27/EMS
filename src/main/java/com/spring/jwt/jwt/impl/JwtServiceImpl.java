@@ -62,7 +62,7 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public Claims extractClaims(String token) {
         return Jwts
-                .parserBuilder()
+                .parser()
                 .setAllowedClockSkewSeconds(jwtConfig.getAllowedClockSkewSeconds())
                 .setSigningKey(getKey())
                 .build()
@@ -345,7 +345,7 @@ public class JwtServiceImpl implements JwtService {
         Claims claims;
 
         try {
-            claims = Jwts.parserBuilder()
+            claims = Jwts.parser()
                     .setSigningKey(getKey())
                     .build()
                     .parseClaimsJws(token)
