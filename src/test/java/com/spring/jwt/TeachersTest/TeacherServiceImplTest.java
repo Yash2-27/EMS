@@ -12,7 +12,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,7 +52,7 @@ class TeacherServiceImplTest {
         user1.setMobileNumber(Long.valueOf("9876543210"));
 
         // Mocks
-        when(teacherRepository.findAll()).thenReturn(Arrays.asList(teacher1));
+        when(teacherRepository.findAll()).thenReturn(List.of(teacher1));
         when(userRepository.findById(101L)).thenReturn(Optional.of(user1));
 
         // Act

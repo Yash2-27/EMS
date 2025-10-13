@@ -570,7 +570,7 @@ public class UserController {
 
     @Operation(
             summary = "Get Personal Information",
-            description = "Fetches a user’s personal details including name, email, phone number, parent relationship, and fees.",
+            description = "Fetches a user’s personal details including name, email, phone number, parent relationship.",
             tags = {"User Management"}
      )
     @ApiResponses({
@@ -601,7 +601,7 @@ public class UserController {
 
     @Operation(
             summary = "Edit Personal Information",
-            description = "Updates a user’s personal details including name, email, phone, parent relationship, and fees.",
+            description = "Updates a user’s personal details including name, email, phone, parent relationship.",
             tags = {"User Management"}
     )
     @ApiResponses({
