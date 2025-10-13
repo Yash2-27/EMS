@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.List;
 public interface ClassesRepository extends JpaRepository<Classes, Long> {
     @Query("SELECT COUNT(c) > 0 FROM Classes c " +
@@ -30,5 +29,6 @@ public interface ClassesRepository extends JpaRepository<Classes, Long> {
             @Param("studentClass") String studentClass,
             @Param("today") LocalDate today,
             @Param("currentTime") String currentTime);
+    List<Classes> findAllByTeacherIdIn(List<Integer> teacherIds);
 
 }
