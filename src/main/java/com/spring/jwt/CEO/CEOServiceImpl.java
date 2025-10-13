@@ -20,7 +20,7 @@ public class CEOServiceImpl implements CEOService {
     @Autowired
     private ExamResultRepository examResultRepository;
 
-   
+
     public Map<Integer, Double> calculateStudentPercentages(List<Student> students, List<ExamResult> examResults) {
         Map<Integer, Double> studentPercentageMap = new HashMap<>();
 
@@ -82,7 +82,7 @@ public class CEOServiceImpl implements CEOService {
         return map;
     }
 
-    // ✅ 1. Batch Toppers (75%–100%)
+
     @Override
     public List<DashboredDTO> getBatchToppers(String studentClass, String batch) {
         Map<String, Object> data = fetchData(studentClass, batch);
