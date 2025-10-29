@@ -1,6 +1,8 @@
 package com.spring.jwt.Question;
 
+import com.spring.jwt.utils.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -20,8 +22,10 @@ public class QuestionBankController {
     //               /api/v1/questionBank/AllTeachers?studentClass=12           //
     //==========================================================================//
     @GetMapping("/AllTeachers")
-    public List<QuestionBankDTO> getTeachersByStudentClass(@RequestParam String studentClass) {
-        return questionBankService.getTeachersByStudentClass(studentClass);
+    public ResponseEntity<ApiResponse<List<QuestionBankDTO>>> getTeachersByStudentClass(
+            @RequestParam String studentClass) {
+        List<QuestionBankDTO> teachers = questionBankService.getTeachersByStudentClass(studentClass);
+        return ResponseEntity.ok(ApiResponse.success(teachers.toString()));
     }
 
     //===============================================================================//
@@ -30,11 +34,13 @@ public class QuestionBankController {
     //===============================================================================//
 
 
+
     @GetMapping("/topics")
-    public List<QuestionBankSubjectDropdown> getTopicsBySubjectAndStudentClass(
+    public ResponseEntity<ApiResponse<List<QuestionBankSubjectDropdown>>> getTopicsBySubjectAndStudentClass(
             @RequestParam String subject,
             @RequestParam String studentClass) {
-        return questionBankService.getTopicsBySubjectAndStudentClass(subject, studentClass);
+        List<QuestionBankSubjectDropdown> topics = questionBankService.getTopicsBySubjectAndStudentClass(subject, studentClass);
+        return ResponseEntity.ok(ApiResponse.success(topics.toString()));
     }
 
     //=========================================================================================================//
@@ -43,12 +49,12 @@ public class QuestionBankController {
     //=========================================================================================================//
 
     @GetMapping("/questions")
-    public List<QuestionBankQuestionsDTO> getFilteredQuestions(
+    public ResponseEntity<ApiResponse<List<QuestionBankQuestionsDTO>>> getFilteredQuestions(
             @RequestParam(required = false) String studentClass,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String subject,
             @RequestParam(required = false) String topic) {
-
-        return questionBankService.getFilteredQuestions(studentClass, name, subject, topic);
+        List<QuestionBankQuestionsDTO> questions = questionBankService.getFilteredQuestions(studentClass, name, subject, topic);
+        return ResponseEntity.ok(ApiResponse.success(questions.toString()));
     }
 }

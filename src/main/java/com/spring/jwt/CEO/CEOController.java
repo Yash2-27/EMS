@@ -1,6 +1,9 @@
 package com.spring.jwt.CEO;
 
+import com.spring.jwt.utils.ApiResponse;
+import com.spring.jwt.utils.GenericResponseDto;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -22,11 +25,13 @@ CEOService ceoService;
 
 
     @GetMapping("/batchToppers")
-    public List<DashboredDTO> getBatchToppers(
+    public ResponseEntity<ApiResponse<List<DashboredDTO>>> getBatchToppers(
             @RequestParam String studentClass,
             @RequestParam String batch
     ) {
-        return ceoService.getBatchToppers(studentClass, batch);
+        return ResponseEntity.ok(
+                ApiResponse.success("Batch toppers fetched successfully", ceoService.getBatchToppers(studentClass, batch))
+        );
     }
 
 
@@ -36,11 +41,14 @@ CEOService ceoService;
     //         /api/ceo/batchAverage/studentClass=?  &  batch=?  //
     //===========================================================//
     @GetMapping("/batchAverage")
-    public List<DashboredDTO> getAverageStudents(
+    public ResponseEntity<ApiResponse<List<DashboredDTO>>> getBatchAverage(
             @RequestParam String studentClass,
             @RequestParam String batch
-    ) {
-        return ceoService.getAverageStudents(studentClass, batch);
+    )
+    {
+        return ResponseEntity.ok(
+                ApiResponse.success("Batch Average fetched successfully",ceoService.getAverageStudents(studentClass, batch))
+        );
     }
 
 
@@ -50,11 +58,13 @@ CEOService ceoService;
     //=================================================================//
 
     @GetMapping("/batchBelowAverage")
-    public List<DashboredDTO> getBelowAverageStudents(
+    public ResponseEntity<ApiResponse<List<DashboredDTO>>> getBatchBelowAverage(
             @RequestParam String studentClass,
             @RequestParam String batch
     ) {
-        return ceoService.getBelowAverageStudents(studentClass, batch);
+    return ResponseEntity.ok(
+            ApiResponse.success("Batch below average successfully ",ceoService.getAverageStudents(studentClass, batch))
+    );
     }
 
 

@@ -28,7 +28,7 @@ public class ClassesServiceImpl implements ClassesService {
             throw new IllegalArgumentException("Class data cannot be null");
         }
 
-        // Validate required fields
+
         if (classesDto.getSub() == null || classesDto.getSub().trim().isEmpty()) {
             throw new IllegalArgumentException("Subject is required");
         }
@@ -51,30 +51,27 @@ public class ClassesServiceImpl implements ClassesService {
             throw new IllegalArgumentException("Topic is required");
         }
 
-        // Fetch teacher from teacher table
+
         Teacher teacher = teacherRepository.findById(classesDto.getTeacherId())
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Teacher with ID " + classesDto.getTeacherId() + " not found"));
 
-        // Check if teacher already has a class at the same date/time
         boolean exists = classesRepository.existsClassForTeacherAtTime(
                 classesDto.getTeacherId(), classesDto.getDate(), classesDto.getTime());
         if (exists) {
             throw new IllegalStateException("Teacher already has a class scheduled at this time");
         }
 
-        // Map DTO → Entity
+
         Classes entity = mapper.toEntity(classesDto);
 
-        // Set teacherName from Teacher table
         entity.setTeacherName(teacher.getName());
 
         Classes savedClass = classesRepository.save(entity);
 
-        // Map back to DTO
         ClassesDto dto = mapper.toDto(savedClass);
 
-        // ✅ Ensure teacherName is set in DTO
+
         dto.setTeacherName(teacher.getName());
 
         return dto;
@@ -123,25 +120,25 @@ public class ClassesServiceImpl implements ClassesService {
 
     @Override
     public List<ClassesDto> getTodaysClasses(String studentClass) {
-        // Step 1: Check if studentClass is missing or empty
+
         if (studentClass == null || studentClass.trim().isEmpty()) {
-            // Throw custom exception with proper message
+
             throw new ClassesNotFoundException("Student class not provided");
         }
-        // Step 2: Get today's date
+
         LocalDate today = LocalDate.now();
 
-        // Step 3: Fetch classes from repository and map to DTO
+
         List<ClassesDto> classes = classesRepository.findTodaysClasses(studentClass.trim(), today)
                 .stream()
                 .map(mapper::toDto)
                 .collect(Collectors.toList());
 
-        // Step 4: If no classes found for today, throw exception
+
         if (classes.isEmpty()) {
             throw new ClassesNotFoundException("No classes found for today");
         }
-        // Step 5: Return list of DTOs
+
         return classes;
     }
 
@@ -169,9 +166,3 @@ public class ClassesServiceImpl implements ClassesService {
 
 }
 
-/**
- *
- *
- *
- *
- */
