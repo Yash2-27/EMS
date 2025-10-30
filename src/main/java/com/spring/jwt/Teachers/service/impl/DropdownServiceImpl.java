@@ -1,9 +1,9 @@
 package com.spring.jwt.Teachers.service.impl;
 
+import com.spring.jwt.Teachers.exception.DropdownResourceNotFoundException;
 import com.spring.jwt.Teachers.service.DropdownService;
 import com.spring.jwt.Teachers.dto.TeacherQuestionFlatDto;
-import com.spring.jwt.exception.DropdownResourceNotFoundException;
-import com.spring.jwt.repository.TeacherRepository;
+ import com.spring.jwt.repository.TeacherRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,5 +66,5 @@ public class DropdownServiceImpl implements DropdownService {
                 .orElseThrow(() -> new DropdownResourceNotFoundException(
                         "No question paper found for subject: " + subject));
     }
-}
 
+}
