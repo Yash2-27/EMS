@@ -8,10 +8,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TeacherSalaryInfoDTO {
-    private Integer serialNo;      // Auto increment
+    private Integer serialNo;
     private String teacherName;
     private String studentClass;
-    private String date;           // created_at
+    private String date;
     private Double totalSalary;
     private String subject;
 
