@@ -1,7 +1,7 @@
 package com.spring.jwt.TeachersTest;
 
 import com.spring.jwt.Teachers.dto.TeacherQuestionFlatDto;
-import com.spring.jwt.exception.DropdownResourceNotFoundException;
+import com.spring.jwt.Teachers.exception.DropdownResourceNotFoundException;
 import com.spring.jwt.Teachers.service.impl.DropdownServiceImpl;
 import com.spring.jwt.repository.TeacherRepository;
 import org.junit.jupiter.api.BeforeEach;
