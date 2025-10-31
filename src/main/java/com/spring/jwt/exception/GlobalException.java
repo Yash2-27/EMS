@@ -252,16 +252,6 @@ public class GlobalException extends ResponseEntityExceptionHandler {
 
     // =========================================================================
 
-    @ExceptionHandler(PersonalInfoResourceNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handlePersonalInfoResourceNotFound(PersonalInfoResourceNotFoundException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", new Date());
-        body.put("status", HttpStatus.NOT_FOUND.value());
-        body.put("error", "Personal Info Not Found");
-        body.put("message", ex.getMessage());
-
-        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
-    }
 
     @ExceptionHandler(DuplicateEmailException.class)
     public ResponseEntity<Map<String, Object>> handleDuplicateEmail(DuplicateEmailException ex) {
@@ -303,17 +293,6 @@ public class GlobalException extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.NOT_FOUND); // 404 status
     }
 
-    @ExceptionHandler(PapersAndTeacherException.class)
-    public ResponseEntity<?> handlePapersAndTeacher(PapersAndTeacherException ex) {
-        ErrorResponseDto errorResponse = new ErrorResponseDto(
-                "Papers and Teacher Error",
-                HttpStatus.NOT_FOUND,
-                ex.getMessage(),
-                LocalDateTime.now()
-        );
-        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
-    }
-
     @ExceptionHandler(InvalidPersonalInfoException.class)
     public ResponseEntity<Map<String, Object>> handleInvalidPersonalInfo(InvalidPersonalInfoException ex) {
         Map<String, Object> body = new HashMap<>();
@@ -335,17 +314,6 @@ public class GlobalException extends ResponseEntityExceptionHandler {
 
         log.error("IllegalArgumentException: {}", ex.getMessage());
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(DropdownResourceNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleDropdownNotFound(DropdownResourceNotFoundException ex) {
-        log.error("Dropdown data not found: {}", ex.getMessage());
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", HttpStatus.NOT_FOUND.value());
-        body.put("error", "Not Found");
-        body.put("message", ex.getMessage());
-        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
     }
 
 
@@ -629,7 +597,7 @@ public class GlobalException extends ResponseEntityExceptionHandler {
 //        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
 //    }
 //
-//    // In your GlobalExceptionHandler.java
+//    // In your sss.java
 //    @ExceptionHandler(NotesNotCreatedException.class)
 //    public ResponseEntity<Map<String, Object>> handleNotesNotCreatedException(NotesNotCreatedException ex) {
 //        Map<String, Object> body = new HashMap<>();
