@@ -29,7 +29,6 @@ public class QuestionBankServiceImpl implements QuestionBankService {
         if (studentClass == null || studentClass.isBlank()) {
             throw new IllegalArgumentException("Student class must not be null or empty");
         }
-
         try {
 
             List<QuestionBankDTO> teachers = repository.findTeachersByStudentClass(studentClass);

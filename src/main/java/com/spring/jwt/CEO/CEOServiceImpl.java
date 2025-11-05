@@ -37,7 +37,7 @@ public class CEOServiceImpl implements CEOService {
             double totalMarks = resultsForStudent.stream().mapToDouble(ExamResult::getTotalMarks).sum();
 
             double percentage = totalMarks > 0 ? (totalScore / totalMarks) * 100 : 0.0;
-
+            percentage = Math.floor(percentage * 100) / 100.0;
             if (totalMarks > 0) {
                 studentPercentageMap.put(userId, percentage);
             }
@@ -124,27 +124,24 @@ public class CEOServiceImpl implements CEOService {
 
         Map<Integer, Double> studentPercentageMap = calculateStudentPercentages(students, examResults);
 
-        List<DashboredDTO> averageStudents = new ArrayList<>();
-        for (Student s : students) {
-            Double perc = studentPercentageMap.get(s.getUserId());
-            if (perc != null && perc >= 50 && perc < 75) {
-                averageStudents.add(new DashboredDTO(
+        List<DashboredDTO> averageStudents = students.stream()
+                .filter(s -> studentPercentageMap.containsKey(s.getUserId()))
+                .map(s -> new DashboredDTO(
                         s.getUserId(),
                         s.getName(),
                         s.getLastName(),
                         s.getStudentClass(),
                         s.getBatch(),
-                        perc
-                ));
-            }
-        }
-
+                        studentPercentageMap.get(s.getUserId())
+                ))
+                .filter(dto -> dto.getPercentage() >= 50 && dto.getPercentage() < 75)
+                .sorted((d1, d2) -> Double.compare(d2.getPercentage(), d1.getPercentage()))
+                .collect(Collectors.toList());
 
         if (averageStudents.isEmpty()) {
             throw new ResourceNotFoundException("No average students found for class " + studentClass + " and batch " + batch);
         }
 
-        averageStudents.sort((d1, d2) -> Double.compare(d2.getPercentage(), d1.getPercentage()));
         return averageStudents;
     }
 
@@ -157,27 +154,26 @@ public class CEOServiceImpl implements CEOService {
 
         Map<Integer, Double> studentPercentageMap = calculateStudentPercentages(students, examResults);
 
-        List<DashboredDTO> belowAverageStudents = new ArrayList<>();
-        for (Student s : students) {
-            Double perc = studentPercentageMap.get(s.getUserId());
-            if (perc != null && perc < 50) {
-                belowAverageStudents.add(new DashboredDTO(
+        List<DashboredDTO> belowAverageStudents = students.stream()
+                .filter(s -> {
+                    Double perc = studentPercentageMap.get(s.getUserId());
+                    return perc != null && perc < 50; // strictly below 50%
+                })
+                .map(s -> new DashboredDTO(
                         s.getUserId(),
                         s.getName(),
                         s.getLastName(),
                         s.getStudentClass(),
                         s.getBatch(),
-                        perc
-                ));
-            }
-        }
-
+                        studentPercentageMap.get(s.getUserId())
+                ))
+                .sorted((d1, d2) -> Double.compare(d2.getPercentage(), d1.getPercentage()))
+                .collect(Collectors.toList());
 
         if (belowAverageStudents.isEmpty()) {
             throw new ResourceNotFoundException("No below average students found for class " + studentClass + " and batch " + batch);
         }
 
-        belowAverageStudents.sort((d1, d2) -> Double.compare(d2.getPercentage(), d1.getPercentage()));
         return belowAverageStudents;
     }
 }
