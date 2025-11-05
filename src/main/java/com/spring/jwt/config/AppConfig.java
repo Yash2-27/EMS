@@ -269,6 +269,7 @@ public class AppConfig {
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/dropdown/titles/**"),
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/dropdown/paper/**"),
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/teacherSalary/**"),
+                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("api/v1/exam/previous/**"),
 
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher(jwtConfig.getUrl()),
                 new org.springframework.security.web.util.matcher.AntPathRequestMatcher(jwtConfig.getRefreshUrl())

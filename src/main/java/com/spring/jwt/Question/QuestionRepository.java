@@ -130,16 +130,37 @@ public interface QuestionRepository extends JpaRepository<Question, Integer>, Jp
                                                 @Param("studentClass") String studentClass);
 
 
+//    @Query("""
+//    SELECT new com.spring.jwt.Question.QuestionBankQuestionsDTO(
+//        q.questionId, q.questionText, q.option1, q.option2, q.option3, q.option4, q.topic, q.level
+//    )
+//    FROM Question q
+//    JOIN Teacher t ON q.userId = t.userId
+//    WHERE (:studentClass IS NULL OR q.studentClass = :studentClass)
+//      AND (:name IS NULL OR t.name = :name)
+//      AND (:subject IS NULL OR q.subject = :subject)
+//      AND (:topic IS NULL OR q.topic = :topic)
+//    """)
+//    List<QuestionBankQuestionsDTO> findFilteredQuestions(
+//            @Param("studentClass") String studentClass,
+//            @Param("name") String name,
+//            @Param("subject") String subject,
+//            @Param("topic") String topic
+//    );
+
     @Query("""
-    SELECT new com.spring.jwt.Question.QuestionBankQuestionsDTO(
-        q.questionId, q.questionText, q.option1, q.option2, q.option3, q.option4, q.topic, q.level
-    )
-    FROM Question q
-    JOIN Teacher t ON q.userId = t.userId
-    WHERE (:studentClass IS NULL OR q.studentClass = :studentClass)
-      AND (:name IS NULL OR t.name = :name)
-      AND (:subject IS NULL OR q.subject = :subject)
-      AND (:topic IS NULL OR q.topic = :topic)
+        SELECT new com.spring.jwt.Question.QuestionBankQuestionsDTO(
+            q.questionId,
+            q.questionText,
+            q.topic,
+            q.level
+        )
+        FROM Question q
+        JOIN Teacher t ON q.userId = t.userId
+        WHERE (:studentClass IS NULL OR q.studentClass = :studentClass)
+          AND (:name IS NULL OR t.name = :name)
+          AND (:subject IS NULL OR q.subject = :subject)
+          AND (:topic IS NULL OR q.topic = :topic)
     """)
     List<QuestionBankQuestionsDTO> findFilteredQuestions(
             @Param("studentClass") String studentClass,

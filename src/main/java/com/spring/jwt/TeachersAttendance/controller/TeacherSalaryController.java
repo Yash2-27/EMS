@@ -2,14 +2,12 @@ package com.spring.jwt.TeachersAttendance.controller;
 
 import com.spring.jwt.TeachersAttendance.dto.TeacherSalaryInfoDTO;
 import com.spring.jwt.TeachersAttendance.dto.TeacherSalaryResponseDto;
+import com.spring.jwt.TeachersAttendance.entity.TeacherSalary;
 import com.spring.jwt.TeachersAttendance.service.TeacherSalaryService;
 import com.spring.jwt.utils.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -19,6 +17,15 @@ import java.util.List;
 public class TeacherSalaryController {
 
     private final TeacherSalaryService salaryService;
+
+
+
+    @PostMapping("/addSalary")
+    public ResponseEntity<ApiResponse<TeacherSalary>> addTeacherSalary(@RequestBody TeacherSalary teacherSalary) {
+        TeacherSalary saved = salaryService.addTeacherSalary(teacherSalary);
+        return ResponseEntity.ok(ApiResponse.success("Salary added successfully", saved));
+    }
+
 
     //===================================================================================//
     //                      FOR CALCULATING THE TEACHER SALARY                           //

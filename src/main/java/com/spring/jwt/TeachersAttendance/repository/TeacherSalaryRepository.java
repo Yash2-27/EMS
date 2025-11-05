@@ -8,17 +8,17 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface TeacherSalaryRepository extends JpaRepository<TeacherSalary, Integer> {
 
-    // Fetch the per-day salary of a teacher for a specific month & year
     @Query("SELECT t.perDaySalary FROM TeacherSalary t WHERE t.teacherId = :teacherId AND t.month = :month AND t.year = :year")
     Double findPerDaySalary(
             @Param("teacherId") Integer teacherId,
             @Param("month") String month,
             @Param("year") Integer year
     );
-
+    Optional<TeacherSalary> findByTeacherIdAndMonthAndYear(Long teacherId, String month, Integer year);
 
 }
