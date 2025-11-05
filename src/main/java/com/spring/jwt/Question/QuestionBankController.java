@@ -1,8 +1,7 @@
 package com.spring.jwt.Question;
 
-import com.spring.jwt.utils.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -21,11 +20,10 @@ public class QuestionBankController {
     //                GET ALL TEACHER BY RESPECTED CLASS 11th or 12th           //
     //               /api/v1/questionBank/AllTeachers?studentClass=12           //
     //==========================================================================//
+    @Operation(summary = "Question Bank - Dropdown all Teachers")
     @GetMapping("/AllTeachers")
-    public ResponseEntity<ApiResponse<List<QuestionBankDTO>>> getTeachersByStudentClass(
-            @RequestParam String studentClass) {
-        List<QuestionBankDTO> teachers = questionBankService.getTeachersByStudentClass(studentClass);
-        return ResponseEntity.ok(ApiResponse.success(teachers.toString()));
+    public List<QuestionBankDTO> getTeachersByStudentClass(@RequestParam String studentClass) {
+        return questionBankService.getTeachersByStudentClass(studentClass);
     }
 
     //===============================================================================//
@@ -33,28 +31,26 @@ public class QuestionBankController {
     //     api/v1/questionBank/topics?subject=Mathematics & StudentClass=11          //
     //===============================================================================//
 
-
-
+    @Operation(summary = "Question Bank - Dropdown Topic")
     @GetMapping("/topics")
-    public ResponseEntity<ApiResponse<List<QuestionBankSubjectDropdown>>> getTopicsBySubjectAndStudentClass(
+    public List<QuestionBankSubjectDropdown> getTopicsBySubjectAndStudentClass(
             @RequestParam String subject,
             @RequestParam String studentClass) {
-        List<QuestionBankSubjectDropdown> topics = questionBankService.getTopicsBySubjectAndStudentClass(subject, studentClass);
-        return ResponseEntity.ok(ApiResponse.success(topics.toString()));
+        return questionBankService.getTopicsBySubjectAndStudentClass(subject, studentClass);
     }
 
     //=========================================================================================================//
     //                                             GET QUESTION BANK                                           //
     //  /api/v1/questionBank/questions?studentClass=12&name=Ms. Neha&subject=Mathematics&topic=Algebra         //
     //=========================================================================================================//
-
+    @Operation(summary = "Question Bank - Fetch all questions")
     @GetMapping("/questions")
-    public ResponseEntity<ApiResponse<List<QuestionBankQuestionsDTO>>> getFilteredQuestions(
+    public List<QuestionBankQuestionsDTO> getFilteredQuestions(
             @RequestParam(required = false) String studentClass,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String subject,
             @RequestParam(required = false) String topic) {
-        List<QuestionBankQuestionsDTO> questions = questionBankService.getFilteredQuestions(studentClass, name, subject, topic);
-        return ResponseEntity.ok(ApiResponse.success(questions.toString()));
+
+        return questionBankService.getFilteredQuestions(studentClass, name, subject, topic);
     }
 }

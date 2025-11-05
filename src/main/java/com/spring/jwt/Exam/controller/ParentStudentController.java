@@ -33,7 +33,7 @@ public class ParentStudentController {
         );
     }
 
-
+    @Operation(summary = "Multiple Student assign to one parent id ")
     @GetMapping("/parentId/{parentId}")
     public ResponseEntity<ApiResponse<List<StudentDTO>>> getStudentsByParentId(@PathVariable Integer parentId) {
         try {
@@ -60,13 +60,5 @@ public class ParentStudentController {
     }
 
 
-    @GetMapping("/parentId/")
-    public ResponseEntity<ApiResponse<Object>> parentIdMissing() {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error(
-                        HttpStatus.BAD_REQUEST,
-                        "Parent ID is missing",
-                        "Please provide a valid parent ID in the URL"
-                ));
-    }
+
 }

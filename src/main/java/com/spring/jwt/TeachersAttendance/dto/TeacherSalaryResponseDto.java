@@ -12,5 +12,5 @@ public class TeacherSalaryResponseDto {
     private Integer year;
     private Double totalSalary;
     private Double perDaySalary;
-    private Map<String, String> attendanceMap; // date -> FULL_DAY/HALF_DAY/ABSENT
+    private Map<String, String> attendanceMap;
 }

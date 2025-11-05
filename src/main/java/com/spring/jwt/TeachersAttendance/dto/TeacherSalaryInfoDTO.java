@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TeacherSalaryInfoDTO {
-    private Integer serialNo;
+//    private Integer serialNo;
     private String teacherName;
     private String studentClass;
     private String date;

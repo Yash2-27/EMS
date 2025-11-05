@@ -2,6 +2,7 @@ package com.spring.jwt.CEO;
 
 import com.spring.jwt.utils.ApiResponse;
 import com.spring.jwt.utils.GenericResponseDto;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +24,7 @@ CEOService ceoService;
    //===========================================================//
 
 
-
+    @Operation(summary = "CEO Dashboard - Topper list")
     @GetMapping("/batchToppers")
     public ResponseEntity<ApiResponse<List<DashboredDTO>>> getBatchToppers(
             @RequestParam String studentClass,
@@ -40,6 +41,8 @@ CEOService ceoService;
     //                FOR BATCH AVERAGE STUDENT  LIST            //
     //         /api/ceo/batchAverage/studentClass=?  &  batch=?  //
     //===========================================================//
+
+    @Operation(summary = "CEO Dashboard - Average  list")
     @GetMapping("/batchAverage")
     public ResponseEntity<ApiResponse<List<DashboredDTO>>> getBatchAverage(
             @RequestParam String studentClass,
@@ -57,13 +60,14 @@ CEOService ceoService;
     //         /api/ceo/batchBelowAverage/studentClass=?  &  batch=?   //
     //=================================================================//
 
+    @Operation(summary = "CEO Dashboard - Below average student  list")
     @GetMapping("/batchBelowAverage")
     public ResponseEntity<ApiResponse<List<DashboredDTO>>> getBatchBelowAverage(
             @RequestParam String studentClass,
             @RequestParam String batch
     ) {
     return ResponseEntity.ok(
-            ApiResponse.success("Batch below average successfully ",ceoService.getAverageStudents(studentClass, batch))
+            ApiResponse.success("Batch below average successfully ",ceoService.getBelowAverageStudents(studentClass, batch))
     );
     }
 

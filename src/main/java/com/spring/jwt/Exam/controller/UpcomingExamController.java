@@ -90,11 +90,11 @@ public class UpcomingExamController {
         }
     }
 
-    @GetMapping("/upcomingExams/class/")
-    public ResponseEntity<ApiResponse<?>> handleMissingStudentClassUpcoming() {
-        return ResponseEntity.badRequest()
-                .body(ApiResponse.error(HttpStatus.BAD_REQUEST, "No student class selected.", null));
-    }
+//    @GetMapping("/upcomingExams/class/")
+//    public ResponseEntity<ApiResponse<?>> handleMissingStudentClassUpcoming() {
+//        return ResponseEntity.badRequest()
+//                .body(ApiResponse.error(HttpStatus.BAD_REQUEST, "No student class selected.", null));
+//    }
 
     @Operation(summary = "Get previous exams by student class (strictly before current time)")
     @GetMapping("/previousExams/class/{studentClass}")
@@ -126,9 +126,9 @@ public class UpcomingExamController {
         }
     }
 
-    @GetMapping("/previousExams/class/")
-    public ResponseEntity<ApiResponse<?>> handleMissingStudentClassPrevious() {
-        return ResponseEntity.badRequest()
-                .body(ApiResponse.error(HttpStatus.BAD_REQUEST, "No student class selected.", null));
-    }
+//    @GetMapping("/previousExams/class/")
+//    public ResponseEntity<ApiResponse<?>> handleMissingStudentClassPrevious() {
+//        return ResponseEntity.badRequest()
+//                .body(ApiResponse.error(HttpStatus.BAD_REQUEST, "No student class selected.", null));
+//    }
 }
