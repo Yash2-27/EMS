@@ -18,7 +18,8 @@ PaperWithQuestionsDTOn startExam(Integer userId, Integer paperId, String student
 
     List<SessionQuestionAnswerDTO> getQuestionsAndAnswersBySessionId(Integer sessionId);
 
-    List<StudentClassResultDTO> getResultsGroupedByStudentClass();
+    List<StudentClassResultDTO>
+    getResultsGroupedByStudentClass();
 
     List<ExamSessionDTO> getAllExamSessions();
 
