@@ -1,6 +1,7 @@
 package com.spring.jwt.exception;
 
 import com.spring.jwt.utils.ApiResponse;
+import com.spring.jwt.dto.ErrorResponse;
 import com.spring.jwt.utils.ErrorResponseDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -17,6 +18,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -156,6 +158,18 @@ public class GlobalException extends ResponseEntityExceptionHandler {
 
 
     @Override
+    protected ResponseEntity<Object> handleMissingServletRequestParameter(
+            MissingServletRequestParameterException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        log.error("Missing parameter: {}", ex.getMessage());
+        String error = ex.getParameterName() + " parameter is missing";
+
+        Map<String, String> errors = new HashMap<>();
+        errors.put(ex.getParameterName(), error);
+
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+
+    @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
             MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         log.error("Validation error: {}", ex.getMessage());
@@ -168,18 +182,6 @@ public class GlobalException extends ResponseEntityExceptionHandler {
             validationErrors.put(fieldName, validationMsg);
         });
         return new ResponseEntity<>(validationErrors, HttpStatus.BAD_REQUEST);
-    }
-
-    @Override
-    protected ResponseEntity<Object> handleMissingServletRequestParameter(
-            MissingServletRequestParameterException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        log.error("Missing parameter: {}", ex.getMessage());
-        String error = ex.getParameterName() + " parameter is missing";
-
-        Map<String, String> errors = new HashMap<>();
-        errors.put(ex.getParameterName(), error);
-
-        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -252,6 +254,16 @@ public class GlobalException extends ResponseEntityExceptionHandler {
 
     // =========================================================================
 
+    @ExceptionHandler(PersonalInfoResourceNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handlePersonalInfoResourceNotFound(PersonalInfoResourceNotFoundException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", new Date());
+        body.put("status", HttpStatus.NOT_FOUND.value());
+        body.put("error", "Personal Info Not Found");
+        body.put("message", ex.getMessage());
+
+        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+    }
 
     @ExceptionHandler(DuplicateEmailException.class)
     public ResponseEntity<Map<String, Object>> handleDuplicateEmail(DuplicateEmailException ex) {
@@ -293,6 +305,12 @@ public class GlobalException extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.NOT_FOUND); // 404 status
     }
 
+    @ExceptionHandler(PapersAndTeacherException.class)
+    public ResponseEntity<?> handlePapersAndTeacher(PapersAndTeacherException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(LocalDateTime.now(), ex.getMessage(), "NOT_FOUND");
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
     @ExceptionHandler(InvalidPersonalInfoException.class)
     public ResponseEntity<Map<String, Object>> handleInvalidPersonalInfo(InvalidPersonalInfoException ex) {
         Map<String, Object> body = new HashMap<>();
@@ -314,6 +332,28 @@ public class GlobalException extends ResponseEntityExceptionHandler {
 
         log.error("IllegalArgumentException: {}", ex.getMessage());
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(DropdownResourceNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleDropdownNotFound(DropdownResourceNotFoundException ex) {
+        log.error("Dropdown data not found: {}", ex.getMessage());
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.NOT_FOUND.value());
+        body.put("error", "Not Found");
+        body.put("message", ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(ExamResultNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleDropdownNotFound(ExamResultNotFoundException ex) {
+        log.error("Dropdown data not found: {}", ex.getMessage());
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.NOT_FOUND.value());
+        body.put("error", "Not Found");
+        body.put("message", ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
     }
 
 
@@ -597,7 +637,7 @@ public class GlobalException extends ResponseEntityExceptionHandler {
 //        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
 //    }
 //
-//    // In your sss.java
+//    // In your GlobalExceptionHandler.java
 //    @ExceptionHandler(NotesNotCreatedException.class)
 //    public ResponseEntity<Map<String, Object>> handleNotesNotCreatedException(NotesNotCreatedException ex) {
 //        Map<String, Object> body = new HashMap<>();
@@ -668,4 +708,3 @@ public class GlobalException extends ResponseEntityExceptionHandler {
 //}
 
 }
-

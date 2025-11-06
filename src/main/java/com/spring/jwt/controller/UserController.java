@@ -2,7 +2,6 @@ package com.spring.jwt.controller;
 
 import com.spring.jwt.dto.*;
 import com.spring.jwt.entity.User;
- import com.spring.jwt.exception.PersonalInfoResourceNotFoundException;
 import com.spring.jwt.jwt.JwtService;
 import com.spring.jwt.repository.UserRepository;
 import com.spring.jwt.service.UserService;
@@ -40,7 +39,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -628,11 +626,4 @@ public class UserController {
         PersonalInfoDTO updatedInfo = userService.updatePersonalInfo(userId, dto);
         return ResponseEntity.ok(updatedInfo);
     }
-
-    @ExceptionHandler(PersonalInfoResourceNotFoundException.class)
-    public ResponseEntity<ErrorResponseDto> handlePersonalInfoNotFound(PersonalInfoResourceNotFoundException e,HttpServletRequest request) {
-        ErrorResponseDto errorResponse = new ErrorResponseDto(request.getRequestURI(), HttpStatus.NOT_FOUND, e.getMessage(), LocalDateTime.now());
-        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
-    }
-
 }

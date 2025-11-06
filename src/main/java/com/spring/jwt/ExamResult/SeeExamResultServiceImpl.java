@@ -1,6 +1,6 @@
 package com.spring.jwt.ExamResult;
 
-import com.spring.jwt.ExamResult.exception.ExamResultNotFoundException;
+import com.spring.jwt.exception.ExamResultNotFoundException;
 import com.spring.jwt.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
