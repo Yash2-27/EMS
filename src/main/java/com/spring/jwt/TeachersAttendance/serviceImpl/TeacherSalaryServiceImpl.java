@@ -11,6 +11,8 @@ import com.spring.jwt.TeachersAttendance.service.TeacherSalaryService;
 import com.spring.jwt.entity.Classes;
 import com.spring.jwt.entity.Teacher;
 import com.spring.jwt.exception.ResourceNotFoundException;
+import com.spring.jwt.exception.TeacherNotFoundException;
+import com.spring.jwt.exception.TeacherSalary.TeacherSalaryException;
 import com.spring.jwt.repository.TeacherRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,92 +32,89 @@ public class TeacherSalaryServiceImpl implements TeacherSalaryService {
 	private final TeacherSalaryRepository teacherSalaryRepo;
 	private final ClassesRepository classesRepo;
 	private final TeacherRepository teacherRepo;
-	@Override
-	public TeacherSalary addTeacherSalary(TeacherSalary teacherSalary) {
-		try {
-			if (teacherSalary == null) {
-				throw new IllegalArgumentException("Teacher salary object cannot be null");
-			}
+    @Override
+    public TeacherSalary addTeacherSalary(TeacherSalary teacherSalary) {
+        try {
+            if (teacherSalary == null) {
+                throw new TeacherSalaryException("Teacher salary object cannot be null");
+            }
 
-			if (teacherSalary.getTeacherId() == null) {
-				throw new IllegalArgumentException("Teacher ID cannot be null");
-			}
+            if (teacherSalary.getTeacherId() == null) {
+                throw new TeacherSalaryException("Teacher ID cannot be null");
+            }
 
-			if (teacherSalary.getPerDaySalary() == null) {
-				throw new IllegalArgumentException("Per-day Salary cannot be null");
-			}
+            if (teacherSalary.getPerDaySalary() == null) {
+                throw new TeacherSalaryException("Per-day Salary cannot be null");
+            }
 
-			if (teacherSalary.getMonth() == null || teacherSalary.getMonth().isEmpty()) {
-				throw new IllegalArgumentException("Month cannot be null or empty");
-			}
+            if (teacherSalary.getMonth() == null || teacherSalary.getMonth().trim().isEmpty()) {
+                throw new TeacherSalaryException("Month cannot be null or empty");
+            }
 
-			if (teacherSalary.getYear() == null) {
-				throw new IllegalArgumentException("Year cannot be null");
-			}
-
-			Teacher teacher = teacherRepo.findById(Math.toIntExact(teacherSalary.getTeacherId()))
-					.orElseThrow(() ->
-							new ResourceNotFoundException("No teacher found with ID: " + teacherSalary.getTeacherId())
-
-					);
-			if (!"Active".equalsIgnoreCase(teacher.getStatus())) {
-				throw new IllegalArgumentException("Cannot add salary. Teacher is not ACTIVE.");
-			}
+            if (teacherSalary.getYear() == null) {
+                throw new TeacherSalaryException("Year cannot be null");
+            }
 
 
+            Teacher teacher = teacherRepo.findById(Math.toIntExact(teacherSalary.getTeacherId()))
+                    .orElseThrow(() ->
+                            new TeacherNotFoundException("No teacher found with ID: " + teacherSalary.getTeacherId())
+                    );
 
-			Optional<TeacherSalary> existingSalary = teacherSalaryRepo
-					.findByTeacherIdAndMonthAndYear(
-							teacherSalary.getTeacherId(),
-							teacherSalary.getMonth(),
-							teacherSalary.getYear()
-					);
+            if (!"Active".equalsIgnoreCase(teacher.getStatus())) {
+                throw new TeacherSalaryException("Cannot add salary. Teacher is not ACTIVE.");
+            }
 
-			if (existingSalary.isPresent()) {
-				throw new IllegalArgumentException("Salary already exists for this teacher in "
-						+ teacherSalary.getMonth() + " " + teacherSalary.getYear());
-			}
+            Optional<TeacherSalary> existingSalary = teacherSalaryRepo
+                    .findByTeacherIdAndMonthAndYear(
+                            teacherSalary.getTeacherId(),
+                            teacherSalary.getMonth(),
+                            teacherSalary.getYear()
+                    );
 
+            if (existingSalary.isPresent()) {
+                throw new TeacherSalaryException("Salary already exists for this teacher in "
+                        + teacherSalary.getMonth() + " " + teacherSalary.getYear());
+            }
 
-			teacherSalary.setMonth(
-					teacherSalary.getMonth().substring(0, 1).toUpperCase() +
-							teacherSalary.getMonth().substring(1).toLowerCase()
-			);
-
-
-			ZoneId zoneId = ZoneId.of("Asia/Kolkata");
-			LocalDateTime currentIST = LocalDateTime.now(zoneId);
-			teacherSalary.setCreatedAt(currentIST);
-			teacherSalary.setUpdatedAt(currentIST);
+            teacherSalary.setMonth(
+                    teacherSalary.getMonth().substring(0, 1).toUpperCase() +
+                            teacherSalary.getMonth().substring(1).toLowerCase()
+            );
 
 
-			return teacherSalaryRepo.save(teacherSalary);
+            ZoneId zoneId = ZoneId.of("Asia/Kolkata");
+            LocalDateTime currentIST = LocalDateTime.now(zoneId);
+            teacherSalary.setCreatedAt(currentIST);
+            teacherSalary.setUpdatedAt(currentIST);
 
-		} catch (ResourceNotFoundException e) {
-			throw new ResourceNotFoundException("Failed to add salary: " + e.getMessage());
-		} catch (IllegalArgumentException e) {
-			throw new IllegalArgumentException("Validation failed: " + e.getMessage());
-		} catch (Exception e) {
-			throw new RuntimeException("An unexpected error occurred while adding teacher salary: " + e.getMessage(), e);
-		}
-	}
+            return teacherSalaryRepo.save(teacherSalary);
 
-	@Override
+        } catch (TeacherNotFoundException ex) {
+            throw ex;
+        } catch (TeacherSalaryException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new TeacherSalaryException("Unexpected error while adding teacher salary: " + ex.getMessage(), ex);
+        }
+    }
+
+    @Override
 	public TeacherSalaryResponseDto calculateSalary(Integer teacherId, String month, Integer year) {
 
 		if (teacherId == null)
-			throw new IllegalArgumentException("Teacher ID cannot be null");
+			throw new TeacherSalaryException("Teacher ID cannot be null");
 		if (month == null || month.trim().isEmpty())
-			throw new IllegalArgumentException("Month cannot be null or empty");
+			throw new TeacherSalaryException("Month cannot be null or empty");
 		if (year == null || year <= 0)
-			throw new IllegalArgumentException("Year must be a valid positive integer");
+			throw new TeacherSalaryException("Year must be a valid positive integer");
 
 		month = month.trim();
 
 		// Fetch attendance
 		List<TeachersAttendance> attendances = attendanceRepo.findByTeacherIdAndMonth(teacherId, month);
 		if (attendances == null || attendances.isEmpty()) {
-			throw new ResourceNotFoundException(
+			throw new TeacherNotFoundException(
 					"No attendance records found for teacherId " + teacherId + " for " + month + "/" + year
 			);
 		}
@@ -123,7 +122,7 @@ public class TeacherSalaryServiceImpl implements TeacherSalaryService {
 		// Fetch per day salary
 		Double perDaySalary = teacherSalaryRepo.findPerDaySalary(teacherId, month, year);
 		if (perDaySalary == null) {
-			throw new ResourceNotFoundException(
+			throw new TeacherNotFoundException(
 					"Salary record not found for teacherId " + teacherId + " for " + month + "/" + year
 			);
 		}
@@ -171,14 +170,14 @@ public class TeacherSalaryServiceImpl implements TeacherSalaryService {
 		try {
 			List<TeacherSalary> salaries = teacherSalaryRepo.findAll();
 			if (salaries == null || salaries.isEmpty()) {
-				throw new ResourceNotFoundException("No salary records found.");
+				throw new TeacherSalaryException("No salary records found.");
 			}
 
 			// Convert teacher IDs from salary table (Long to Integer)
 			List<Integer> teacherIdsInt = salaries.stream()
 					.map(s -> {
 						if (s.getTeacherId() == null)
-							throw new IllegalStateException("Teacher ID cannot be null for salary record: " + s.getSalaryId());
+							throw new TeacherNotFoundException("Teacher ID cannot be null for salary record: " + s.getSalaryId());
 						return s.getTeacherId().intValue();
 					})
 					.collect(Collectors.toList());
@@ -238,7 +237,7 @@ public class TeacherSalaryServiceImpl implements TeacherSalaryService {
 			}
 
 			if (result.isEmpty()) {
-				throw new ResourceNotFoundException("No teacher summary data found.");
+				throw new TeacherSalaryException("No teacher summary data found.");
 			}
 
 			// Merge by teacherName if multiple salary records exist for same teacher (different months)
