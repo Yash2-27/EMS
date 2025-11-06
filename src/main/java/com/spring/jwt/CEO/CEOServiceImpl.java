@@ -157,7 +157,7 @@ public class CEOServiceImpl implements CEOService {
         List<DashboredDTO> belowAverageStudents = students.stream()
                 .filter(s -> {
                     Double perc = studentPercentageMap.get(s.getUserId());
-                    return perc != null && perc < 50; // strictly below 50%
+                    return perc != null && perc < 50;
                 })
                 .map(s -> new DashboredDTO(
                         s.getUserId(),

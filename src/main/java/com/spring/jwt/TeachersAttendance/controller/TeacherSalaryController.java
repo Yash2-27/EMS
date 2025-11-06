@@ -6,11 +6,13 @@ import com.spring.jwt.TeachersAttendance.entity.TeacherSalary;
 import com.spring.jwt.TeachersAttendance.service.TeacherSalaryService;
 import com.spring.jwt.utils.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/teacherSalary")
 @RequiredArgsConstructor
@@ -22,7 +24,10 @@ public class TeacherSalaryController {
 
     @PostMapping("/addSalary")
     public ResponseEntity<ApiResponse<TeacherSalary>> addTeacherSalary(@RequestBody TeacherSalary teacherSalary) {
+
+
         TeacherSalary saved = salaryService.addTeacherSalary(teacherSalary);
+        log.debug("Teacher salary added successfully");
         return ResponseEntity.ok(ApiResponse.success("Salary added successfully", saved));
     }
 
