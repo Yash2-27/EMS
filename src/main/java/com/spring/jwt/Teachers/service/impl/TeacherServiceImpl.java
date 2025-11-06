@@ -3,13 +3,13 @@ import com.spring.jwt.Teachers.dto.TeacherInfoDto;
 import com.spring.jwt.Teachers.service.TeacherService;
 import com.spring.jwt.entity.Teacher;
 import com.spring.jwt.entity.User;
+import com.spring.jwt.exception.PapersAndTeacherException;
 import com.spring.jwt.repository.TeacherRepository;
 import com.spring.jwt.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
@@ -36,15 +36,22 @@ public class TeacherServiceImpl implements TeacherService {
 
     @Override
     public List<TeacherInfoDto> getAllTeachers() {
-        return teacherRepository.findAll()
-                .stream()
+        List<Teacher> teachers = teacherRepository.findAll();
+
+        if (teachers.isEmpty()) {
+            throw new PapersAndTeacherException("No teachers found in the database.");
+        }
+
+        return teachers.stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public Optional<TeacherInfoDto> findById(Integer teacherId) {
-        return teacherRepository.findById(teacherId)
-                .map(this::mapToDTO);
+    public TeacherInfoDto findById(Integer teacherId) {
+        Teacher teacher = teacherRepository.findById(teacherId)
+                .orElseThrow(() -> new PapersAndTeacherException("Teacher not found with id: " + teacherId));
+        return mapToDTO(teacher);
     }
+
 }
