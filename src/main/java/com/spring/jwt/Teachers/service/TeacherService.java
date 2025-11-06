@@ -13,6 +13,5 @@ public interface TeacherService {
 
     List<TeacherInfoDto> getAllTeachers();
 
-    Optional<TeacherInfoDto> findById(Integer teacherId);
-
+    TeacherInfoDto findById(Integer teacherId);
 }
