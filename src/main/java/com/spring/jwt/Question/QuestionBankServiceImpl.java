@@ -2,6 +2,7 @@ package com.spring.jwt.Question;
 
 import com.spring.jwt.entity.Question;
 import com.spring.jwt.exception.ResourceNotFoundException;
+import com.spring.jwt.exception.TeacherNotFoundException;
 import org.hibernate.service.spi.ServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -100,10 +101,10 @@ public class QuestionBankServiceImpl implements QuestionBankService {
 
         try{
             if (name==null || name.isBlank()) {
-                throw new ResourceNotFoundException("Name must not be null or empty");
+                throw new TeacherNotFoundException("Name must not be null or empty");
             }
             if (subject==null || subject.isBlank()) {
-                throw new ResourceNotFoundException("Subject must not be null or empty");
+                throw new TeacherNotFoundException("Subject must not be null or empty");
             }
             if (topic==null || topic.trim().isBlank()) {
                 throw new ResourceNotFoundException("Topic must not be null or empty");
