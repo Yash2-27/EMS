@@ -17,39 +17,26 @@ public class ParentStudentServiceImpl implements ParentStudentService {
 
     @Autowired
     private StudentRepository studentRepository;
-    @Override
     public List<StudentDTO> getStudentsByParentId(Integer parentId) {
 
         if (parentId == null) {
-            throw new IllegalArgumentException("Parent ID cannot be null.");
+            throw new IllegalArgumentException("Parent ID cannot be null");
         }
 
-        List<Student> students;
-
-        try {
-
-            students = studentRepository.findByParent_ParentsId(parentId);
-        } catch (RuntimeException e) {
-
-            throw new RuntimeException("Database error while retrieving students for parent ID: " + parentId, e);
-        }
-
+        // Fetch students
+        List<Student> students = studentRepository.findByParent_ParentsId(parentId);
 
         if (students == null || students.isEmpty()) {
             throw new ResourceNotFoundException("No students found for parent ID: " + parentId);
         }
 
-        try {
-
-            return students.stream()
-                    .map(StudentDTO::fromEntity)
-                    .collect(Collectors.toList());
-        } catch (IllegalStateException | NullPointerException e) {
-            throw new RuntimeException("Error while mapping Student entities to DTOs.", e);
-        } catch (Exception e) {
-            throw new RuntimeException("Unexpected error during DTO conversion.", e);
-        }
+        // Convert to DTO
+        return students.stream()
+                .map(StudentDTO::fromEntity)
+                .collect(Collectors.toList());
     }
 
-
 }
+
+
+

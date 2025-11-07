@@ -1,15 +1,15 @@
-//upcoming service imp
 package com.spring.jwt.Exam.serviceImpl;
 
 import com.spring.jwt.Exam.Dto.UpcomingExamDetailsDTO;
-import com.spring.jwt.Exam.entity.Paper;
-import com.spring.jwt.entity.PaperPattern;
 import com.spring.jwt.Exam.entity.UpcomingExams;
-import com.spring.jwt.Exam.repository.PaperRepository;
 import com.spring.jwt.Exam.repository.UpcomingExamsRepository;
+import com.spring.jwt.Exam.repository.PaperRepository;
 import com.spring.jwt.Exam.service.UpcomingExamsService;
 import com.spring.jwt.dto.ResponseDto;
+import com.spring.jwt.entity.PaperPattern;
 import com.spring.jwt.exception.ResourceNotFoundException;
+import com.spring.jwt.Exam.entity.Paper;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,179 +28,159 @@ public class UpcomingExamsServiceImpl implements UpcomingExamsService {
     @Autowired
     private PaperRepository paperRepository;
 
-    private UpcomingExamDetailsDTO convertToDto(UpcomingExams upcomingExam) {
+    private UpcomingExamDetailsDTO convertToDto(UpcomingExams exam) {
         return UpcomingExamDetailsDTO.builder()
-//                .upcomingExamId(upcomingExam.getUpcomingExamId())
-//                .paperId(upcomingExam.getPaper().getPaperId())
-                .title(upcomingExam.getTitle())
-                .subject(upcomingExam.getSubject())
-                .examDate(upcomingExam.getStartTime())
-//                .studentClass(upcomingExam.getStudentClass())
-                .totalMarks(upcomingExam.getTotalMarks())
+                .title(exam.getTitle())
+                .subject(exam.getSubject())
+                .examDate(exam.getStartTime())
+                .totalMarks(exam.getTotalMarks())
                 .build();
     }
 
     @Override
     @Transactional(readOnly = true)
     public ResponseDto<List<UpcomingExamDetailsDTO>> getAllUpcomingExams() {
-        List<UpcomingExams> upcomingExams = upcomingExamsRepository.findByStartTimeAfterOrderByStartTimeAsc(LocalDateTime.now());
+        List<UpcomingExams> list =
+                upcomingExamsRepository.findByStartTimeAfterOrderByStartTimeAsc(LocalDateTime.now());
 
-        if (upcomingExams.isEmpty()) {
+        if (list.isEmpty()) {
             throw new ResourceNotFoundException("No upcoming exams found at this time.");
         }
 
-        List<UpcomingExamDetailsDTO> dtos = upcomingExams.stream()
+        List<UpcomingExamDetailsDTO> dtos = list.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
+
         return ResponseDto.success("Upcoming exams fetched successfully", dtos);
     }
-
 
     @Override
     @Transactional(readOnly = true)
     public ResponseDto<List<UpcomingExamDetailsDTO>> getUpcomingExamsByStudentClass(String studentClass) {
 
-        // Validate input
         if (studentClass == null || studentClass.isBlank()) {
             throw new IllegalArgumentException("Student class must be provided");
         }
 
-        // Check if class exists in the repository
-        boolean studentClassExists = upcomingExamsRepository.existsByStudentClass(studentClass);
-        if (!studentClassExists) {
+        if (!upcomingExamsRepository.existsByStudentClass(studentClass)) {
             throw new ResourceNotFoundException("Student class '" + studentClass + "' not found in the database.");
         }
 
-        // Fetch upcoming exams
-        List<UpcomingExams> upcomingExams = upcomingExamsRepository
-                .findByStudentClassAndStartTimeAfterOrderByStartTimeAsc(studentClass, LocalDateTime.now());
+        List<UpcomingExams> list =
+                upcomingExamsRepository.findByStudentClassAndStartTimeAfterOrderByStartTimeAsc(
+                        studentClass, LocalDateTime.now());
 
-        if (upcomingExams.isEmpty()) {
+        if (list.isEmpty()) {
             throw new ResourceNotFoundException("No upcoming exams found for student class: " + studentClass);
         }
 
-        // Convert to DTO
-        List<UpcomingExamDetailsDTO> dtos = upcomingExams.stream()
+        List<UpcomingExamDetailsDTO> dtos = list.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
 
-        return ResponseDto.success("Upcoming exams for class " + studentClass + " fetched successfully", dtos);
+        return ResponseDto.success("Upcoming exams fetched successfully", dtos);
     }
-
-
 
     @Override
     @Transactional(readOnly = true)
     public ResponseDto<List<UpcomingExamDetailsDTO>> getAllPreviousExams() {
-        List<UpcomingExams> previousExams = upcomingExamsRepository.findByStartTimeBeforeOrderByStartTimeDesc(LocalDateTime.now());
+        List<UpcomingExams> list =
+                upcomingExamsRepository.findByStartTimeBeforeOrderByStartTimeDesc(LocalDateTime.now());
 
-        if (previousExams.isEmpty()) {
+        if (list.isEmpty()) {
             throw new ResourceNotFoundException("No previous exams found.");
         }
 
-        List<UpcomingExamDetailsDTO> dtos = previousExams.stream()
+        List<UpcomingExamDetailsDTO> dtos = list.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
+
         return ResponseDto.success("Previous exams fetched successfully", dtos);
     }
-
-
 
     @Override
     @Transactional(readOnly = true)
     public ResponseDto<List<UpcomingExamDetailsDTO>> getPreviousExamsByStudentClass(String studentClass) {
 
-        boolean StudentclassExists = upcomingExamsRepository.existsByStudentClass(studentClass);
-
-        if (!StudentclassExists) {
-            throw new ResourceNotFoundException("Student class '" + studentClass + "' not found in the database.");
-        }
-
-
         if (studentClass == null || studentClass.isBlank()) {
             throw new IllegalArgumentException("Student class must be provided");
         }
 
-        List<UpcomingExams> foundPreviousExams = upcomingExamsRepository
-                .findByStudentClassAndStartTimeBeforeOrderByStartTimeDesc(studentClass, LocalDateTime.now());
-
-        if (foundPreviousExams.isEmpty()) {
-            throw new ResourceNotFoundException("No previous exams found for student class: " + studentClass);
+        if (!upcomingExamsRepository.existsByStudentClass(studentClass)) {
+            throw new ResourceNotFoundException("Student class '" + studentClass + "' not found in the database.");
         }
 
-        List<UpcomingExamDetailsDTO> previousExamDTOs = foundPreviousExams.stream()
+        List<UpcomingExams> list =
+                upcomingExamsRepository.findByStudentClassAndStartTimeBeforeOrderByStartTimeDesc(
+                        studentClass, LocalDateTime.now());
+
+        if (list.isEmpty()) {
+            throw new ResourceNotFoundException("No previous exams found for class: " + studentClass);
+        }
+
+        List<UpcomingExamDetailsDTO> dtos = list.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
 
-        return ResponseDto.success("Previous exams for class " + studentClass + " fetched successfully", previousExamDTOs);
+        return ResponseDto.success("Previous exams fetched successfully", dtos);
     }
-
-
-
-
 
     @Override
     @Transactional(readOnly = true)
     public ResponseDto<UpcomingExamDetailsDTO> getUpcomingExamDetailsById(Integer paperId) {
-        Optional<UpcomingExams> upcomingExamOptional = upcomingExamsRepository.findByPaper_PaperId(paperId);
-        if (upcomingExamOptional.isPresent()) {
-            return ResponseDto.success("Upcoming exam fetched successfully", convertToDto(upcomingExamOptional.get()));
-        } else {
-            return ResponseDto.error("Not found", "Upcoming exam with paper ID " + paperId + " not found");
+        Optional<UpcomingExams> exam = upcomingExamsRepository.findByPaper_PaperId(paperId);
+
+        if (exam.isEmpty()) {
+            throw new ResourceNotFoundException("Upcoming exam with paper ID " + paperId + " not found.");
         }
+
+        return ResponseDto.success("Upcoming exam fetched successfully", convertToDto(exam.get()));
     }
 
     @Override
     @Transactional(readOnly = true)
     public ResponseDto<UpcomingExamDetailsDTO> getUpcomingExamDetailsByUpcomingExamId(Integer upcomingExamId) {
-        Optional<UpcomingExams> upcomingExamOptional = upcomingExamsRepository.findById(upcomingExamId);
-        if (upcomingExamOptional.isPresent()) {
-            return ResponseDto.success("Upcoming exam fetched successfully", convertToDto(upcomingExamOptional.get()));
-        } else {
-            return ResponseDto.error("Not found", "Upcoming exam with ID " + upcomingExamId + " not found");
-        }
-    }
+        Optional<UpcomingExams> exam = upcomingExamsRepository.findById(upcomingExamId);
 
+        if (exam.isEmpty()) {
+            throw new ResourceNotFoundException("Upcoming exam with ID " + upcomingExamId + " not found.");
+        }
+
+        return ResponseDto.success("Upcoming exam fetched successfully", convertToDto(exam.get()));
+    }
 
     @Override
     @Transactional
     public void createOrUpdateUpcomingExamFromPaper(Integer paperId) {
+
         Paper paper = paperRepository.findById(paperId)
                 .orElseThrow(() -> new ResourceNotFoundException("Paper not found with ID: " + paperId));
 
-        PaperPattern paperPattern = paper.getPaperPattern();
-        if (paperPattern == null) {
-            throw new ResourceNotFoundException("PaperPattern not found for Paper with ID: " + paperId + ". Cannot create UpcomingExam entry.");
+        PaperPattern pattern = paper.getPaperPattern();
+        if (pattern == null) {
+            throw new ResourceNotFoundException("PaperPattern not found for Paper ID: " + paperId);
         }
 
-
-
-        Integer totalMarks = paperPattern.getMarks();
-        String subject = paperPattern.getSubject();
-
+        Integer totalMarks = pattern.getMarks();
         if (totalMarks == null) {
-            throw new IllegalArgumentException("Total marks are not defined for PaperPattern with ID: " + paperPattern.getPaperPatternId() + ". Cannot create UpcomingExam entry.");
+            throw new IllegalArgumentException("Total marks missing for PaperPattern ID: " + pattern.getPaperPatternId());
         }
+
+        String subject = pattern.getSubject();
         if (subject == null || subject.trim().isEmpty()) {
-            throw new IllegalArgumentException("Subject is not defined for PaperPattern with ID: " + paperPattern.getPaperPatternId() + ". Cannot create UpcomingExam entry.");
+            throw new IllegalArgumentException("Subject missing for PaperPattern ID: " + pattern.getPaperPatternId());
         }
 
-        Optional<UpcomingExams> existingUpcomingExam = upcomingExamsRepository.findByPaper_PaperId(paperId);
+        Optional<UpcomingExams> existing = upcomingExamsRepository.findByPaper_PaperId(paperId);
 
-        UpcomingExams upcomingExam;
-        if (existingUpcomingExam.isPresent()) {
-            upcomingExam = existingUpcomingExam.get();
-        } else {
-            upcomingExam = new UpcomingExams();
-        }
+        UpcomingExams exam = existing.orElse(new UpcomingExams());
+        exam.setPaper(paper);
+        exam.setTitle(paper.getTitle());
+        exam.setStartTime(paper.getStartTime());
+        exam.setStudentClass(paper.getStudentClass());
+        exam.setTotalMarks(totalMarks);
+        exam.setSubject(subject);
 
-        upcomingExam.setPaper(paper);
-        upcomingExam.setTitle(paper.getTitle());
-        upcomingExam.setStartTime(paper.getStartTime());
-        upcomingExam.setStudentClass(paper.getStudentClass());
-        upcomingExam.setTotalMarks(totalMarks);
-        upcomingExam.setSubject(subject);
-
-        upcomingExamsRepository.save(upcomingExam);
+        upcomingExamsRepository.save(exam);
     }
 }

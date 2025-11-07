@@ -1,10 +1,13 @@
 package com.spring.jwt.TeachersAttendance.controller;
 
+import com.spring.jwt.TeachersAttendance.dto.AddSalaryDTO;
+import com.spring.jwt.TeachersAttendance.dto.TeacherSalaryMapper;
 import com.spring.jwt.TeachersAttendance.dto.TeacherSalaryInfoDTO;
 import com.spring.jwt.TeachersAttendance.dto.TeacherSalaryResponseDto;
 import com.spring.jwt.TeachersAttendance.entity.TeacherSalary;
 import com.spring.jwt.TeachersAttendance.service.TeacherSalaryService;
 import com.spring.jwt.utils.ApiResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -23,18 +26,18 @@ public class TeacherSalaryController {
 
 
     @PostMapping("/addSalary")
-    public ResponseEntity<ApiResponse<TeacherSalary>> addTeacherSalary(@RequestBody TeacherSalary teacherSalary) {
+    public ResponseEntity<ApiResponse> addSalary(@Valid @RequestBody AddSalaryDTO dto) {
 
+        TeacherSalary entity = TeacherSalaryMapper.toEntity(dto);
+        TeacherSalary saved = salaryService.addTeacherSalary(dto);
 
-        TeacherSalary saved = salaryService.addTeacherSalary(teacherSalary);
-        log.debug("Teacher salary added successfully");
-        return ResponseEntity.ok(ApiResponse.success("Salary added successfully", saved));
+        return ResponseEntity.ok(ApiResponse.success("Salary added successfully", dto));
     }
 
 
     //===================================================================================//
     //                      FOR CALCULATING THE TEACHER SALARY                           //
-    //         api/v1/teacherSalary/calculate?teacherId=10000&month=November &year=2025  //
+    //         api/v1/teacherSalary/calculate?teacherId=10000&month=November&year=2025   //
     //===================================================================================//
 
     @GetMapping("/calculate")
@@ -51,7 +54,6 @@ public class TeacherSalaryController {
     //              FOR ALL TEACHER SALARY INFORMATION           //
     //             /api/v1/teacherSalary/teacherSummary          //
     //===========================================================//
-
 
     @GetMapping("/teacherSummary")
     public ResponseEntity<List<TeacherSalaryInfoDTO>> getTeacherSummary() {

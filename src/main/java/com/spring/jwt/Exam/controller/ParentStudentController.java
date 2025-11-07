@@ -5,9 +5,7 @@ import com.spring.jwt.dto.StudentDTO;
 import com.spring.jwt.utils.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,31 +31,17 @@ public class ParentStudentController {
         );
     }
 
-    @Operation(summary = "Multiple Student assign to one parent id ")
+    @Operation(summary = "Multiple Students assigned to one parent")
     @GetMapping("/parentId/{parentId}")
     public ResponseEntity<ApiResponse<List<StudentDTO>>> getStudentsByParentId(@PathVariable Integer parentId) {
-        try {
-            List<StudentDTO> students = parentStudentService.getStudentsByParentId(parentId);
 
-            if (students == null || students.isEmpty()) {
-                return ResponseEntity.ok(
-                        ApiResponse.success("No students found for parent ID: " + parentId)
-                );
-            }
+        List<StudentDTO> students = parentStudentService.getStudentsByParentId(parentId);
 
-            return ResponseEntity.ok(
-                    ApiResponse.success("Students for parent ID " + parentId + " fetched successfully.", students)
-            );
-
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error(
-                            HttpStatus.INTERNAL_SERVER_ERROR,
-                            "Something went wrong while fetching students",
-                            e.getMessage()
-                    ));
-        }
+        return ResponseEntity.ok(
+                ApiResponse.success("Students fetched successfully.", students)
+        );
     }
+
 
 
 

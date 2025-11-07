@@ -1,5 +1,6 @@
 package com.spring.jwt.exception;
 
+import com.spring.jwt.exception.TeacherSalary.TeacherSalaryException;
 import com.spring.jwt.utils.ApiResponse;
 import com.spring.jwt.dto.ErrorResponse;
 import com.spring.jwt.utils.ErrorResponseDto;
@@ -348,6 +349,18 @@ public class GlobalException extends ResponseEntityExceptionHandler {
     @ExceptionHandler(ExamResultNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleDropdownNotFound(ExamResultNotFoundException ex) {
         log.error("Dropdown data not found: {}", ex.getMessage());
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.NOT_FOUND.value());
+        body.put("error", "Not Found");
+        body.put("message", ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(TeacherSalaryException.class)
+    public ResponseEntity<Map<String, Object>> handleTeacherSalary(TeacherSalaryException ex) {
+
+        log.error("Teacher salary not found: {}", ex.getMessage());
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.NOT_FOUND.value());
