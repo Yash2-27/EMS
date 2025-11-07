@@ -1,7 +1,9 @@
 package com.spring.jwt.TeachersAttendance.serviceImpl;
 
 import com.spring.jwt.Classes.ClassesRepository;
+import com.spring.jwt.TeachersAttendance.dto.AddSalaryDTO;
 import com.spring.jwt.TeachersAttendance.dto.TeacherSalaryInfoDTO;
+import com.spring.jwt.TeachersAttendance.dto.TeacherSalaryMapper;
 import com.spring.jwt.TeachersAttendance.dto.TeacherSalaryResponseDto;
 import com.spring.jwt.TeachersAttendance.entity.TeacherSalary;
 import com.spring.jwt.TeachersAttendance.entity.TeachersAttendance;
@@ -33,66 +35,63 @@ public class TeacherSalaryServiceImpl implements TeacherSalaryService {
 	private final ClassesRepository classesRepo;
 	private final TeacherRepository teacherRepo;
     @Override
-    public TeacherSalary addTeacherSalary(TeacherSalary teacherSalary) {
+    public TeacherSalary addTeacherSalary(AddSalaryDTO dto) {
         try {
-            if (teacherSalary == null) {
-                throw new TeacherSalaryException("Teacher salary object cannot be null");
+            if (dto == null) {
+                throw new TeacherSalaryException("Teacher salary DTO cannot be null");
             }
 
-            if (teacherSalary.getTeacherId() == null) {
+            if (dto.getTeacherId() == null) {
                 throw new TeacherSalaryException("Teacher ID cannot be null");
             }
 
-            if (teacherSalary.getPerDaySalary() == null) {
+            if (dto.getPerDaySalary() == null) {
                 throw new TeacherSalaryException("Per-day Salary cannot be null");
             }
 
-            if (teacherSalary.getMonth() == null || teacherSalary.getMonth().trim().isEmpty()) {
+            if (dto.getMonth() == null || dto.getMonth().trim().isEmpty()) {
                 throw new TeacherSalaryException("Month cannot be null or empty");
             }
 
-            if (teacherSalary.getYear() == null) {
+            if (dto.getYear() == null) {
                 throw new TeacherSalaryException("Year cannot be null");
             }
 
 
-            Teacher teacher = teacherRepo.findById(Math.toIntExact(teacherSalary.getTeacherId()))
+            TeacherSalary teacherSalary = TeacherSalaryMapper.toEntity(dto);
+            Teacher teacher = teacherRepo.findById(dto.getTeacherId())
                     .orElseThrow(() ->
-                            new TeacherNotFoundException("No teacher found with ID: " + teacherSalary.getTeacherId())
+                            new TeacherNotFoundException("No teacher found with ID: " + dto.getTeacherId())
                     );
 
             if (!"Active".equalsIgnoreCase(teacher.getStatus())) {
                 throw new TeacherSalaryException("Cannot add salary. Teacher is not ACTIVE.");
             }
 
-            Optional<TeacherSalary> existingSalary = teacherSalaryRepo
-                    .findByTeacherIdAndMonthAndYear(
-                            teacherSalary.getTeacherId(),
-                            teacherSalary.getMonth(),
-                            teacherSalary.getYear()
+
+            Optional<TeacherSalary> existingSalary =
+                    teacherSalaryRepo.findByTeacherIdAndMonthAndYear(
+                            dto.getTeacherId(), dto.getMonth(), dto.getYear()
                     );
 
             if (existingSalary.isPresent()) {
-                throw new TeacherSalaryException("Salary already exists for this teacher in "
-                        + teacherSalary.getMonth() + " " + teacherSalary.getYear());
+                throw new TeacherSalaryException(
+                        "Salary already exists for " + dto.getMonth() + " " + dto.getYear()
+                );
             }
 
-            teacherSalary.setMonth(
-                    teacherSalary.getMonth().substring(0, 1).toUpperCase() +
-                            teacherSalary.getMonth().substring(1).toLowerCase()
-            );
+            String formatted = dto.getMonth().substring(0, 1).toUpperCase()
+                    + dto.getMonth().substring(1).toLowerCase();
+            teacherSalary.setMonth(formatted);
 
 
-            ZoneId zoneId = ZoneId.of("Asia/Kolkata");
-            LocalDateTime currentIST = LocalDateTime.now(zoneId);
-            teacherSalary.setCreatedAt(currentIST);
-            teacherSalary.setUpdatedAt(currentIST);
+            LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Kolkata"));
+            teacherSalary.setCreatedAt(now);
+            teacherSalary.setUpdatedAt(now);
 
             return teacherSalaryRepo.save(teacherSalary);
 
-        } catch (TeacherNotFoundException ex) {
-            throw ex;
-        } catch (TeacherSalaryException ex) {
+        } catch (TeacherNotFoundException | TeacherSalaryException ex) {
             throw ex;
         } catch (Exception ex) {
             throw new TeacherSalaryException("Unexpected error while adding teacher salary: " + ex.getMessage(), ex);
