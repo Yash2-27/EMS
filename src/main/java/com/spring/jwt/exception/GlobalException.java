@@ -370,6 +370,17 @@ public class GlobalException extends ResponseEntityExceptionHandler {
     }
 
 
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<Object> handleBadRequest(BadRequestException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("error", "Bad Request");
+        body.put("message", ex.getMessage());
+        log.error("BadRequest: {}", ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
 //package com.spring.jwt.exception;
 //
 //import com.spring.jwt.Classes.ClassesNotFoundException;

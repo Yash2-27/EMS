@@ -16,29 +16,29 @@ public class ClassesDto {
     private long classesId;
 
     @Schema(description = "Name of subject", example = "Chemistry")
-    @NotBlank(message = "Subject is required")
+  //  @NotBlank(message = "Subject is required")
     private String sub;
 
     @Schema(description = "Date on which class will be conducted", example = "21-07-2025")
-    @NotNull(message = "Date is required")
+  //  @NotNull(message = "Date is required")
     @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate date;
 
     @Schema(description = "Duration of class", example = "1 hrs")
-    @NotBlank(message = "Duration is required")
+   // @NotBlank(message = "Duration is required")
     private String duration;
 
     @Schema(description = "Class of student", example = "11th")
-    @NotBlank(message = "Student class is required")
+   // @NotBlank(message = "Student class is required")
     private String studentClass;
 
     @Schema(description = "Unique id of teacher who will conduct the class", example = "11")
-    @NotNull(message = "Teacher ID is required")
+   // @NotNull(message = "Teacher ID is required")
     private Integer teacherId;
 
     private String topic;
 
-    @NotBlank(message = "Class time is required")
+   // @NotBlank(message = "Class time is required")
     private String time;
     private String teacherName;
 }
