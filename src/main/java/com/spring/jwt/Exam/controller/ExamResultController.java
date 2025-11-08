@@ -4,6 +4,7 @@ import com.spring.jwt.Exam.Dto.ExamResultDTO;
 import com.spring.jwt.Exam.Dto.MonthlyPercentageDTO;
 import com.spring.jwt.Exam.Dto.SubjectScoreReportDto;
 import com.spring.jwt.Exam.entity.ExamSession;
+import com.spring.jwt.Exam.repository.ClassMonthlyAverageProjection;
 import com.spring.jwt.Exam.repository.ExamSessionRepository;
 import com.spring.jwt.Exam.scheduler.ExamResultScheduler;
 import com.spring.jwt.Exam.service.ExamResultService;
@@ -19,12 +20,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Controller for exam results
@@ -40,11 +44,11 @@ public class ExamResultController {
     private final ExamResultService examResultService;
     private final ExamResultScheduler examResultScheduler;
     private final ExamSessionRepository examSessionRepository;
-    
+
     @Operation(
             summary = "Get exam results by user ID",
             description = "Retrieves all exam results for a specific user",
-            security = { @SecurityRequirement(name = "bearer-jwt") }
+            security = {@SecurityRequirement(name = "bearer-jwt")}
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Results retrieved successfully"),
@@ -57,11 +61,11 @@ public class ExamResultController {
         List<ExamResultDTO> results = examResultService.getResultsByUserId(userId);
         return ResponseEntity.ok(results);
     }
-    
+
     @Operation(
             summary = "Get exam results by paper ID",
             description = "Retrieves all exam results for a specific paper",
-            security = { @SecurityRequirement(name = "bearer-jwt") }
+            security = {@SecurityRequirement(name = "bearer-jwt")}
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Results retrieved successfully"),
@@ -74,11 +78,11 @@ public class ExamResultController {
         List<ExamResultDTO> results = examResultService.getResultsByPaperId(paperId);
         return ResponseEntity.ok(results);
     }
-    
+
     @Operation(
             summary = "Get exam results by student class",
             description = "Retrieves all exam results for a specific student class",
-            security = { @SecurityRequirement(name = "bearer-jwt") }
+            security = {@SecurityRequirement(name = "bearer-jwt")}
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Results retrieved successfully"),
@@ -91,11 +95,11 @@ public class ExamResultController {
         List<ExamResultDTO> results = examResultService.getResultsByStudentClass(studentClass);
         return ResponseEntity.ok(results);
     }
-    
+
     @Operation(
             summary = "Manually process ready exam results",
             description = "Triggers the processing of exam sessions that have reached their result date",
-            security = { @SecurityRequirement(name = "bearer-jwt") }
+            security = {@SecurityRequirement(name = "bearer-jwt")}
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Processing completed successfully")
@@ -107,65 +111,65 @@ public class ExamResultController {
         int processed = examResultService.processReadyExamResults();
         return ResponseEntity.ok("Processed " + processed + " exam results");
     }
-    
+
     @Operation(
             summary = "Debug scheduler execution",
             description = "Test endpoint to debug scheduler execution",
-            security = { @SecurityRequirement(name = "bearer-jwt") }
+            security = {@SecurityRequirement(name = "bearer-jwt")}
     )
     @GetMapping("/debug/scheduler")
 //    @PreAuthorize("hasRole('ADMIN')")
     @PermitAll
     public ResponseEntity<Map<String, Object>> debugScheduler() {
         log.info("Manually triggering scheduler for debugging");
-        
+
         // Check raw database values
         List<Map<String, Object>> rawDates = examSessionRepository.findRawResultDates();
         log.info("Raw database values: {}", rawDates);
-        
+
         // Check if there are sessions with result dates in the past
         LocalDateTime now = LocalDateTime.now();
         List<ExamSession> readySessions = examSessionRepository.findByResultDateBeforeOrEqual(now);
-        
+
         // Get all sessions with result dates for debugging
         List<ExamSession> allWithResultDate = examSessionRepository.findAllWithResultDate();
-        
+
         // Try to find sessions with the specific date mentioned (2025-07-04 22:37:00)
         LocalDateTime specificDate = LocalDateTime.of(2025, 7, 4, 22, 37, 0);
         List<ExamSession> specificDateSessions = examSessionRepository.findByExactResultDate(specificDate);
-        
+
         // Manually trigger the scheduler
         examResultScheduler.processReadyExamResults();
-        
+
         // Return debug info
         return ResponseEntity.ok(Map.of(
-            "currentTime", now.toString(),
-            "rawDatabaseValues", rawDates,
-            "readySessionsCount", readySessions.size(),
-            "readySessions", readySessions.stream().map(s -> Map.of(
-                "sessionId", s.getSessionId(),
-                "resultDate", s.getResultDate() != null ? s.getResultDate().toString() : "null",
-                "userId", s.getUser().getId(),
-                "paperId", s.getPaper().getPaperId()
-            )).toList(),
-            "allWithResultDateCount", allWithResultDate.size(),
-            "allWithResultDate", allWithResultDate.stream().map(s -> Map.of(
-                "sessionId", s.getSessionId(),
-                "resultDate", s.getResultDate() != null ? s.getResultDate().toString() : "null"
-            )).toList(),
-            "specificDate", specificDate.toString(),
-            "specificDateSessionsCount", specificDateSessions.size(),
-            "specificDateSessions", specificDateSessions.stream().map(s -> Map.of(
-                "sessionId", s.getSessionId(),
-                "resultDate", s.getResultDate() != null ? s.getResultDate().toString() : "null"
-            )).toList()
+                "currentTime", now.toString(),
+                "rawDatabaseValues", rawDates,
+                "readySessionsCount", readySessions.size(),
+                "readySessions", readySessions.stream().map(s -> Map.of(
+                        "sessionId", s.getSessionId(),
+                        "resultDate", s.getResultDate() != null ? s.getResultDate().toString() : "null",
+                        "userId", s.getUser().getId(),
+                        "paperId", s.getPaper().getPaperId()
+                )).toList(),
+                "allWithResultDateCount", allWithResultDate.size(),
+                "allWithResultDate", allWithResultDate.stream().map(s -> Map.of(
+                        "sessionId", s.getSessionId(),
+                        "resultDate", s.getResultDate() != null ? s.getResultDate().toString() : "null"
+                )).toList(),
+                "specificDate", specificDate.toString(),
+                "specificDateSessionsCount", specificDateSessions.size(),
+                "specificDateSessions", specificDateSessions.stream().map(s -> Map.of(
+                        "sessionId", s.getSessionId(),
+                        "resultDate", s.getResultDate() != null ? s.getResultDate().toString() : "null"
+                )).toList()
         ));
     }
 
     @Operation(
             summary = "Fix result date format",
             description = "Updates the result date format in the database",
-            security = { @SecurityRequirement(name = "bearer-jwt") }
+            security = {@SecurityRequirement(name = "bearer-jwt")}
     )
     @PostMapping("/fix-date-format")
 //    @PreAuthorize("hasRole('ADMIN')")
@@ -186,7 +190,6 @@ public class ExamResultController {
         }
     }
 
-    // Case 1: userId provided → existing method
     @GetMapping("/progress/{userId}")
     @PermitAll
     @Operation(summary = "Get monthly progress for a student")
@@ -215,6 +218,7 @@ public class ExamResultController {
                     ));
         }
     }
+
     // Case 2: userId NOT provided → custom message
     @GetMapping("/progress/")
     @PermitAll
@@ -222,11 +226,11 @@ public class ExamResultController {
         return ResponseEntity.badRequest()
                 .body(Map.of(
                         "message", "User ID is required",
-                        "hint", "Please enter User ID "
+                        "hint", "Please enter User ID to get monthly progress "
                 ));
     }
 
-    @GetMapping({ "/average/class/","/average/class/{studentClass}"})
+    @GetMapping({"/average/class/", "/average/class/{studentClass}"})
     public ResponseEntity<ResponseDto<List<ClassAverageDTO>>> getClassMonthlyAverage(
             @PathVariable(required = false) String studentClass) {
 
@@ -247,24 +251,26 @@ public class ExamResultController {
         }
     }
 
-    @GetMapping("/subjectScores/{studentId}")
+    @GetMapping("/subjectScores/{userId}")
     public ResponseEntity<ResponseDto<List<SubjectScoreReportDto>>> getSubjectWiseScores(
-            @PathVariable Long studentId,
+            @PathVariable Long userId,
             @RequestParam int month,
             @RequestParam int year) {
 
-        // Input validation (optional)
-        if (studentId == null || month <= 0 || year <= 0) {
+        // Input validation
+        if (userId == null || month <= 0 || month > 12 || year <= 0) {
             return ResponseEntity.badRequest().body(
-                    ResponseDto.error("Invalid input", "StudentId, month, and year must be valid")
+                    ResponseDto.error("Invalid input", "UserId, month, and year must be valid")
             );
         }
         try {
-            List<SubjectScoreReportDto> scores = examResultService.getMonthlySubjectWiseScores(studentId, month, year);
+            List<SubjectScoreReportDto> scores =
+                    examResultService.getMonthlySubjectWiseScores(userId, month, year);
 
             return ResponseEntity.ok(
-                    ResponseDto.success("Subject-wise scores fetched successfully", scores)
+                    ResponseDto.success("For this month Subject-wise scores fetched successfully", scores)
             );
+
         } catch (ResourceNotFoundException ex) {
             return ResponseEntity.status(404)
                     .body(ResponseDto.error("No data found", ex.getMessage()));
