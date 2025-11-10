@@ -127,10 +127,11 @@ public class AppConfig {
                 "/api/v1/fees",
                 "/api/v1/students",
                 "/api/ceo/dash",
-                    "/api/ceo",
+                    "/api/v1/ceo",
                 "/api/v1/questionBank",
                     "/api/v1/teacherAttendance/**",
                 "/api/v1/teacherSalary",
+                "/api/v1/dropdown/**",
 
 
                 jwtConfig.getUrl(),
@@ -201,8 +202,8 @@ public class AppConfig {
                 .requestMatchers("/api/v1/Classes/**").permitAll()
                 .requestMatchers("/api/v1/userFee/**").permitAll()
                 .requestMatchers("api/v1/students/**").permitAll()
-                .requestMatchers("/api/ceo/**").permitAll()
-                .requestMatchers("/api/v1/questionBank/**").permitAll()
+                .requestMatchers("/api/v1/ceo/**").permitAll()
+//                .requestMatchers("/api/v1/questionBank/**").permitAll()
                 .requestMatchers("/api/v1/teacherAttendance/**").permitAll()
                 .requestMatchers("/api/v1/teacherSalary/**").permitAll()
 
@@ -215,6 +216,8 @@ public class AppConfig {
                 .requestMatchers("/api/v1/dropdown/subjects/**").permitAll()
                 .requestMatchers("/api/v1/dropdown/titles/**").permitAll()
                 .requestMatchers("/api/v1/dropdown/paper/**").permitAll()
+                .requestMatchers("/api/v1/dropdown/questionBank/**").permitAll()
+                .requestMatchers("/questionBank").permitAll()
 
 
                 .anyRequest().authenticated());
@@ -222,8 +225,8 @@ public class AppConfig {
         // Create a request matcher for public URLs
         org.springframework.security.web.util.matcher.RequestMatcher publicUrls =
             new org.springframework.security.web.util.matcher.OrRequestMatcher(
-                new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/users/personalInfo/**"), // ✅ Added here
-                new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/users/editPersonalInfo/**"), // ✅ Added here
+                new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/users/personalInfo/**"),
+                new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/users/editPersonalInfo/**"),
 
                 new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/auth/**"),
                 new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/public/**"),
@@ -255,8 +258,8 @@ public class AppConfig {
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/Classes/**"),
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/userFee/**"),
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/students/**"),
-                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/ceo/**"),
-                new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/questionBank/**"),
+                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/ceo/**"),
+//                new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/questionBank/**"),
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/teacherAttendance/**"),
 
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/users/personalInfo/**"),
@@ -270,6 +273,8 @@ public class AppConfig {
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/dropdown/paper/**"),
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/teacherSalary/**"),
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("api/v1/exam/previous/**"),
+                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/dropdown/questionBank/**"),
+                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/questionBank"),
 
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher(jwtConfig.getUrl()),
                 new org.springframework.security.web.util.matcher.AntPathRequestMatcher(jwtConfig.getRefreshUrl())
