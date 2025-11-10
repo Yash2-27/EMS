@@ -43,77 +43,8 @@ public interface ExamResultRepository extends JpaRepository<ExamResult, Integer>
      */
     ExamResult findByOriginalSessionId(Integer sessionId);
 
-    /**
-     * query  for get Monthly score of student
-     * (SUM(score ) / SUM(total_marks )) * 100
-     * @param userId
-     * @return Monthly Percentage
-     */
-    @Query(value = """
-    SELECT 
-        DATE_FORMAT(e.exam_end_time, '%Y-%m') AS month,
-        ROUND(
-            CASE
-                WHEN SUM(e.total_marks) = 0 THEN 0
-                ELSE (SUM(e.score) / SUM(e.total_marks)) * 100
-            END, 2
-        ) AS percentage
-    FROM exam_results e
-    WHERE e.user_id = :userId
-    GROUP BY DATE_FORMAT(e.exam_end_time, '%Y-%m')
-    ORDER BY month
-    """, nativeQuery = true)
-    List<MonthlyPercentageProjection> findMonthlyPercentageByUser(@Param("userId") Long userId);
+    List<ExamResult> findByUserId(Long userId);
 
-    /**
-     * query for get Monthly Class Average
-     * @param studentClass
-     * @return
-     */
-    @Query(value = """
-    SELECT 
-        DATE_FORMAT(e.exam_end_time, '%Y-%m') AS month,
-        ROUND(
-            CASE
-                WHEN SUM(e.total_marks) = 0 THEN 0
-                ELSE (SUM(e.score) / SUM(e.total_marks)) * 100
-            END, 2
-        ) AS averagePercentage
-    FROM exam_results e
-    WHERE e.student_class = :studentClass
-    GROUP BY DATE_FORMAT(e.exam_end_time, '%Y-%m')
-    ORDER BY month
-    """, nativeQuery = true)
-    List<ClassMonthlyAverageProjection> findMonthlyAverageByClass(@Param("studentClass") String studentClass);
-
-    /** query for get monthly score by subjectwise
-     * @param studentId
-     * @param month
-     * @param year
-     * @return
-     */
-    @Query("""
-        SELECT (
-            pp.subject,
-            ROUND(
-                CASE WHEN SUM(er.totalMarks) = 0 THEN 0
-                     ELSE (SUM(er.score) / SUM(er.totalMarks)) * 100
-                END, 2
-            )
-        )
-        FROM ExamResult er
-        JOIN er.paper p
-        JOIN p.paperPattern pp
-        JOIN Student s ON s.userId = er.user.id
-        WHERE s.studentId = :studentId
-          AND FUNCTION('MONTH', er.examEndTime) = :month
-          AND FUNCTION('YEAR', er.examEndTime) = :year
-        GROUP BY pp.subject
-    """)
-    List<SubjectScoreReportDto> getMonthlySubjectWiseScores(
-            @Param("studentId") Long studentId,
-            @Param("month") int month,
-            @Param("year") int year);
 
     /**
      * Find results for multiple users
