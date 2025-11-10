@@ -11,16 +11,16 @@ public interface TeachersAttendanceService {
 
     List<TeachersAttendanceResponseDto> getAttendanceByTeacherId(Integer teacherId);
 
+    List<TeachersAttendanceResponseDto> getAttendanceByTeacherIdAndMonth(Integer teacherId, String month);
+
     TeachersAttendance updateTeacherAttendance(Integer teachersAttendanceId, TeachersAttendance updatedAttendance);
 
     void deleteTeacherAttendance(Integer teachersAttendanceId);
 
     List<TeachersAttendanceResponseDto> getAttendanceByDate(String date);
 
-    List<TeachersAttendanceResponseDto> getAttendanceByMonth(String month, String year);
+    List<TeachersAttendanceResponseDto> getAttendanceByYear(String year);
 
-    TeachersAttendanceSummaryDto getAttendanceSummaryByTeacherId(Integer teacherId);
-
-
+    TeachersAttendanceSummaryDto getAttendanceSummaryByTeacherIdAndMonth(Integer teacherId, String month);
 
 }

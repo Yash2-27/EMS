@@ -10,5 +10,6 @@ public class TeachersAttendanceSummaryDto {
     private long fullDays;
     private long halfDays;
     private long absentDays;
+    private String month;
     private double attendancePercentage;
 }
