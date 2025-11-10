@@ -1,5 +1,6 @@
 package com.spring.jwt.Teachers.service.impl;
 
+import com.spring.jwt.Teachers.dto.QuestionBankDTO;
 import com.spring.jwt.Teachers.dto.TeacherQuestionFlatDto;
 import com.spring.jwt.Teachers.service.DropdownService;
 import com.spring.jwt.exception.DropdownResourceNotFoundException;
@@ -53,30 +54,31 @@ public class DropdownServiceImpl implements DropdownService {
 
     @Override
     public List<TeacherQuestionFlatDto> getQuestionPaper(String studentClass, Integer teacherId, String subject) {
-        logger.info("Fetching question papers for class: {}, teacherId: {}, subject: {}", studentClass, teacherId, subject);
+        logger.info("Fetching question papers for class: {}, teacherId: {}, subject: {}",
+                studentClass, teacherId, subject);
+
         List<TeacherQuestionFlatDto> papers = Optional.ofNullable(
                         teacherRepository.findByQuestionPaper(studentClass, teacherId, subject))
                 .filter(list -> !list.isEmpty())
                 .orElseThrow(() -> new DropdownResourceNotFoundException(
                         "No question paper found for subject: " + subject));
+
         logger.debug("Question papers fetched: {}", papers);
         return papers;
     }
 
-    /**
-     @Override
-     public List<String> getTitles(String studentClass, Integer teacherId, String subject) {
-     try {
-     List<String> titles = teacherRepository.findSubjectByTitles(studentClass, teacherId, subject);
-     if (titles.isEmpty()) {
-     throw new DropdownResourceNotFoundException("No titles found for subject: " + subject);
-     }
-     return titles;
-     } catch (Exception e) {
-     logger.error("Error fetching titles: {}", e.getMessage());
-     throw new RuntimeException("Unable to fetch titles. Please try again later.");
-     }
-     }
-     **/
+    @Override
+    public List<QuestionBankDTO> getQuestionsOnly(String studentClass, String subject, Integer teacherId) {
+        logger.info("Fetching questions without options for class: {}, subject: {}",
+                studentClass, subject);
 
+        List<QuestionBankDTO> questions = Optional.ofNullable(
+                        teacherRepository.findQuestionsOnly(studentClass, subject ,teacherId))
+                .filter(list -> !list.isEmpty())
+                .orElseThrow(() -> new DropdownResourceNotFoundException(
+                        "No questions found for subject: " + subject));
+
+        logger.debug("Questions fetched: {}", questions);
+        return questions;
+    }
 }
