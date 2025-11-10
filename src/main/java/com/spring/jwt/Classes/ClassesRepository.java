@@ -1,6 +1,5 @@
 package com.spring.jwt.Classes;
 import com.spring.jwt.entity.Classes;
-import jakarta.validation.constraints.NotNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -32,5 +31,4 @@ public interface ClassesRepository extends JpaRepository<Classes, Long> {
             @Param("currentTime") String currentTime);
     List<Classes> findAllByTeacherIdIn(List<Integer> teacherIds);
 
-    List<Classes> findByTeacherIdAndDate(@NotNull(message = "Teacher ID is required") Integer teacherId, @NotNull(message = "Date is required") LocalDate date);
 }
