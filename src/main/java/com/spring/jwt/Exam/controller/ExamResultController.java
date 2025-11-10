@@ -215,6 +215,7 @@ public class ExamResultController {
                     ));
         }
     }
+
     // Case 2: userId NOT provided → custom message
     @GetMapping("/progress/")
     @PermitAll
@@ -222,11 +223,11 @@ public class ExamResultController {
         return ResponseEntity.badRequest()
                 .body(Map.of(
                         "message", "User ID is required",
-                        "hint", "Please enter User ID "
+                        "hint", "Please enter User ID to get monthly progress "
                 ));
     }
 
-    @GetMapping({ "/average/class/","/average/class/{studentClass}"})
+    @GetMapping({"/average/class/", "/average/class/{studentClass}"})
     public ResponseEntity<ResponseDto<List<ClassAverageDTO>>> getClassMonthlyAverage(
             @PathVariable(required = false) String studentClass) {
 
@@ -247,24 +248,26 @@ public class ExamResultController {
         }
     }
 
-    @GetMapping("/subjectScores/{studentId}")
+    @GetMapping("/subjectScores/{userId}")
     public ResponseEntity<ResponseDto<List<SubjectScoreReportDto>>> getSubjectWiseScores(
-            @PathVariable Long studentId,
+            @PathVariable Long userId,
             @RequestParam int month,
             @RequestParam int year) {
 
-        // Input validation (optional)
-        if (studentId == null || month <= 0 || year <= 0) {
+        // Input validation
+        if (userId == null || month <= 0 || month > 12 || year <= 0) {
             return ResponseEntity.badRequest().body(
-                    ResponseDto.error("Invalid input", "StudentId, month, and year must be valid")
+                    ResponseDto.error("Invalid input", "UserId, month, and year must be valid")
             );
         }
         try {
-            List<SubjectScoreReportDto> scores = examResultService.getMonthlySubjectWiseScores(studentId, month, year);
+            List<SubjectScoreReportDto> scores =
+                    examResultService.getMonthlySubjectWiseScores(userId, month, year);
 
             return ResponseEntity.ok(
-                    ResponseDto.success("Subject-wise scores fetched successfully", scores)
+                    ResponseDto.success("For this month Subject-wise scores fetched successfully", scores)
             );
+
         } catch (ResourceNotFoundException ex) {
             return ResponseEntity.status(404)
                     .body(ResponseDto.error("No data found", ex.getMessage()));
