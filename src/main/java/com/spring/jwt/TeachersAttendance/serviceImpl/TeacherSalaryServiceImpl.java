@@ -9,6 +9,7 @@ import com.spring.jwt.TeachersAttendance.entity.TeacherSalary;
 import com.spring.jwt.TeachersAttendance.entity.TeachersAttendance;
 import com.spring.jwt.TeachersAttendance.repository.TeacherSalaryRepository;
 import com.spring.jwt.TeachersAttendance.repository.TeachersAttendanceRepository;
+import com.spring.jwt.TeachersAttendance.service.TeacherSalaryService;
 import com.spring.jwt.entity.Classes;
 import com.spring.jwt.entity.Teacher;
 import com.spring.jwt.exception.ResourceNotFoundException;

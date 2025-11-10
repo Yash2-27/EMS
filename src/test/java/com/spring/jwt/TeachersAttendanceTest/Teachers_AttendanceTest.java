@@ -18,7 +18,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import java.util.List;
-class Teachers_AttendanceTest {
+class TeachersAttendanceServiceTest {
 
     @Mock
     private TeachersAttendanceRepository attendanceRepo;
@@ -66,8 +66,7 @@ class Teachers_AttendanceTest {
     void testCreateAttendance_Success() {
         // Arrange
         TeachersAttendanceDto dto = new TeachersAttendanceDto();
-        dto.setTeacherId(1);
-        Teacher teacher = new Teacher();
+        dto.setTeacherId(1); Teacher teacher = new Teacher();
         teacher.setTeacherId(1);
         teacher.setName("John Doe");
 
@@ -137,7 +136,7 @@ class Teachers_AttendanceTest {
     void testGetAttendanceSummaryByTeacherId_Success() {
         when(attendanceRepo.findByTeacherId(1)).thenReturn(Arrays.asList(attendance));
 
-        TeachersAttendanceSummaryDto summary = service.getAttendanceSummaryByTeacherIdAndMonth(1, "november");
+        TeachersAttendanceSummaryDto summary = service.getAttendanceSummaryByTeacherId(1);
 
         assertNotNull(summary);
         assertEquals(1, summary.getTotalDays());
@@ -147,7 +146,7 @@ class Teachers_AttendanceTest {
     @Test
     void testGetAttendanceSummaryByTeacherId_NotFound() {
         when(attendanceRepo.findByTeacherId(1)).thenReturn(Collections.emptyList());
-        assertThrows(ResourceNotFoundException.class, () -> service.getAttendanceSummaryByTeacherIdAndMonth(1, "november"));
+        assertThrows(ResourceNotFoundException.class, () -> service.getAttendanceSummaryByTeacherId(1));
     }
 
     // =================== GET BY DATE ===================

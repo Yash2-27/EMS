@@ -12,31 +12,19 @@ import com.spring.jwt.Exam.repository.ExamResultRepository;
 import com.spring.jwt.Exam.repository.ExamSessionRepository;
 import com.spring.jwt.Exam.repository.MonthlyPercentageProjection;
 import com.spring.jwt.Exam.service.ExamResultService;
-import com.spring.jwt.dto.ResponseDto;
 import com.spring.jwt.exception.NoExamResultFoundException;
 import com.spring.jwt.exception.ResourceNotFoundException;
-import io.swagger.v3.oas.annotations.Operation;
-import jakarta.annotation.security.PermitAll;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -240,137 +228,58 @@ public class ExamResultServiceImpl implements ExamResultService {
 
     @Override
     public List<MonthlyPercentageDTO> getStudentMonthlyPercentage(Long userId) {
-        // Fetch all exam results for this user
-        List<ExamResult> results = examResultRepository.findByUserId(userId);
+        List<MonthlyPercentageProjection> results = examResultRepository.findMonthlyPercentageByUser(userId);
 
         if (results == null || results.isEmpty()) {
             throw new ResourceNotFoundException("No exam results found for userId: " + userId);
         }
 
-        // Group by month (yyyy-MM)
-        Map<String, List<ExamResult>> groupedByMonth = results.stream()
-                .filter(r -> r.getExamEndTime() != null)
-                .collect(Collectors.groupingBy(r -> r.getExamEndTime()
-                        .format(DateTimeFormatter.ofPattern("yyyy-MM"))));
-
-        // Calculate percentage per month
-        List<MonthlyPercentageDTO> monthlyList = new ArrayList<>();
-
-        for (Map.Entry<String, List<ExamResult>> entry : groupedByMonth.entrySet()) {
-            String month = entry.getKey();
-            List<ExamResult> exams = entry.getValue();
-
-            double totalScore = exams.stream()
-                    .mapToDouble(e -> e.getScore() != null ? e.getScore() : 0)
-                    .sum();
-
-            double totalMarks = exams.stream()
-                    .mapToDouble(e -> e.getTotalMarks() != null ? e.getTotalMarks() : 0)
-                    .sum();
-
-            double percentage = (totalMarks == 0) ? 0 : (totalScore / totalMarks) * 100;
-
-            monthlyList.add(new MonthlyPercentageDTO(month, Math.round(percentage * 100.0) / 100.0));
-        }
-        // Sort by month ascending (yyyy-MM)
-        monthlyList.sort(Comparator.comparing(MonthlyPercentageDTO::getMonth));
-
-        return monthlyList;
+        return results.stream()
+                .map(r -> new MonthlyPercentageDTO(
+                        r.getMonth(),
+                        r.getPercentage() != null ? r.getPercentage() : 0.0 // replace null with 0
+                ))
+                .collect(Collectors.toList());
     }
+
     @Override
     public List<ClassAverageDTO> getClassMonthlyAverage(String studentClass) {
-        // Fetch all exam results for the given class
-        List<ExamResult> results = examResultRepository.findByStudentClass(studentClass);
+        List<ClassMonthlyAverageProjection> results = examResultRepository.findMonthlyAverageByClass(studentClass);
 
         if (results == null || results.isEmpty()) {
             throw new ResourceNotFoundException("No exam results found for class: " + studentClass);
         }
 
-        // Group results by month (yyyy-MM)
-        Map<String, List<ExamResult>> groupedByMonth = results.stream()
-                .filter(r -> r.getExamEndTime() != null)
-                .collect(Collectors.groupingBy(r -> r.getExamEndTime()
-                        .format(DateTimeFormatter.ofPattern("yyyy-MM"))));
-
-        // Calculate monthly class average percentage
-        List<ClassAverageDTO> averageList = new ArrayList<>();
-
-        for (Map.Entry<String, List<ExamResult>> entry : groupedByMonth.entrySet()) {
-            String month = entry.getKey();
-            List<ExamResult> exams = entry.getValue();
-
-            double totalScore = exams.stream()
-                    .mapToDouble(e -> e.getScore() != null ? e.getScore() : 0)
-                    .sum();
-
-            double totalMarks = exams.stream()
-                    .mapToDouble(e -> e.getTotalMarks() != null ? e.getTotalMarks() : 0)
-                    .sum();
-
-            double averagePercentage = (totalMarks == 0) ? 0 : (totalScore / totalMarks) * 100;
-
-            // Round to 2 decimal places
-            averageList.add(new ClassAverageDTO(month, Math.round(averagePercentage * 100.0) / 100.0));
-        }
-
-        // Sort by month ascending
-        averageList.sort(Comparator.comparing(ClassAverageDTO::getMonth));
-
-        return averageList;
+        return results.stream()
+                .map(r -> new ClassAverageDTO(
+                        r.getMonth(),
+                        r.getAveragePercentage() != null ? r.getAveragePercentage() : 0.0
+                ))
+                .collect(Collectors.toList());
     }
+
+//    @Override
+//    public List<SubjectScoreReportDto> getMonthlySubjectWiseScores(Long studentId, int month, int year) {
+//        return examResultRepository.getMonthlySubjectWiseScores(studentId, month, year);
+//    }
 
     @Override
-    public List<SubjectScoreReportDto> getMonthlySubjectWiseScores(Long userId, int month, int year) {
-        //  Step 1: Fetch all exam results for the student
-        List<ExamResult> results = examResultRepository.findByUserId(userId);
+    public List<SubjectScoreReportDto> getMonthlySubjectWiseScores(Long studentId, int month, int year) {
+        try {
+            List<SubjectScoreReportDto> results = examResultRepository.getMonthlySubjectWiseScores(studentId, month, year);
 
-        if (results == null || results.isEmpty()) {
-            throw new ResourceNotFoundException("No exam results found for userId: " + userId);
+            if (results == null || results.isEmpty()) {
+                throw new NoExamResultFoundException(
+                        "No exam results found for studentId=" + studentId + " in " + month + "/" + year
+                );
+            }
+            return results;
+        } catch (DataAccessException ex) {
+            // Database error handling
+            throw new RuntimeException("Database error while fetching exam results", ex);
+        } catch (Exception ex) {
+            // Fallback error
+            throw new RuntimeException("Unexpected error occurred while fetching exam results", ex);
         }
-
-        // Step 2: Filter results for the given month and year
-        List<ExamResult> filteredResults = results.stream()
-                .filter(r -> r.getExamEndTime() != null &&
-                        r.getExamEndTime().getMonthValue() == month &&
-                        r.getExamEndTime().getYear() == year)
-                .collect(Collectors.toList());
-
-        if (filteredResults.isEmpty()) {
-            throw new ResourceNotFoundException(
-                    "No exam results found for userId " + userId + " in " + month + "/" + year);
-        }
-
-        //  Step 3: Group by subject name
-        Map<String, List<ExamResult>> groupedBySubject = filteredResults.stream()
-                .filter(r -> r.getPaper() != null &&
-                        r.getPaper().getPaperPattern() != null &&
-                        r.getPaper().getPaperPattern().getSubject() != null)
-                .collect(Collectors.groupingBy(r -> r.getPaper().getPaperPattern().getSubject()));
-
-        //  Step 4: Calculate percentage per subject
-        List<SubjectScoreReportDto> subjectScores = new ArrayList<>();
-
-        for (Map.Entry<String, List<ExamResult>> entry : groupedBySubject.entrySet()) {
-            String subject = entry.getKey();
-            List<ExamResult> subjectResults = entry.getValue();
-
-            double totalScore = subjectResults.stream()
-                    .mapToDouble(r -> r.getScore() != null ? r.getScore() : 0)
-                    .sum();
-
-            double totalMarks = subjectResults.stream()
-                    .mapToDouble(r -> r.getTotalMarks() != null ? r.getTotalMarks() : 0)
-                    .sum();
-
-            double percentage = (totalMarks == 0) ? 0 : (totalScore / totalMarks) * 100;
-
-            subjectScores.add(new SubjectScoreReportDto(subject,
-                    Math.round(percentage * 100.0) / 100.0));
-        }
-
-        //  Step 5: Sort alphabetically by subject name
-        subjectScores.sort(Comparator.comparing(SubjectScoreReportDto::getSubject));
-
-        return subjectScores;
     }
-}
+} 
