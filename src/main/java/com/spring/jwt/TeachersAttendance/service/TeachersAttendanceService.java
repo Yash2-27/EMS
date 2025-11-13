@@ -1,4 +1,5 @@
 package com.spring.jwt.TeachersAttendance.service;
+import com.spring.jwt.TeachersAttendance.dto.TeacherAttendanceUpdateDTO;
 import com.spring.jwt.TeachersAttendance.dto.TeachersAttendanceDto;
 import com.spring.jwt.TeachersAttendance.dto.TeachersAttendanceResponseDto;
 import com.spring.jwt.TeachersAttendance.dto.TeachersAttendanceSummaryDto;
@@ -13,7 +14,7 @@ public interface TeachersAttendanceService {
 
     List<TeachersAttendanceResponseDto> getAttendanceByTeacherIdAndMonth(Integer teacherId, String month);
 
-    TeachersAttendanceResponseDto updateTeacherAttendance(Integer teachersAttendanceId, TeachersAttendance updatedAttendance);
+    TeacherAttendanceUpdateDTO updateTeacherAttendance(Integer teachersAttendanceId, TeachersAttendance updatedAttendance);
 
     void deleteTeacherAttendance(Integer teachersAttendanceId);
 

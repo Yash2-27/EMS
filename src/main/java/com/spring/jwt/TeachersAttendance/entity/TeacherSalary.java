@@ -19,7 +19,6 @@ public class TeacherSalary {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long salaryId;
 
-
     private Integer teacherId;
 
 
