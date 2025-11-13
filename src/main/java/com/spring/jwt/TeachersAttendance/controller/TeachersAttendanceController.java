@@ -1,4 +1,5 @@
 package com.spring.jwt.TeachersAttendance.controller;
+import com.spring.jwt.TeachersAttendance.dto.TeacherAttendanceUpdateDTO;
 import com.spring.jwt.TeachersAttendance.dto.TeachersAttendanceDto;
 import com.spring.jwt.TeachersAttendance.dto.TeachersAttendanceResponseDto;
 import com.spring.jwt.TeachersAttendance.dto.TeachersAttendanceSummaryDto;
@@ -10,7 +11,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,7 +24,7 @@ public class TeachersAttendanceController {
 
     @PostMapping("/add")
     public ResponseEntity<ApiResponse<TeachersAttendanceResponseDto>> createAttendance(
-            @RequestBody TeachersAttendanceDto dto) {
+            @Valid @RequestBody TeachersAttendanceDto dto) {
 
         TeachersAttendanceResponseDto response = service.createAttendance(dto);
 
@@ -162,15 +162,15 @@ public class TeachersAttendanceController {
     }
 
     @PatchMapping("/update/{id}")
-    public ResponseEntity<ApiResponse<TeachersAttendanceResponseDto>> updateAttendance(
+    public ResponseEntity<ApiResponse<TeacherAttendanceUpdateDTO>> updateAttendance(
             @PathVariable("id") Integer attendanceId,
-            @RequestBody TeachersAttendance updatedAttendance) {
+           @Valid @RequestBody TeachersAttendance updatedAttendance) {
 
-        TeachersAttendanceResponseDto updated = service.updateTeacherAttendance(attendanceId, updatedAttendance);
+        TeacherAttendanceUpdateDTO updated = service.updateTeacherAttendance(attendanceId, updatedAttendance);
 
-        TeachersAttendanceResponseDto response = new TeachersAttendanceResponseDto();
+        TeacherAttendanceUpdateDTO response = new TeacherAttendanceUpdateDTO();
         response.setAttendanceId(updated.getAttendanceId());
-        response.setTeacherId(updated.getTeacherId());
+//        response.setTeacherId(updated.getTeacherId());
         response.setTeacherName(updated.getTeacherName());
         response.setMonth(updated.getMonth());
         response.setDate(updated.getDate());
