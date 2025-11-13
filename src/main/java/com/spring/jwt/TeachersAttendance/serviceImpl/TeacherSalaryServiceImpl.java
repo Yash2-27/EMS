@@ -17,9 +17,13 @@ import com.spring.jwt.exception.TeacherNotFoundException;
 import com.spring.jwt.exception.TeacherSalary.TeacherSalaryException;
 import com.spring.jwt.repository.TeacherRepository;
 import lombok.RequiredArgsConstructor;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.Month;
+import java.time.YearMonth;
 import java.time.ZoneId;
 
 import java.util.*;
@@ -41,53 +45,61 @@ public class TeacherSalaryServiceImpl implements TeacherSalaryService {
                 throw new TeacherSalaryException("Teacher salary DTO cannot be null");
             }
 
+            String perDayStr = dto.getPerDaySalary().toString();
+            if (!perDayStr.matches("^[0-9]+(\\.[0-9]{1,2})?$")) {
+                throw new TeacherSalaryException("Per-day salary must be a valid numeric value without exponential format (e.g., 1200 or 1200.50)");
+            }
+
             if (dto.getTeacherId() == null) {
                 throw new TeacherSalaryException("Teacher ID cannot be null");
             }
 
-            if (dto.getPerDaySalary() == null) {
-                throw new TeacherSalaryException("Per-day Salary cannot be null");
+            String teacherIdStr = dto.getTeacherId().toString();
+            if (!teacherIdStr.matches("^[0-9]+$")) {
+                throw new TeacherSalaryException("Invalid Teacher ID. It must be a whole number without letters, decimals, or scientific notation.");
             }
 
-            if (dto.getMonth() == null || dto.getMonth().trim().isEmpty()) {
-                throw new TeacherSalaryException("Month cannot be null or empty");
-            }
-
-            if (dto.getYear() == null) {
-                throw new TeacherSalaryException("Year cannot be null");
-            }
-
-
+            Integer teacherId = Integer.parseInt(teacherIdStr);
             TeacherSalary teacherSalary = TeacherSalaryMapper.toEntity(dto);
-            Teacher teacher = teacherRepo.findById(dto.getTeacherId())
-                    .orElseThrow(() ->
-                            new TeacherNotFoundException("No teacher found with ID: " + dto.getTeacherId())
-                    );
+
+            Teacher teacher = teacherRepo.findById(teacherId)
+                    .orElseThrow(() -> new TeacherNotFoundException("No teacher found with ID: " + teacherId));
+
+            Optional<TeacherSalary> existingSalary =
+                    teacherSalaryRepo.findByTeacherIdAndMonthAndYear(teacherId, dto.getMonth(), dto.getYear());
+
+            if (existingSalary.isPresent()) {
+                throw new TeacherSalaryException("Salary already exists for " + dto.getMonth() + " " + dto.getYear());
+            }
 
             if (!"Active".equalsIgnoreCase(teacher.getStatus())) {
                 throw new TeacherSalaryException("Cannot add salary. Teacher is not ACTIVE.");
             }
 
-
-            Optional<TeacherSalary> existingSalary =
-                    teacherSalaryRepo.findByTeacherIdAndMonthAndYear(
-                            dto.getTeacherId(), dto.getMonth(), dto.getYear()
-                    );
-
-            if (existingSalary.isPresent()) {
-                throw new TeacherSalaryException(
-                        "Salary already exists for " + dto.getMonth() + " " + dto.getYear()
-                );
+            Month monthEnum;
+            try {
+                monthEnum = Month.valueOf(dto.getMonth().toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw new TeacherSalaryException("Invalid month name: " + dto.getMonth());
             }
 
-            String formatted = dto.getMonth().substring(0, 1).toUpperCase()
-                    + dto.getMonth().substring(1).toLowerCase();
-            teacherSalary.setMonth(formatted);
+            YearMonth yearMonth = YearMonth.of(dto.getYear(), monthEnum);
+            int daysInMonth = yearMonth.lengthOfMonth();
+            double totalSalary = dto.getPerDaySalary() * daysInMonth;
 
+            teacherSalary.setSalary(totalSalary);
+            String formatted = dto.getMonth().substring(0, 1).toUpperCase() + dto.getMonth().substring(1).toLowerCase();
+            teacherSalary.setMonth(formatted);
 
             LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Kolkata"));
             teacherSalary.setCreatedAt(now);
             teacherSalary.setUpdatedAt(now);
+
+            YearMonth entered = YearMonth.of(dto.getYear(), Month.valueOf(dto.getMonth().toUpperCase()));
+            YearMonth current = YearMonth.now(ZoneId.of("Asia/Kolkata"));
+            if (entered.isBefore(current)) {
+                throw new TeacherSalaryException("Salary cannot be added for past months or years.");
+            }
 
             return teacherSalaryRepo.save(teacherSalary);
 
@@ -97,6 +109,7 @@ public class TeacherSalaryServiceImpl implements TeacherSalaryService {
             throw new TeacherSalaryException("Unexpected error while adding teacher salary: " + ex.getMessage(), ex);
         }
     }
+
 
     @Override
 	public TeacherSalaryResponseDto calculateSalary(Integer teacherId, String month, Integer year) {
@@ -192,7 +205,7 @@ public class TeacherSalaryServiceImpl implements TeacherSalaryService {
 			AtomicInteger counter = new AtomicInteger(1);
 			List<TeacherSalaryInfoDTO> result = new ArrayList<>();
 
-			// Iterate through salaries (1 per teacherId)
+
 			for (TeacherSalary salary : salaries) {
 				if (salary.getTeacherId() == null) continue;
 				Integer teacherId = salary.getTeacherId().intValue();
@@ -204,13 +217,13 @@ public class TeacherSalaryServiceImpl implements TeacherSalaryService {
 				String subjects = "N/A";
 				String studentClasses = "N/A";
 
-				// If class info exists for this teacher
+
 				if (!teacherClasses.isEmpty()) {
 					teacherName = teacherClasses.get(0).getTeacherName() != null
 							? teacherClasses.get(0).getTeacherName()
 							: "Unknown Teacher";
 
-					// Merge all subjects & classes into comma-separated lists
+
 					subjects = teacherClasses.stream()
 							.map(Classes::getSub)
 							.filter(Objects::nonNull)
@@ -239,7 +252,7 @@ public class TeacherSalaryServiceImpl implements TeacherSalaryService {
 				throw new TeacherSalaryException("No teacher summary data found.");
 			}
 
-			// Merge by teacherName if multiple salary records exist for same teacher (different months)
+
 			Map<String, TeacherSalaryInfoDTO> uniqueMap = result.stream()
 					.collect(Collectors.toMap(
 							TeacherSalaryInfoDTO::getTeacherName,
@@ -254,8 +267,8 @@ public class TeacherSalaryServiceImpl implements TeacherSalaryService {
 
 			return new ArrayList<>(uniqueMap.values());
 
-		} catch (ResourceNotFoundException rnfe) {
-			throw rnfe;
+		} catch (TeacherSalaryException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new RuntimeException("An unexpected error occurred while fetching teacher summary.", e);
 		}
