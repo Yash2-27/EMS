@@ -1,11 +1,11 @@
-package com.spring.jwt.TeachersAttendance.controller;
+package com.spring.jwt.TeacherSalary.controller;
 
-import com.spring.jwt.TeachersAttendance.dto.AddSalaryDTO;
-import com.spring.jwt.TeachersAttendance.dto.TeacherSalaryMapper;
-import com.spring.jwt.TeachersAttendance.dto.TeacherSalaryInfoDTO;
+import com.spring.jwt.TeacherSalary.dto.AddSalaryDTO;
+import com.spring.jwt.TeacherSalary.dto.TeacherSalaryMapper;
+import com.spring.jwt.TeacherSalary.dto.TeacherSalaryInfoDTO;
 import com.spring.jwt.TeachersAttendance.dto.TeacherSalaryResponseDto;
-import com.spring.jwt.TeachersAttendance.entity.TeacherSalary;
-import com.spring.jwt.TeachersAttendance.service.TeacherSalaryService;
+import com.spring.jwt.TeacherSalary.entity.TeacherSalary;
+import com.spring.jwt.TeacherSalary.service.TeacherSalaryService;
 import com.spring.jwt.utils.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

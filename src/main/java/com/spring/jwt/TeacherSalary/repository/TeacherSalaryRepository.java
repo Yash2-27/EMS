@@ -1,6 +1,6 @@
-package com.spring.jwt.TeachersAttendance.repository;
+package com.spring.jwt.TeacherSalary.repository;
 
-import com.spring.jwt.TeachersAttendance.entity.TeacherSalary;
+import com.spring.jwt.TeacherSalary.entity.TeacherSalary;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

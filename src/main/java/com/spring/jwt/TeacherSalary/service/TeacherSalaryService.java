@@ -1,11 +1,9 @@
-package com.spring.jwt.TeachersAttendance.service;
+package com.spring.jwt.TeacherSalary.service;
 
-import com.spring.jwt.TeachersAttendance.dto.AddSalaryDTO;
-import com.spring.jwt.TeachersAttendance.dto.TeacherSalaryInfoDTO;
+import com.spring.jwt.TeacherSalary.dto.AddSalaryDTO;
+import com.spring.jwt.TeacherSalary.dto.TeacherSalaryInfoDTO;
 import com.spring.jwt.TeachersAttendance.dto.TeacherSalaryResponseDto;
-import com.spring.jwt.TeachersAttendance.entity.TeacherSalary;
-import com.spring.jwt.entity.Teacher;
-import com.spring.jwt.repository.TeacherRepository;
+import com.spring.jwt.TeacherSalary.entity.TeacherSalary;
 
 import java.util.List;
 

@@ -1,5 +1,5 @@
-package com.spring.jwt.TeachersAttendance.dto;
-import com.spring.jwt.TeachersAttendance.entity.TeacherSalary;
+package com.spring.jwt.TeacherSalary.dto;
+import com.spring.jwt.TeacherSalary.entity.TeacherSalary;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;

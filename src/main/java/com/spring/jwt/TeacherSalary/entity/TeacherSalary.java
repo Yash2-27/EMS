@@ -1,7 +1,6 @@
-package com.spring.jwt.TeachersAttendance.entity;
+package com.spring.jwt.TeacherSalary.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
