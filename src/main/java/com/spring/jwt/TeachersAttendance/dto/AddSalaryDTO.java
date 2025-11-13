@@ -24,9 +24,9 @@ public class AddSalaryDTO {
 
     @NotNull(message = "Per day salary cannot be null")
     @Positive(message = "Per day salary must be positive")
+    @Min(value = 1000, message = "Per day salary must be at least 4 digits")
+    @Max(value = 99999, message = "Per day salary must be at most 5 digits")  // <-- FIXED
     private Double perDaySalary;
 
-    @NotNull(message = "Salary cannot be null")
-    @PositiveOrZero(message = "Salary must be zero or positive")
-    private Double salary;
+
 }

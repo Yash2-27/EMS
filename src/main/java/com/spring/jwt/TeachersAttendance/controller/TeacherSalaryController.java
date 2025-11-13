@@ -24,14 +24,14 @@ public class TeacherSalaryController {
     private final TeacherSalaryService salaryService;
 
 
-
     @PostMapping("/addSalary")
     public ResponseEntity<ApiResponse> addSalary(@Valid @RequestBody AddSalaryDTO dto) {
-
         TeacherSalary entity = TeacherSalaryMapper.toEntity(dto);
         TeacherSalary saved = salaryService.addTeacherSalary(dto);
 
-        return ResponseEntity.ok(ApiResponse.success("Salary added successfully", dto));
+        return ResponseEntity.ok(
+                ApiResponse.success("Salary added successfully", saved)
+        );
     }
 
 

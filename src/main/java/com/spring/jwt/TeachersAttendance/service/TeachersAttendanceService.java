@@ -13,13 +13,13 @@ public interface TeachersAttendanceService {
 
     List<TeachersAttendanceResponseDto> getAttendanceByTeacherIdAndMonth(Integer teacherId, String month);
 
-    TeachersAttendance updateTeacherAttendance(Integer teachersAttendanceId, TeachersAttendance updatedAttendance);
+    TeachersAttendanceResponseDto updateTeacherAttendance(Integer teachersAttendanceId, TeachersAttendance updatedAttendance);
 
     void deleteTeacherAttendance(Integer teachersAttendanceId);
 
     List<TeachersAttendanceResponseDto> getAttendanceByDate(String date);
 
-    List<TeachersAttendanceResponseDto> getAttendanceByYear(String year);
+    List<TeachersAttendanceResponseDto> getAttendanceByTeacherIdAndYear(Integer teacherId,String year);
 
     TeachersAttendanceSummaryDto getAttendanceSummaryByTeacherIdAndMonth(Integer teacherId, String month);
 
