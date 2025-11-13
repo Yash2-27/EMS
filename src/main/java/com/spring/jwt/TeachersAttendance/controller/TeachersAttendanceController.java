@@ -6,6 +6,7 @@ import com.spring.jwt.TeachersAttendance.entity.TeachersAttendance;
 import com.spring.jwt.TeachersAttendance.service.TeachersAttendanceService;
 import com.spring.jwt.exception.ResourceNotFoundException;
 import com.spring.jwt.utils.ApiResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -73,26 +74,6 @@ public class TeachersAttendanceController {
                 response));
     }
 
-    @PatchMapping("/update/{id}")
-    public ResponseEntity<ApiResponse<TeachersAttendanceResponseDto>> updateAttendance(
-            @PathVariable("id") Integer attendanceId,
-            @RequestBody TeachersAttendance updatedAttendance) {
-
-        TeachersAttendance updated = service.updateTeacherAttendance(attendanceId, updatedAttendance);
-
-        TeachersAttendanceResponseDto response = new TeachersAttendanceResponseDto();
-        response.setAttendanceId(updated.getTeachersAttendanceId());
-        response.setTeacherId(updated.getTeacherId());
-        response.setTeacherName(updated.getTeacherName());
-        response.setMonth(updated.getMonth());
-        response.setDate(updated.getDate());
-        response.setInTime(updated.getInTime());
-        response.setOutTime(updated.getOutTime());
-        response.setMark(updated.getMark());
-
-        return ResponseEntity.ok(ApiResponse.success("Attendance updated successfully", response));
-    }
-
     @DeleteMapping("/delete/{attendanceId}")
     public ResponseEntity<ApiResponse<String>> deleteTeacherAttendance(@PathVariable Integer attendanceId) {
         try {
@@ -131,32 +112,34 @@ public class TeachersAttendanceController {
                             "No data found"
                     ));
         }
-
         return ResponseEntity.ok(ApiResponse.success(
                 "Attendance fetched successfully for date: " + date,
                 response));
     }
 
-    @GetMapping("/year/{year}")
-    public ResponseEntity<ApiResponse<List<TeachersAttendanceResponseDto>>> getAttendanceByYear(
+    @GetMapping("teacherId/{teacherId}/year/{year}")
+    public ResponseEntity<ApiResponse<List<TeachersAttendanceResponseDto>>> getAttendanceByTeacherIdAndYear(
+            @PathVariable Integer teacherId,
             @PathVariable String year) {
 
-        List<TeachersAttendanceResponseDto> response = service.getAttendanceByYear(year);
+        List<TeachersAttendanceResponseDto> response = service.getAttendanceByTeacherIdAndYear(teacherId, year);
 
         if (response == null || response.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(ApiResponse.error(
                             HttpStatus.NOT_FOUND,
-                            "No attendance found for year " + year,
+                            "No attendance found for teacherId: " + teacherId + " in year: " + year,
                             "No data found"
                     ));
         }
 
-        return ResponseEntity.ok(ApiResponse.success(
-                "Attendance fetched successfully for year: " + year,
-                response));
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Attendance fetched successfully for teacherId: " + teacherId + " in year: " + year,
+                        response
+                )
+        );
     }
-
     @GetMapping("/summary/{teacherId}/month/{month}")
     public ResponseEntity<ApiResponse<TeachersAttendanceSummaryDto>> getMonthlyAttendanceSummary(
             @PathVariable Integer teacherId,
@@ -176,6 +159,26 @@ public class TeachersAttendanceController {
         return ResponseEntity.ok(ApiResponse.success(
                 "Monthly Attendance Summary Fetched Successfully For Teacher ID: " + teacherId,
                 summary));
+    }
+
+    @PatchMapping("/update/{id}")
+    public ResponseEntity<ApiResponse<TeachersAttendanceResponseDto>> updateAttendance(
+            @PathVariable("id") Integer attendanceId,
+            @RequestBody TeachersAttendance updatedAttendance) {
+
+        TeachersAttendanceResponseDto updated = service.updateTeacherAttendance(attendanceId, updatedAttendance);
+
+        TeachersAttendanceResponseDto response = new TeachersAttendanceResponseDto();
+        response.setAttendanceId(updated.getAttendanceId());
+        response.setTeacherId(updated.getTeacherId());
+        response.setTeacherName(updated.getTeacherName());
+        response.setMonth(updated.getMonth());
+        response.setDate(updated.getDate());
+        response.setInTime(updated.getInTime());
+        response.setOutTime(updated.getOutTime());
+        response.setMark(updated.getMark());
+
+        return ResponseEntity.ok(ApiResponse.success("Attendance updated successfully", response));
     }
 }
 
