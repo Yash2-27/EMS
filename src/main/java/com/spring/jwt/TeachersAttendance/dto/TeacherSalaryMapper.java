@@ -14,7 +14,7 @@ public class TeacherSalaryMapper {
         salary.setMonth(dto.getMonth());
         salary.setYear(dto.getYear());
         salary.setPerDaySalary(dto.getPerDaySalary());
-        salary.setSalary(dto.getSalary());
+//        salary.setSalary(dto.getSalary());
 
         LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Kolkata"));
         salary.setCreatedAt(now);
