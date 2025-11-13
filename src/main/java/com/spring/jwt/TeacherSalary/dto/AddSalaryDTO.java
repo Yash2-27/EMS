@@ -1,4 +1,4 @@
-package com.spring.jwt.TeachersAttendance.dto;
+package com.spring.jwt.TeacherSalary.dto;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;

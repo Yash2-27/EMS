@@ -2,9 +2,9 @@
 //
 //import com.spring.jwt.TeachersAttendance.dto.TeacherSalaryResponseDto;
 //import com.spring.jwt.TeachersAttendance.entity.TeachersAttendance;
-//import com.spring.jwt.TeachersAttendance.repository.TeacherSalaryRepository;
+//import com.spring.jwt.TeacherSalary.repository.TeacherSalaryRepository;
 //import com.spring.jwt.TeachersAttendance.repository.TeachersAttendanceRepository;
-//import com.spring.jwt.TeachersAttendance.serviceImpl.TeacherSalaryServiceImpl;
+//import com.spring.jwt.TeacherSalary.serviceimpl.TeacherSalaryServiceImpl;
 //import com.spring.jwt.exception.ResourceNotFoundException;
 //import org.junit.jupiter.api.BeforeEach;
 //import org.junit.jupiter.api.Test;
