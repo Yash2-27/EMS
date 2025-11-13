@@ -1,3 +1,4 @@
+
 package com.spring.jwt.TeachersAttendance.serviceImpl;
 import com.spring.jwt.TeachersAttendance.dto.TeachersAttendanceDto;
 import com.spring.jwt.TeachersAttendance.dto.TeachersAttendanceResponseDto;
@@ -6,8 +7,8 @@ import com.spring.jwt.TeachersAttendance.entity.TeachersAttendance;
 import com.spring.jwt.TeachersAttendance.repository.TeachersAttendanceRepository;
 import com.spring.jwt.TeachersAttendance.service.TeachersAttendanceService;
 import com.spring.jwt.entity.Teacher;
-import com.spring.jwt.exception.BadRequestException;
-import com.spring.jwt.exception.ResourceNotFoundException;
+import com.spring.jwt.exception.AttendanceNotFoundException;
+import com.spring.jwt.exception.TeacherNotFoundException;
 import com.spring.jwt.repository.TeacherRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -35,12 +36,12 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
         try {
             //  Validate input
             if (dto.getTeacherId() == null) {
-                throw new BadRequestException("Teacher ID cannot be null");
+                throw new TeacherNotFoundException("Teacher ID cannot be null");
             }
 
             // Fetch teacher info
             Teacher teacher = teacherRepo.findById(dto.getTeacherId())
-                    .orElseThrow(() -> new ResourceNotFoundException(
+                    .orElseThrow(() -> new TeacherNotFoundException(
                             "Teacher not found with ID: " + dto.getTeacherId()
                     ));
 
@@ -93,27 +94,15 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
             return response;
         }
         //  Known exceptions (custom messages)
-        catch (IllegalArgumentException e) {
+        catch (TeacherNotFoundException e) {
             System.err.println(" Error: " + e.getMessage());
             throw e; // rethrow so controller can handle properly
         }
-        catch (ResourceNotFoundException e) {
-            System.err.println(" Error: " + e.getMessage());
-            throw e;
+        catch (Exception e) {
+            System.err.println("Unexpected error occurred while creating attendance: " + e.getMessage());
+            throw new RuntimeException("Failed to create attendance due to unexpected error.", e);
         }
-
-        catch ( BadRequestException e) {
-            throw e;
-        }
-
-
-//        catch (Exception e) {
-//            System.err.println("Unexpected error occurred while creating attendance: " + e.getMessage());
-//            throw new RuntimeException("Failed to create attendance due to unexpected error.", e);
-//        }
-
     }
-
 
     private double calculateHours(String inTime, String outTime) {
         LocalTime in = LocalTime.parse(inTime, timeFormatter);
@@ -137,14 +126,12 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
         List<TeachersAttendanceResponseDto> responseList = new ArrayList<>();
         try {
             if (teacherId == null) {
-                throw new IllegalArgumentException("Teacher ID cannot be null");
+                throw new TeacherNotFoundException("Teacher ID cannot be null");
             }
-
             List<TeachersAttendance> attendances = attendanceRepo.findByTeacherId(teacherId);
             if (attendances == null || attendances.isEmpty()) {
-                throw new ResourceNotFoundException("No attendance found for Teacher ID: " + teacherId);
+                throw new AttendanceNotFoundException("No attendance found for Teacher ID: " + teacherId);
             }
-
             responseList = attendances.stream().map(att -> {
                 TeachersAttendanceResponseDto dto = new TeachersAttendanceResponseDto();
                 dto.setAttendanceId(att.getTeachersAttendanceId());
@@ -158,9 +145,9 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
                 return dto;
             }).collect(Collectors.toList());
 
-        } catch (IllegalArgumentException e) {
+        } catch (TeacherNotFoundException e) {
             System.err.println("Error: " + e.getMessage());
-        } catch (ResourceNotFoundException e) {
+        } catch (AttendanceNotFoundException e) {
             System.err.println("Error: " + e.getMessage());
         } catch (Exception e) {
             System.err.println("Unexpected error occurred: " + e.getMessage());
@@ -175,13 +162,13 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
 
         try {
             if (teacherId == null || month == null || month.isEmpty()) {
-                throw new IllegalArgumentException("Teacher ID and Month cannot be null or empty");
+                throw new TeacherNotFoundException("Teacher ID and Month cannot be null or empty");
             }
 
             List<TeachersAttendance> attendances = attendanceRepo.findByTeacherIdAndMonth(teacherId, month.toUpperCase());
 
             if (attendances == null || attendances.isEmpty()) {
-                throw new ResourceNotFoundException(
+                throw new AttendanceNotFoundException(
                         "No attendance found for Teacher ID: " + teacherId + " in month: " + month);
             }
 
@@ -198,58 +185,116 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
                 return dto;
             }).collect(Collectors.toList());
 
-        } catch (IllegalArgumentException e) {
+        } catch (TeacherNotFoundException e) {
             System.err.println("Validation error: " + e.getMessage());
-        } catch (ResourceNotFoundException e) {
+        } catch (AttendanceNotFoundException e) {
             System.err.println("Data not found: " + e.getMessage());
         } catch (Exception e) {
             System.err.println("Unexpected error: " + e.getMessage());
         }
-
         return responseList;
     }
 
     @Override
-    public TeachersAttendance updateTeacherAttendance(Integer teachersAttendanceId, TeachersAttendance updatedAttendance) {
+    public TeachersAttendanceResponseDto updateTeacherAttendance(Integer teachersAttendanceId, TeachersAttendance updatedAttendance) {
+        try {
+            // Find existing attendance or throw if not found
+            TeachersAttendance existingAttendance = attendanceRepo.findById(teachersAttendanceId)
+                    .orElseThrow(() -> new AttendanceNotFoundException(
+                            "Teacher Attendance not found with ID: " + teachersAttendanceId
+                    ));
 
-        TeachersAttendance existingAttendance = attendanceRepo.findById(teachersAttendanceId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Teacher Attendance not found with ID: " + teachersAttendanceId
-                ));
+            if (updatedAttendance.getTeacherName() != null) {
+                existingAttendance.setTeacherName(updatedAttendance.getTeacherName());
+            }
+            if (updatedAttendance.getInTime() != null) {
+                existingAttendance.setInTime(updatedAttendance.getInTime());
+            }
+            if (updatedAttendance.getOutTime() != null) {
+                existingAttendance.setOutTime(updatedAttendance.getOutTime());
+            }
+            if (updatedAttendance.getDate() != null) {
+                existingAttendance.setDate(updatedAttendance.getDate());
+            }
+            if (updatedAttendance.getMonth() != null) {
+                existingAttendance.setMonth(updatedAttendance.getMonth());
+            }
+            if (updatedAttendance.getTeacherId() != null) {
+                existingAttendance.setTeacherId(updatedAttendance.getTeacherId());
+            }
 
-        if (updatedAttendance.getTeacherName() != null) {
-            existingAttendance.setTeacherName(updatedAttendance.getTeacherName());
-        }
-        if (updatedAttendance.getInTime() != null) {
-            existingAttendance.setInTime(updatedAttendance.getInTime());
-        }
-        if (updatedAttendance.getOutTime() != null) {
-            existingAttendance.setOutTime(updatedAttendance.getOutTime());
-        }
-        if (updatedAttendance.getDate() != null) {
-            existingAttendance.setDate(updatedAttendance.getDate());
-        }
-        if (updatedAttendance.getMonth() != null) {
-            existingAttendance.setMonth(updatedAttendance.getMonth());
-        }
-        if (updatedAttendance.getTeacherId() != null) {
-            existingAttendance.setTeacherId(updatedAttendance.getTeacherId());
-        }
+            // Recalculate mark if inTime and outTime are both available
+            if (existingAttendance.getInTime() != null && existingAttendance.getOutTime() != null) {
+                double hours = calculateHours(existingAttendance.getInTime(), existingAttendance.getOutTime());
+                String mark = getMark(hours);
+                existingAttendance.setMark(mark);
+            }
 
-        //  Recalculate mark if both inTime and outTime are present
-        if (existingAttendance.getInTime() != null && existingAttendance.getOutTime() != null) {
-            double hours = calculateHours(existingAttendance.getInTime(), existingAttendance.getOutTime());
-            String mark = getMark(hours);
-            existingAttendance.setMark(mark);
-        }
+            //Save updated record
+            TeachersAttendance saved = attendanceRepo.save(existingAttendance);
 
-        return attendanceRepo.save(existingAttendance);
+            // Convert to Response DTO
+            TeachersAttendanceResponseDto response = new TeachersAttendanceResponseDto();
+            response.setAttendanceId(saved.getTeachersAttendanceId());
+            response.setTeacherId(saved.getTeacherId());
+            response.setTeacherName(saved.getTeacherName());
+            response.setDate(saved.getDate());
+            response.setMonth(saved.getMonth());
+            response.setInTime(saved.getInTime());
+            response.setOutTime(saved.getOutTime());
+            response.setMark(saved.getMark());
+
+            return response;
+
+        } catch (AttendanceNotFoundException ex) {
+            throw ex; // Already meaningful exception
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalArgumentException("Invalid input data: " + ex.getMessage());
+        } catch (Exception ex) {
+            throw new RuntimeException("Error while updating teacher attendance: " + ex.getMessage());
+        }
     }
+
+//    @Override
+//    public TeachersAttendance updateTeacherAttendance(Integer teachersAttendanceId, TeachersAttendance updatedAttendance) {
+//
+//        TeachersAttendance existingAttendance = attendanceRepo.findById(teachersAttendanceId)
+//                .orElseThrow(() -> new AttendanceNotFoundException(
+//                        "Teacher Attendance not found with ID: " + teachersAttendanceId
+//                ));
+//
+//        if (updatedAttendance.getTeacherName() != null) {
+//            existingAttendance.setTeacherName(updatedAttendance.getTeacherName());
+//        }
+//        if (updatedAttendance.getInTime() != null) {
+//            existingAttendance.setInTime(updatedAttendance.getInTime());
+//        }
+//        if (updatedAttendance.getOutTime() != null) {
+//            existingAttendance.setOutTime(updatedAttendance.getOutTime());
+//        }
+//        if (updatedAttendance.getDate() != null) {
+//            existingAttendance.setDate(updatedAttendance.getDate());
+//        }
+//        if (updatedAttendance.getMonth() != null) {
+//            existingAttendance.setMonth(updatedAttendance.getMonth());
+//        }
+//        if (updatedAttendance.getTeacherId() != null) {
+//            existingAttendance.setTeacherId(updatedAttendance.getTeacherId());
+//        }
+//
+//        //  Recalculate mark if both inTime and outTime are present
+//        if (existingAttendance.getInTime() != null && existingAttendance.getOutTime() != null) {
+//            double hours = calculateHours(existingAttendance.getInTime(), existingAttendance.getOutTime());
+//            String mark = getMark(hours);
+//            existingAttendance.setMark(mark);
+//        }
+//        return attendanceRepo.save(existingAttendance);
+//    }
 
     @Override
     public void deleteTeacherAttendance(Integer teachersAttendanceId) {
         TeachersAttendance existingAttendance = attendanceRepo.findById(teachersAttendanceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Attendance not found with ID: " + teachersAttendanceId));
+                .orElseThrow(() -> new AttendanceNotFoundException("Attendance not found with ID: " + teachersAttendanceId));
 
         attendanceRepo.delete(existingAttendance);
     }
@@ -262,7 +307,6 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
             if (date == null || date.trim().isEmpty()) {
                 throw new IllegalArgumentException("Date cannot be null or empty");
             }
-
             // Validate date format (dd-MM-yyyy)
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
             LocalDate parsedDate;
@@ -272,13 +316,12 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
             } catch (Exception e) {
                 throw new IllegalArgumentException("Invalid date format. Please use dd-MM-yyyy");
             }
-
             String formattedDate = parsedDate.format(formatter); // same format as DB
 
             List<TeachersAttendance> attendances = attendanceRepo.findByDate(formattedDate);
 
             if (attendances == null || attendances.isEmpty()) {
-                throw new ResourceNotFoundException("No attendance records found for date: " + date);
+                throw new AttendanceNotFoundException("No attendance records found for date: " + date);
             }
 
             responseList = attendances.stream().map(att -> {
@@ -296,15 +339,13 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
 
         } catch (IllegalArgumentException e) {
             System.err.println("Validation Error: " + e.getMessage());
-        } catch (ResourceNotFoundException e) {
+        }  catch (AttendanceNotFoundException e  ) {
             System.err.println("Data Not Found: " + e.getMessage());
         } catch (Exception e) {
             System.err.println("Unexpected Error: " + e.getMessage());
         }
-
         return responseList;
     }
-
 
     @Override
     public TeachersAttendanceSummaryDto getAttendanceSummaryByTeacherIdAndMonth(Integer teacherId, String month) {
@@ -322,7 +363,7 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
             List<TeachersAttendance> attendances = attendanceRepo.findByTeacherIdAndMonth(teacherId, month.toUpperCase());
 
             if (attendances == null || attendances.isEmpty()) {
-                throw new ResourceNotFoundException(
+                throw new AttendanceNotFoundException(
                         "No attendance found for Teacher ID: " + teacherId + " in month: " + month);
             }
 
@@ -354,7 +395,7 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
 
         } catch (IllegalArgumentException e) {
             System.err.println("Validation Error: " + e.getMessage());
-        } catch (ResourceNotFoundException e) {
+        } catch (AttendanceNotFoundException e) {
             System.err.println("Data Not Found: " + e.getMessage());
         } catch (Exception e) {
             System.err.println("Unexpected Error: " + e.getMessage());
@@ -364,33 +405,41 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
     }
 
     @Override
-    public List<TeachersAttendanceResponseDto> getAttendanceByYear(String year) {
+    public List<TeachersAttendanceResponseDto> getAttendanceByTeacherIdAndYear(Integer teacherId, String year) {
         List<TeachersAttendanceResponseDto> responseList = new ArrayList<>();
 
         try {
+            if (teacherId == null) {
+                throw new IllegalArgumentException("Teacher ID cannot be null");
+            }
+
             if (year == null || year.trim().isEmpty()) {
                 throw new IllegalArgumentException("Year cannot be null or empty");
             }
 
+            // Fetch all attendance records
             List<TeachersAttendance> attendances = attendanceRepo.findAll();
 
-            // Filter by year extracted from the date field (dd-MM-yyyy)
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
+            //  Filter by both teacherId and year
             List<TeachersAttendance> filtered = attendances.stream()
                     .filter(att -> {
                         try {
-                            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
                             LocalDate date = LocalDate.parse(att.getDate(), formatter);
-                            return date.getYear() == Integer.parseInt(year);
+                            return att.getTeacherId().equals(teacherId)
+                                    && date.getYear() == Integer.parseInt(year);
                         } catch (Exception e) {
-                            return false; // Skip invalid date format
+                            return false; // Skip invalid date formats
                         }
                     })
                     .collect(Collectors.toList());
 
             if (filtered.isEmpty()) {
-                throw new ResourceNotFoundException("No attendance found for the year " + year);
+                throw new AttendanceNotFoundException("No attendance found for teacherId " + teacherId + " in year " + year);
             }
 
+            // Convert to DTO
             responseList = filtered.stream().map(att -> {
                 TeachersAttendanceResponseDto dto = new TeachersAttendanceResponseDto();
                 dto.setAttendanceId(att.getTeachersAttendanceId());
@@ -404,10 +453,8 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
                 return dto;
             }).collect(Collectors.toList());
 
-        } catch (IllegalArgumentException e) {
-            System.err.println("Validation Error: " + e.getMessage());
-        } catch (ResourceNotFoundException e) {
-            System.err.println("Data Not Found: " + e.getMessage());
+        } catch (TeacherNotFoundException | AttendanceNotFoundException | IllegalArgumentException e) {
+            System.err.println("Error: " + e.getMessage());
         } catch (Exception e) {
             System.err.println("Unexpected Error: " + e.getMessage());
         }
@@ -415,5 +462,3 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
         return responseList;
     }
 }
-
-
