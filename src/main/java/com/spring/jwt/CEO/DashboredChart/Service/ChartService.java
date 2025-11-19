@@ -1,10 +1,9 @@
 package com.spring.jwt.CEO.DashboredChart.Service;
 
-import java.util.List;
 import java.util.Map;
 
 public interface ChartService {
-    Map<String, List<Integer>> getBarChart();
-
     Map<String, Long> getPieChart();
+
+    Map<String, Map<String, Integer>> getMonthlyChart(String studentClass, String batch);
 }

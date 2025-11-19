@@ -1,96 +1,123 @@
 package com.spring.jwt.CEOServiceTest;
 
 import com.spring.jwt.CEO.DashboredChart.Service.Impl.ChartServiceImpl;
+import com.spring.jwt.exception.MonthlyChartCustomException;
+import com.spring.jwt.exception.PieChartCustomException;
 import com.spring.jwt.repository.StudentRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
-public class ChartServiceImplTest {
+@ExtendWith(MockitoExtension.class)
+class ChartServiceImplTest {
 
+    @Mock
     private StudentRepository studentRepository;
+
+    @InjectMocks
     private ChartServiceImpl chartService;
 
-    @BeforeEach
-    void setUp() {
-        studentRepository = Mockito.mock(StudentRepository.class);
-        chartService = new ChartServiceImpl(studentRepository);
-    }
-
-    // ----------------------------------------------------
-    // TEST 1: PIE CHART
-    // ----------------------------------------------------
+    // -------------------------------------------------------------
+    // PIE CHART TESTS
+    // -------------------------------------------------------------
     @Test
-    void testGetPieChart() {
+    void testGetPieChart_Success() {
 
-        List<Object[]> mockData = Arrays.asList(
+        List<Object[]> mockRows = Arrays.asList(
                 new Object[]{"11", 50L},
-                new Object[]{"12", 40L}
+                new Object[]{"12", 30L}
         );
 
-        when(studentRepository.countByClass()).thenReturn(mockData);
+        when(studentRepository.countByClass()).thenReturn(mockRows);
 
         Map<String, Long> result = chartService.getPieChart();
 
         assertEquals(2, result.size());
         assertEquals(50L, result.get("Students Class 11"));
-        assertEquals(40L, result.get("Students Class 12"));
+        assertEquals(30L, result.get("Students Class 12"));
     }
 
-    // ----------------------------------------------------
-    // TEST 2: BAR CHART
-    // ----------------------------------------------------
     @Test
-    void testGetBarChart() {
+    void testGetPieChart_EmptyList() {
+        when(studentRepository.countByClass()).thenReturn(Collections.emptyList());
 
-        List<Object[]> mockData = Arrays.asList(
-                new Object[]{1, "11", 86},
-                new Object[]{2, "11", 80},
-                new Object[]{1, "12", 85},
-                new Object[]{2, "12", 75}
+        assertThrows(PieChartCustomException.class,
+                () -> chartService.getPieChart());
+    }
+
+    @Test
+    void testGetPieChart_NullData() {
+        when(studentRepository.countByClass()).thenReturn(null);
+
+        assertThrows(PieChartCustomException.class,
+                () -> chartService.getPieChart());
+    }
+
+    // -------------------------------------------------------------
+    // MONTHLY CHART TESTS
+    // -------------------------------------------------------------
+    @Test
+    void testGetMonthlyChart_Success() {
+
+        List<Object[]> mockRows = Arrays.asList(
+                new Object[]{1, "11", 80},   // Jan
+                new Object[]{2, "11", 75},   // Feb
+                new Object[]{1, "12", 90}    // Jan
         );
 
-        when(studentRepository.getMonthlyCount()).thenReturn(mockData);
+        when(studentRepository.getMonthlyCountFiltered("11", "2024"))
+                .thenReturn(mockRows);
 
-        Map<String, List<Integer>> result = chartService.getBarChart();
+        Map<String, Map<String, Integer>> result =
+                chartService.getMonthlyChart("11", "2024");
 
-        // Validate keys exist
-        assertTrue(result.containsKey("11th"));
-        assertTrue(result.containsKey("12th"));
+        assertEquals(2, result.size()); // 11 & 12 classes
 
-        // Validate month values
-        assertEquals(86, result.get("11th").get(0));
-        assertEquals(80, result.get("11th").get(1));
+        assertEquals(2, result.get("11").size());
+        assertEquals(80, result.get("11").get("JAN"));
+        assertEquals(75, result.get("11").get("FEB"));
 
-        assertEquals(85, result.get("12th").get(0));
-        assertEquals(75, result.get("12th").get(1));
-
-        // Remaining months should be zero
-        for (int i = 2; i < 12; i++) {
-            assertEquals(0, result.get("11th").get(i));
-            assertEquals(0, result.get("12th").get(i));
-        }
+        assertEquals(90, result.get("12").get("JAN"));
     }
 
-    // ----------------------------------------------------
-    // TEST 3: Should handle empty DB properly
-    // ----------------------------------------------------
     @Test
-    void testGetBarChart_EmptyData() {
+    void testGetMonthlyChart_EmptyData() {
 
-        when(studentRepository.getMonthlyCount()).thenReturn(Collections.emptyList());
+        when(studentRepository.getMonthlyCountFiltered(null, null))
+                .thenReturn(Collections.emptyList());
 
-        Map<String, List<Integer>> result = chartService.getBarChart();
+        assertThrows(MonthlyChartCustomException.class,
+                () -> chartService.getMonthlyChart(null, null));
+    }
 
-        assertEquals(12, result.get("11th").size());
-        assertEquals(12, result.get("12th").size());
+    @Test
+    void testGetMonthlyChart_NullList() {
 
-        assertTrue(result.get("11th").stream().allMatch(v -> v == 0));
-        assertTrue(result.get("12th").stream().allMatch(v -> v == 0));
+        when(studentRepository.getMonthlyCountFiltered(null, null))
+                .thenReturn(null);
+
+        assertThrows(MonthlyChartCustomException.class,
+                () -> chartService.getMonthlyChart(null, null));
+    }
+
+    @Test
+    void testGetMonthlyChart_InvalidMonth() {
+
+        List<Object[]> mockRows = Collections.singletonList(
+                new Object[]{13, "11", 70} // invalid month
+        );
+
+        when(studentRepository.getMonthlyCountFiltered("11", "2024"))
+                .thenReturn(mockRows);
+
+        assertThrows(MonthlyChartCustomException.class,
+                () -> chartService.getMonthlyChart("11", "2024"));
     }
 }

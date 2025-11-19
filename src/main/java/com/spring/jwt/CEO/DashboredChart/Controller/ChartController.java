@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -15,7 +16,6 @@ import java.util.Map;
 @RequestMapping("/api/v1/chart")
 @RequiredArgsConstructor
 public class ChartController {
-
     private final ChartService chartService;
 
     @GetMapping("/pieChart")
@@ -25,11 +25,18 @@ public class ChartController {
         );
     }
 
-    @GetMapping("/barChart")
-    public ResponseEntity<ApiResponse<Map<String, List<Integer>>>> getBarChart() {
+    @GetMapping("/monthly")
+    public ResponseEntity<ApiResponse<Map<String, Map<String, Integer>>>> getMonthlyChart(
+            @RequestParam(required = false) String studentClass,
+            @RequestParam(required = false) String batch) {
+
         return ResponseEntity.ok(
-                ApiResponse.success("Bar chart data fetched successfully", chartService.getBarChart())
+                ApiResponse.success(
+                        "Monthly chart fetched",
+                        chartService.getMonthlyChart(studentClass, batch)
+                )
         );
     }
+
 }
 
