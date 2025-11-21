@@ -1,6 +1,6 @@
 package com.spring.jwt.CEOServiceTest;
 
-import com.spring.jwt.CEO.DashboredChart.Service.Impl.ChartServiceImpl;
+import com.spring.jwt.CEO.CEOServiceImpl;
 import com.spring.jwt.exception.MonthlyChartCustomException;
 import com.spring.jwt.exception.PieChartCustomException;
 import com.spring.jwt.repository.StudentRepository;
@@ -22,7 +22,7 @@ class ChartServiceImplTest {
     private StudentRepository studentRepository;
 
     @InjectMocks
-    private ChartServiceImpl chartService;
+    private CEOServiceImpl chartService;
 
     // -------------------------------------------------------------
     // PIE CHART TESTS
