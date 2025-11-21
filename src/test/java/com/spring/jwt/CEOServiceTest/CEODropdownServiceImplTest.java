@@ -1,6 +1,6 @@
 package com.spring.jwt.CEOServiceTest;
 
-import com.spring.jwt.CEO.DashboredChart.Service.Impl.CEODropdownServiceImpl;
+import com.spring.jwt.CEO.CEOServiceImpl;
 import com.spring.jwt.repository.StudentRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,7 +22,7 @@ class CEODropdownServiceImplTest {
     private StudentRepository studentRepository;
 
     @InjectMocks
-    private CEODropdownServiceImpl dropdownService;
+    private CEOServiceImpl dropdownService;
 
     // -----------------------------
     // getStudentClass() Tests
