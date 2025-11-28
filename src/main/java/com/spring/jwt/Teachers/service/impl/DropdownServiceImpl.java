@@ -66,19 +66,21 @@ public class DropdownServiceImpl implements DropdownService {
         logger.debug("Question papers fetched: {}", papers);
         return papers;
     }
-
-    @Override
-    public List<QuestionBankDTO> getQuestionsOnly(String studentClass, String subject, Integer teacherId) {
-        logger.info("Fetching questions without options for class: {}, subject: {}",
-                studentClass, subject);
-
-        List<QuestionBankDTO> questions = Optional.ofNullable(
-                        teacherRepository.findQuestionsOnly(studentClass, subject ,teacherId))
-                .filter(list -> !list.isEmpty())
-                .orElseThrow(() -> new DropdownResourceNotFoundException(
-                        "No questions found for subject: " + subject));
-
-        logger.debug("Questions fetched: {}", questions);
-        return questions;
-    }
+//
+//    @Override
+//    public List<QuestionBankDTO> getQuestionsOnly(String studentClass, String subject, Integer teacherId) {
+//        logger.info("Fetching questions without options for class: {}, subject: {}",
+//                studentClass, subject);
+//
+//        List<QuestionBankDTO> questions = Optional.ofNullable(
+//                        teacherRepository.findQuestionsOnly(studentClass, subject, teacherId))
+//                .filter(list -> !list.isEmpty())
+//                .orElseThrow(() -> new DropdownResourceNotFoundException(
+//                        "No questions found for subject: " + subject));
+//
+//        logger.debug("Questions fetched: {}", questions);
+//        return questions;
+//
+//
+//    }}
 }

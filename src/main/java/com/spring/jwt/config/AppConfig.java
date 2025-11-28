@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.http.HttpMethod;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
@@ -75,7 +76,7 @@ public class AppConfig {
     @Value("${app.url.frontend:http://localhost:5173}")
     private String frontendUrl;
 
-    @Value("#{'${app.cors.allowed-origins:http://localhost:5173,http://localhost:3000,http://localhost:8080,http://localhost:5173/,http://localhost:8091/,http://localhost:8085/}'.split(',')}")
+    @Value("#{'${app.cors.allowed-origins:https://unadulterate-karlene-condensible.ngrok-free.dev,http://localhost:5173,http://localhost:3000,http://localhost:8080,http://localhost:5173/,http://localhost:8091/,http://localhost:8085/}'.split(',')}")
     private List<String> allowedOrigins;
 
     @Bean
@@ -147,7 +148,16 @@ public class AppConfig {
                 .xssProtection(xss -> xss
                     .headerValue(XXssProtectionHeaderWriter.HeaderValue.ENABLED_MODE_BLOCK))
                 .contentSecurityPolicy(csp -> csp
-                    .policyDirectives("default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'"))
+                        //.policyDirectives("default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'"))
+
+                        .policyDirectives(
+                                "default-src 'self'; " +
+                                        "connect-src 'self' http://localhost:5173 https://*.ngrok-free.app https://*.ngrok-free.dev; " +
+                                        "script-src 'self' 'unsafe-inline'; " +
+                                        "style-src 'self' 'unsafe-inline'; " +
+                                        "img-src 'self' data:; font-src 'self';"
+                        ))
+
                 .frameOptions(frame -> frame.deny())
                 .referrerPolicy(referrer -> referrer
                     .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
@@ -157,6 +167,8 @@ public class AppConfig {
 
         log.debug("Configuring URL-based security rules");
         http.authorizeHttpRequests(authorize -> authorize
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/api/v1/users/personalInfo/**").permitAll() // ✅ Added here
                 .requestMatchers("/api/v1/users/editPersonalInfo/**").permitAll() // ✅ Added here
                 .requestMatchers("/api/auth/**").permitAll()
@@ -224,6 +236,7 @@ public class AppConfig {
 
 
 
+
                 .anyRequest().authenticated());
 
         // Create a request matcher for public URLs
@@ -281,6 +294,7 @@ public class AppConfig {
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/questionBank"),
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/dropdown/**"),
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/chart/**"),
+                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/teacherSalary/**"),
 
 
                     new org.springframework.security.web.util.matcher.AntPathRequestMatcher(jwtConfig.getUrl()),
@@ -306,22 +320,24 @@ public class AppConfig {
         return http.build();
     }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        return new CorsConfigurationSource() {
-            @Override
-            public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
-                CorsConfiguration config = new CorsConfiguration();
-                config.setAllowedOrigins(allowedOrigins);
-                config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-                config.setAllowCredentials(true);
-                config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept"));
-                config.setExposedHeaders(Arrays.asList("Authorization"));
-                config.setMaxAge(3600L);
-                return config;
-            }
-        };
-    }
+//    @Bean
+//    public CorsConfigurationSource corsConfigurationSource() {
+//        return new CorsConfigurationSource() {
+//            @Override
+//            public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
+//                CorsConfiguration config = new CorsConfiguration();
+//                config.setAllowedOrigins(allowedOrigins);
+//                config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+//                config.setAllowCredentials(true);
+//                config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept"));
+//                config.setExposedHeaders(Arrays.asList("Authorization"));
+//                config.setMaxAge(3600L);
+//                return config;
+//            }
+//        };
+//    }
+
+
 
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
