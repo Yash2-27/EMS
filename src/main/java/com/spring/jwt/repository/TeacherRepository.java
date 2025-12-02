@@ -28,19 +28,19 @@ public interface TeacherRepository extends JpaRepository<Teacher, Integer> {
             @Param("teacherId") Integer teacherId,
             @Param("subject") String subject
     );
-    @Query("SELECT new com.spring.jwt.Teachers.dto.QuestionBankDTO(" +
-            "q.questionId, q.questionText, q.subject, q.level) " +
-            "FROM Teacher t " +
-            "JOIN Question q ON t.userId = q.userId " +
-            "JOIN Paper p ON q.paper = p " +
-            "WHERE p.studentClass = :studentClass " +
-            "AND t.teacherId = :teacherId " +
-            "AND q.subject = :subject")
-    List<QuestionBankDTO> findQuestionsOnly(
-            @Param("studentClass") String studentClass,
-            @Param("subject") String subject,
-            @Param("teacherId") Integer teacherId
-    );
+//    @Query("SELECT new com.spring.jwt.Teachers.dto.QuestionBankDTO(" +
+//            "q.questionId, q.questionText, q.subject, q.level) " +
+//            "FROM Teacher t " +
+//            "JOIN Question q ON t.userId = q.userId " +
+//            "JOIN Paper p ON q.paper = p " +
+//            "WHERE p.studentClass = :studentClass " +
+//            "AND t.teacherId = :teacherId " +
+//            "AND q.subject = :subject")
+//    List<QuestionBankDTO> findQuestionsOnly(
+//            @Param("studentClass") String studentClass,
+//            @Param("subject") String subject,
+//            @Param("teacherId") Integer teacherId
+//    );
 
 
 
