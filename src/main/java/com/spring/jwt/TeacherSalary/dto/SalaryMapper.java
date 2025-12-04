@@ -26,6 +26,7 @@ public class SalaryMapper {
         SalaryResponseDto dto = new SalaryResponseDto();
         dto.setSalaryId(m.getSalaryId());
         dto.setTeacherId(m.getTeacherId());
+        dto.setTeacherName(m.getTeacherName());
         dto.setMonth(m.getMonth());
         dto.setYear(m.getYear());
         dto.setCalculatedSalary(m.getCalculatedSalary());
@@ -41,9 +42,10 @@ public class SalaryMapper {
 
         dto.setPaymentDate(
                 m.getPaymentDate() == null
-                        ? null
+                        ? "PENDING"
                         : m.getPaymentDate().format(DateTimeFormatter.ISO_DATE_TIME)
         );
+
         return dto;
     }
 
@@ -61,7 +63,7 @@ public class SalaryMapper {
         dto.setCreatedAt(s.getCreatedAt());
         dto.setUpdatedAt(s.getUpdatedAt());
 
-        // Use updated values if provided in request, otherwise keep existing
+
         dto.setPerDaySalary(req.getPerDaySalary() != null ? req.getPerDaySalary() : s.getPerDaySalary());
         dto.setAnnualSalary(req.getAnnualSalary() != null ? req.getAnnualSalary() : s.getAnnualSalary());
 

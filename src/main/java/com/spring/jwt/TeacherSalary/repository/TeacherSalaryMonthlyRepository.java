@@ -11,8 +11,10 @@ import java.util.List;
 public interface TeacherSalaryMonthlyRepository
         extends JpaRepository<TeacherSalaryMonthly, Long> {
 
-    Optional<TeacherSalaryMonthly> findByTeacherIdAndMonthAndYear(
-            Integer teacherId, String month, Integer year);
+    Optional<TeacherSalaryMonthly> findByTeacherIdAndMonthAndYear(Integer teacherId, String month, Integer year);
 
     List<TeacherSalaryMonthly> findByTeacherId(Integer teacherId);
+
+
+
 }
