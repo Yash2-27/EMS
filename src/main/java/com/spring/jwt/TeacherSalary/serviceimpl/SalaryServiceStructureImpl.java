@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class SalaryServiceImpl implements SalaryService {
+public class SalaryServiceStructureImpl implements SalaryService {
 
     private final TeacherSalaryStructureRepository structureRepo;
     private final TeacherSalaryMonthlyRepository monthlyRepo;
@@ -197,123 +197,6 @@ public class SalaryServiceImpl implements SalaryService {
     }
 
 
-    // ----------------------------------------------------------//
-    // 2) GENERATE SALARY                                        //
-    // ----------------------------------------------------------//
-    @Override
-    public SalaryResponseDto generateSalary(SalaryGenerateRequestDto req) {
-
-        try {
-            if (req.getTeacherId() == null)
-                throw new TeacherSalaryException("Teacher ID cannot be null");
-
-            if (req.getMonth() == null)
-                throw new TeacherSalaryException("Month cannot be null");
-
-            if (req.getYear() == null)
-                throw new TeacherSalaryException("Year cannot be null");
-
-            String fullMonth = toFullMonth(req.getMonth());
-            String shortMonth = toShortMonth(req.getMonth());
-
-            monthlyRepo.findByTeacherIdAndMonthAndYear(req.getTeacherId(), shortMonth, req.getYear())
-                    .ifPresent(m -> {
-                        throw new TeacherSalaryException("Salary already generated for this month");
-                    });
-
-            TeacherSalaryStructure structure = structureRepo.findByTeacherId(req.getTeacherId())
-                    .orElseThrow(() -> new TeacherSalaryException("Salary structure not found for this teacher"));
-
-
-            if (!"ACTIVE".equalsIgnoreCase(structure.getStatus())) {
-                throw new TeacherSalaryException("Salary structure is not ACTIVE. Cannot generate salary.");
-            }
-
-
-
-            List<TeachersAttendance> attendanceList =
-                    attendanceRepo.findByTeacherIdAndMonth(req.getTeacherId(), fullMonth);
-
-            if (attendanceList.isEmpty()) {
-                attendanceList =
-                        attendanceRepo.findByTeacherIdAndMonth(req.getTeacherId(), shortMonth);
-            }
-
-
-            if (attendanceList.isEmpty()) {
-                throw new TeacherSalaryException("No attendance found for this month");
-            }
-
-            int presentDays = 0;
-            int absentDays = 0;
-            int halfDays = 0;
-            int lateDays = 0;
-
-            for (TeachersAttendance a : attendanceList) {
-
-                String mark = a.getMark().trim().toUpperCase();
-
-                switch (mark) {
-                    case "PRESENT":
-                    case "FULL_DAY":
-                        presentDays += 1;
-                        break;
-
-                    case "HALF":
-                    case "HALF DAY":
-                    case "HALF_DAY":
-                        halfDays += 1;
-                        break;
-
-                    case "LATE":
-                        lateDays += 1;
-                        break;
-
-                    case "ABSENT":
-                    default:
-                        absentDays += 1;
-                }
-            }
-
-            int totalDays = presentDays + absentDays + halfDays + lateDays;
-
-            Integer perDay = structure.getPerDaySalary();
-
-            double calculatedSalary = perDay * totalDays;
-
-            int deductionAmount =
-                    (int) ((absentDays * perDay) +
-                            (halfDays * (perDay * 0.5)) +
-                            (lateDays * (perDay * 0.25)));
-
-            double finalSalary = calculatedSalary - deductionAmount;
-
-            TeacherSalaryMonthly saved = TeacherSalaryMonthly.builder()
-                    .teacherId(req.getTeacherId())
-                    .month(shortMonth)
-                    .year(req.getYear())
-                    .calculatedSalary(calculatedSalary)
-                    .deduction(deductionAmount)
-                    .finalSalary(finalSalary)
-                    .status("UNPAID")
-                    .createdAt(LocalDateTime.now(tz))
-                    .presentDays(presentDays)
-                    .absentDays(absentDays)
-                    .halfDays(halfDays)
-                    .lateDays(lateDays)
-                    .perDaySalary(structure.getPerDaySalary())
-                    .totalDays(totalDays)
-                    .build();
-
-            monthlyRepo.save(saved);
-
-            return SalaryMapper.toSalaryResponse(saved);
-        }
-        catch (Exception e) {
-            throw new TeacherSalaryException("Failed to generate salary: " + e.getMessage());
-        }
-    }
-
 
 
     // ----------------------------------------------------------
@@ -338,66 +221,6 @@ public class SalaryServiceImpl implements SalaryService {
         }
     }
 
-    // ----------------------------------------------------------
-    // 4) PAY SALARY
-    // ----------------------------------------------------------
-    @Override
-    public SalaryResponseDto paySalary(Long salaryId) {
-
-        try {
-            TeacherSalaryMonthly salary = monthlyRepo.findById(salaryId)
-                    .orElseThrow(() -> new RuntimeException("Salary record not found"));
-
-            if ("PAID".equalsIgnoreCase(salary.getStatus()))
-                throw new TeacherSalaryException("Salary is already paid");
-
-            salary.setStatus("PAID");
-            salary.setPaymentDate(LocalDateTime.now(tz));
-
-            monthlyRepo.save(salary);
-
-            return SalaryMapper.toSalaryResponse(salary);
-        } catch (Exception e) {
-            throw new TeacherSalaryException("Failed to update salary payment status: " + e.getMessage());
-        }
-    }
-
-    // ----------------------------------------------------------
-    // SALARY HISTORY
-    // ----------------------------------------------------------
-    @Override
-    public List<SalaryResponseDto> getSalaryHistory(Integer teacherId) {
-        try {
-            return monthlyRepo.findByTeacherId(teacherId)
-                    .stream()
-                    .map(SalaryMapper::toSalaryResponse)
-                    .collect(Collectors.toList());
-        }
-        catch (Exception e) {
-            throw new TeacherSalaryException("Failed to fetch salary history: " + e.getMessage());
-        }
-    }
-
-
-    // ----------------------------------------------------------
-    // GET SALARY BY MONTH
-    // ----------------------------------------------------------
-    @Override
-    public SalaryResponseDto getSalaryByMonth(Integer teacherId, String month, Integer year) {
-
-        try {
-            String shortMonth = toShortMonth(month);
-
-            TeacherSalaryMonthly salary = monthlyRepo
-                    .findByTeacherIdAndMonthAndYear(teacherId, shortMonth, year)
-                    .orElseThrow(() -> new RuntimeException("Salary not found for this month"));
-
-            return SalaryMapper.toSalaryResponse(salary);
-        }
-        catch (Exception e) {
-            throw new RuntimeException("Failed to fetch salary for month: " + e.getMessage());
-        }
-    }
 
 
 

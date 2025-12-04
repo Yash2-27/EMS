@@ -20,6 +20,9 @@ public class TeacherSalaryMonthly {
     @Column(name = "teacher_id", nullable = false)
     private Integer teacherId;
 
+    @Column(name = "teacher_Name" , nullable = false)
+    private String teacherName;
+
     @Column(name = "month", length = 10, nullable = false)
     private String month;
 
@@ -56,9 +59,9 @@ public class TeacherSalaryMonthly {
     @Column(name = "per_day_salary", nullable = false)
     private Integer perDaySalary;
 
-    @Column(name = "payment_date", nullable = false)
+    @Column(name = "payment_date")
     private LocalDateTime paymentDate;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 }

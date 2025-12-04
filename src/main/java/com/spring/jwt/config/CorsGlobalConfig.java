@@ -22,7 +22,7 @@ public class CorsGlobalConfig {
                                 "https://*.ngrok-free.dev",
                                 "https://*.ngrok-free.app"
                         )
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                        .allowedMethods("GET", "POST", "PATCH", "DELETE", "OPTIONS","PATCH")
                         .allowedHeaders("*")
                         .exposedHeaders("Authorization")
                         .allowCredentials(true)
