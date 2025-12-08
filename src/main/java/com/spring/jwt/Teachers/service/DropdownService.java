@@ -19,5 +19,5 @@ public interface DropdownService {
 
     List<TeacherQuestionFlatDto> getQuestionPaper(String studentClass, Integer teacherId, String subject);
 
-    List<QuestionBankDTO> getQuestionsOnly(String studentClass, String subject , Integer teacherId);
+//    List<QuestionBankDTO> getQuestionsOnly(String studentClass, String subject , Integer teacherId);
 }

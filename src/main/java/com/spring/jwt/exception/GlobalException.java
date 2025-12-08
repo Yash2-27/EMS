@@ -399,6 +399,28 @@ public class GlobalException extends ResponseEntityExceptionHandler {
     }
 
 
+    @ExceptionHandler(PieChartCustomException.class)
+    public ResponseEntity<Map<String, Object>> handlePieChartNotFound(PieChartCustomException ex) {
+        log.error("Pie Chart data not found: {}", ex.getMessage());
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.NOT_FOUND.value());
+        body.put("error", "Not Found");
+        body.put("message", ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(MonthlyChartCustomException.class)
+    public ResponseEntity<Map<String, Object>> handlePieChartNotFound(MonthlyChartCustomException ex) {
+        log.error("Monthly Chart data not found: {}", ex.getMessage());
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.NOT_FOUND.value());
+        body.put("error", "Not Found");
+        body.put("message", ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+    }
+
 //package com.spring.jwt.exception;
 //
 //import com.spring.jwt.Classes.ClassesNotFoundException;

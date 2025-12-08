@@ -1,6 +1,7 @@
 package com.spring.jwt.CEO;
 
 import java.util.List;
+import java.util.Map;
 
 public interface CEOService {
     /**
@@ -16,5 +17,10 @@ public interface CEOService {
         List<DashboredDTO> getAverageStudents(String studentClass, String batch);
 
         List<DashboredDTO> getBelowAverageStudents(String studentClass, String batch);
+
+    List<String> getStudentClass();
+    List<String> getStudentBatch();
+    Map<String, Long> getPieChart();
+    Map<String, Map<String, Integer>> getMonthlyChart(String studentClass, String batch);
 
 }

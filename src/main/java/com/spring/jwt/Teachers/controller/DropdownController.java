@@ -42,14 +42,14 @@ public class DropdownController {
         return ResponseEntity.ok(ApiResponse.success("Question papers fetched successfully", papers));
     }
 
-    @GetMapping("/questionBank")
-    public ResponseEntity<?> getQuestionsOnly(
-            @RequestParam String studentClass,
-            @RequestParam Integer teacherId,
-            @RequestParam String subject) {
-
-        return ResponseEntity.ok(dropdownService.getQuestionsOnly(studentClass,subject,teacherId));
-    }
+//    @GetMapping("/questionBank")
+//    public ResponseEntity<?> getQuestionsOnly(
+//            @RequestParam String studentClass,
+//            @RequestParam Integer teacherId,
+//            @RequestParam String subject) {
+//
+//        return ResponseEntity.ok(dropdownService.getQuestionsOnly(studentClass,subject,teacherId));
+//    }
 
     /**
      @GetMapping("/titles")
