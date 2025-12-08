@@ -64,7 +64,10 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
                         a.setTeacherId(teacher.getTeacherId());
                         a.setTeacherName(teacher.getName());
                         a.setDate(formattedDate);
-                        a.setMonth(currentDate.getMonth().name());
+                        //a.setMonth(currentDate.getMonth().name());
+                        String month = currentDate.getMonth().name(); // e.g., DECEMBER
+                        a.setMonth(formatMonth(month));
+
                         return a;
                     });
 
@@ -120,6 +123,12 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
         if (hours >= fullDayThreshold) return "FULL_DAY";
         if (hours >= halfDayThreshold) return "HALF_DAY";
         return "ABSENT";
+    }
+
+    private String formatMonth(String month) {
+        if (month == null || month.isEmpty()) return month;
+        month = month.toLowerCase();          // december
+        return month.substring(0, 1).toUpperCase() + month.substring(1);  // December
     }
 
     @Override
@@ -238,7 +247,7 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
                 if (!month.matches("(?i)^(January|February|March|April|May|June|July|August|September|October|November|December)$")) {
                     throw new InvalidAttendanceDataException("Invalid month. Only full month names (January–December) are allowed");
                 }
-                existingAttendance.setMonth(month);
+                existingAttendance.setMonth(formatMonth(updatedAttendance.getMonth()));
             }
 
             if (updatedAttendance.getInTime() != null) {

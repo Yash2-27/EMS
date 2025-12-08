@@ -164,7 +164,7 @@ public class TeachersAttendanceController {
     @PatchMapping("/update/{id}")
     public ResponseEntity<ApiResponse<TeacherAttendanceUpdateDTO>> updateAttendance(
             @PathVariable("id") Integer attendanceId,
-           @Valid @RequestBody TeachersAttendance updatedAttendance) {
+            @Valid @RequestBody TeachersAttendance updatedAttendance) {
 
         TeacherAttendanceUpdateDTO updated = service.updateTeacherAttendance(attendanceId, updatedAttendance);
 
