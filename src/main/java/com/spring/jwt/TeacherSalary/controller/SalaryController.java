@@ -166,7 +166,7 @@ public class SalaryController {
     }
 
     //===========================================================//
-    //              FOR ALL TEACHER SALARY INFORMATION LIST          //
+    //              FOR ALL TEACHER SALARY INFORMATION LIST      //
     //             /api/v1/teacherSalary/teacherSummary          //
     //===========================================================//
     @Operation(summary = "Get summary of all teachers' salaries")
