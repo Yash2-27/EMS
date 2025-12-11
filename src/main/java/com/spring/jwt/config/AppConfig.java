@@ -142,6 +142,8 @@ public class AppConfig {
         );
 
         http.cors(Customizer.withDefaults());
+        http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
+
 
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
@@ -154,7 +156,8 @@ public class AppConfig {
                                 "style-src 'self' 'unsafe-inline';" +
                                 "img-src 'self' data:;" +
                                 "font-src 'self'; " +
-                                "connect-src 'self' http://localhost:5173 http://localhost:3000 https://undemised-purulently-lamonica.ngrok-free.dev:;"
+                                " connect-src 'self' http://localhost:5174 https://*.ngrok-free.dev https://*.ngrok-free.app; "
+
                         ))
                 .frameOptions(frame -> frame.deny())
                 .referrerPolicy(referrer -> referrer
@@ -165,6 +168,8 @@ public class AppConfig {
 
         log.debug("Configuring URL-based security rules");
         http.authorizeHttpRequests(authorize -> authorize
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
                 .requestMatchers("/api/v1/users/personalInfo/**").permitAll() // ✅ Added here
                 .requestMatchers("/api/v1/users/editPersonalInfo/**").permitAll() // ✅ Added here
                 .requestMatchers("/api/auth/**").permitAll()
@@ -296,25 +301,13 @@ public class AppConfig {
                 );
 
         log.debug("Configuring security filters");
-        JwtUsernamePasswordAuthenticationFilter jwtUsernamePasswordAuthenticationFilter = new JwtUsernamePasswordAuthenticationFilter(authenticationManager(http), jwtConfig, jwtService, userRepository, activeSessionService);
-        JwtTokenAuthenticationFilter jwtTokenAuthenticationFilter = new JwtTokenAuthenticationFilter(jwtConfig, jwtService, userDetailsService(), publicUrls, activeSessionService);
-        JwtRefreshTokenFilter jwtRefreshTokenFilter = new JwtRefreshTokenFilter(authenticationManager(http), jwtConfig, jwtService, userDetailsService(), activeSessionService);
+       JwtUsernamePasswordAuthenticationFilter jwtUsernamePasswordAuthenticationFilter = new JwtUsernamePasswordAuthenticationFilter(authenticationManager(http), jwtConfig, jwtService, userRepository, activeSessionService);
 
-        http.addFilterBefore(jwtTokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(jwtUsernamePasswordAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(jwtRefreshTokenFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(xssFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(sqlInjectionFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(securityHeadersFilter, UsernamePasswordAuthenticationFilter.class);
-
-        http.authenticationProvider(customAuthenticationProvider);
-
-        log.debug("Security configuration completed");
         return http.build();
     }
 
-//    @Bean
+
+    //    @Bean
 //    public CorsConfigurationSource corsConfigurationSource() {
 //        return new CorsConfigurationSource() {
 //            @Override
@@ -332,12 +325,46 @@ public class AppConfig {
 //    }
 
     @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+
+        CorsConfiguration config = new CorsConfiguration();
+
+        config.setAllowedOriginPatterns(List.of(
+                "http://localhost:5174",
+                "http://localhost:5173",
+                "http://localhost:*",
+                "https://*.ngrok-free.dev",
+                "https://*.ngrok-free.app"
+        ));
+
+        config.setAllowedMethods(List.of(
+                "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
+        ));
+
+        config.setAllowedHeaders(List.of(
+                "Authorization",
+                "Content-Type",
+                "X-Requested-With",
+                "ngrok-skip-browser-warning"
+        ));
+
+        config.setExposedHeaders(List.of("Authorization"));
+        config.setAllowCredentials(true);
+        config.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
+
+
+    @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
         AuthenticationManagerBuilder builder = http.getSharedObject(AuthenticationManagerBuilder.class);
         builder.userDetailsService(userDetailsService())
                 .passwordEncoder(passwordEncoder());
         return builder.build();
     }
-
-
 }
