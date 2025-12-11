@@ -29,6 +29,7 @@ import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWrite
 import org.springframework.security.web.header.writers.XXssProtectionHeaderWriter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.ForwardedHeaderFilter;
 
 import java.util.Arrays;
@@ -38,9 +39,9 @@ import java.util.List;
 @EnableWebSecurity
 @EnableScheduling
 @EnableMethodSecurity(
-    securedEnabled = true,
-    jsr250Enabled = true,
-    prePostEnabled = true
+        securedEnabled = true,
+        jsr250Enabled = true,
+        prePostEnabled = true
 )
 @Slf4j
 public class AppConfig {
@@ -76,7 +77,7 @@ public class AppConfig {
     @Value("${app.url.frontend:http://localhost:5173}")
     private String frontendUrl;
 
-    @Value("#{'${app.cors.allowed-origins:https://unadulterate-karlene-condensible.ngrok-free.dev,http://localhost:5173,http://localhost:3000,http://localhost:8080,http://localhost:5173/,http://localhost:8091/,http://localhost:8085/}'.split(',')}")
+    @Value("#{'${app.cors.allowed-origins:https://undemised-purulently-lamonica.ngrok-free.dev,http://localhost:5173,http://localhost:3000,http://localhost:8080,http://localhost:5173/,http://localhost:8091/,http://localhost:8085/}'.split(',')}")
     private List<String> allowedOrigins;
 
     @Bean
@@ -109,66 +110,66 @@ public class AppConfig {
         log.debug("Configuring security filter chain");
 
         http.csrf(csrf -> csrf
-            .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-            .ignoringRequestMatchers(
-                "/api/**",
-                "/user/**",
-                "/api/v1/questions/**",
-                "/assessments/**",
-                "/fees/**",
-                "/api/v1/exam/**",
-                "api/v1/attendance/**",
-                "api/v1/paper-patterns/**",
-                "api/v1/notes/**",
-                "/api/v1/calendar-events/**",
-                "api/v1/exam-results/**",
-                "api/v1/exam/session",
-                "api/v1/Classes/**",
-                "api/v1/userFee",
-                "/api/v1/fees",
-                "/api/v1/students",
-                "/api/ceo/dash",
-                    "/api/v1/ceo",
-                "/api/v1/questionBank",
-                    "/api/v1/teacherAttendance/**",
-                "/api/v1/teacherSalary",
+                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                .ignoringRequestMatchers(
+                        "/api/**",
+                        "/user/**",
+                        "/api/v1/questions/**",
+                        "/assessments/**",
+                        "/fees/**",
+                        "/api/v1/exam/**",
+                        "api/v1/attendance/**",
+                        "api/v1/paper-patterns/**",
+                        "api/v1/notes/**",
+                        "/api/v1/calendar-events/**",
+                        "api/v1/exam-results/**",
+                        "api/v1/exam/session",
+                        "/api/v1/Classes/**",
+                        "api/v1/userFee",
+                        "/api/v1/fees",
+                        "/api/v1/students",
+                        "/api/ceo/dash",
+                        "/api/v1/ceo",
+                        "/api/v1/questionBank",
+                        "/api/v1/teacherAttendance/**",
+                        "/api/v1/teacherSalary",
 
 
 
-                jwtConfig.getUrl(),
-                jwtConfig.getRefreshUrl()
-            )
+                        jwtConfig.getUrl(),
+                        jwtConfig.getRefreshUrl()
+                )
         );
 
         http.cors(Customizer.withDefaults());
+        http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
+
 
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         http.headers(headers -> headers
                 .xssProtection(xss -> xss
-                    .headerValue(XXssProtectionHeaderWriter.HeaderValue.ENABLED_MODE_BLOCK))
+                        .headerValue(XXssProtectionHeaderWriter.HeaderValue.ENABLED_MODE_BLOCK))
                 .contentSecurityPolicy(csp -> csp
-                        //.policyDirectives("default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'"))
+                        .policyDirectives("default-src 'self'; " +
+                                "script-src 'self' 'unsafe-inline'; " +
+                                "style-src 'self' 'unsafe-inline';" +
+                                "img-src 'self' data:;" +
+                                "font-src 'self'; " +
+                                " connect-src 'self' http://localhost:5174 https://*.ngrok-free.dev https://*.ngrok-free.app; "
 
-                        .policyDirectives(
-                                "default-src 'self'; " +
-                                        "connect-src 'self' http://localhost:5173 https://*.ngrok-free.app https://*.ngrok-free.dev; " +
-                                        "script-src 'self' 'unsafe-inline'; " +
-                                        "style-src 'self' 'unsafe-inline'; " +
-                                        "img-src 'self' data:; font-src 'self';"
                         ))
-
                 .frameOptions(frame -> frame.deny())
                 .referrerPolicy(referrer -> referrer
-                    .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
+                        .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
                 .permissionsPolicy(permissions -> permissions
-                    .policy("camera=(), microphone=(), geolocation=()"))
-            );
+                        .policy("camera=(), microphone=(), geolocation=()"))
+        );
 
         log.debug("Configuring URL-based security rules");
         http.authorizeHttpRequests(authorize -> authorize
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+
                 .requestMatchers("/api/v1/users/personalInfo/**").permitAll() // ✅ Added here
                 .requestMatchers("/api/v1/users/editPersonalInfo/**").permitAll() // ✅ Added here
                 .requestMatchers("/api/auth/**").permitAll()
@@ -236,91 +237,77 @@ public class AppConfig {
 
 
 
-
                 .anyRequest().authenticated());
 
         // Create a request matcher for public URLs
         org.springframework.security.web.util.matcher.RequestMatcher publicUrls =
-            new org.springframework.security.web.util.matcher.OrRequestMatcher(
-                new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/users/personalInfo/**"),
-                new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/users/editPersonalInfo/**"),
+                new org.springframework.security.web.util.matcher.OrRequestMatcher(
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/users/personalInfo/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/users/editPersonalInfo/**"),
 
-                new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/auth/**"),
-                new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/public/**"),
-                new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/users/register"),
-                new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/users/password/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/auth/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/public/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/users/register"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/users/password/**"),
 
-                new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/v2/api-docs/**"),
-                new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/v3/api-docs/**"),
-                new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/swagger-resources/**"),
-                new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/swagger-ui/**"),
-                new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/configuration/**"),
-                new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/webjars/**"),
-                new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/swagger-ui.html"),
-                new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/user/**"),
-                new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/fees/**"),
-                new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/assessments/**"),
-                new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/questions/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/v2/api-docs/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/v3/api-docs/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/swagger-resources/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/swagger-ui/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/configuration/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/webjars/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/swagger-ui.html"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/user/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/fees/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/assessments/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/questions/**"),
 
-                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/attendance/**"),
-                new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/questions/search"),
-                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/papers/**"),
-                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/exam/**"),
-                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/papers/solutions/pdf"),
-                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/paper-patterns/**"),
-                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/notes/**"),
-                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/calendar-events/**"),
-                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/exam-results/**"),
-                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/exam/session/**"),
-                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/Classes/**"),
-                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/userFee/**"),
-                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/students/**"),
-                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/ceo/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/attendance/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/questions/search"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/papers/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/exam/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/papers/solutions/pdf"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/paper-patterns/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/notes/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/calendar-events/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/exam-results/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/exam/session/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/Classes/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/userFee/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/students/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/ceo/**"),
 //                new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/questionBank/**"),
-                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/teacherAttendance/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/teacherAttendance/**"),
 
-                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/users/personalInfo/**"),
-                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/users/editPersonalInfo/**"),
-                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/teachers/allTeacher/**"),
-                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/teachers/getTeachers/**"),
-                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/dropdown/getAllStudentClass/**"),
-                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/dropdown/teachers/**"),
-                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/dropdown/subjects/**"),
-                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/dropdown/titles/**"),
-                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/dropdown/paper/**"),
-                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/teacherSalary/**"),
-                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("api/v1/exam/previous/**"),
-                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/dropdown/questionBank/**"),
-                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/questionBank"),
-                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/dropdown/**"),
-                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/chart/**"),
-                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/teacherSalary/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/users/personalInfo/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/users/editPersonalInfo/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/teachers/allTeacher/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/teachers/getTeachers/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/dropdown/getAllStudentClass/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/dropdown/teachers/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/dropdown/subjects/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/dropdown/titles/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/dropdown/paper/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/teacherSalary/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("api/v1/exam/previous/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/dropdown/questionBank/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/questionBank"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/dropdown/**"),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/chart/**"),
 
 
-                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher(jwtConfig.getUrl()),
-                new org.springframework.security.web.util.matcher.AntPathRequestMatcher(jwtConfig.getRefreshUrl())
-            );
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher(jwtConfig.getUrl()),
+                        new org.springframework.security.web.util.matcher.AntPathRequestMatcher(jwtConfig.getRefreshUrl())
+                );
 
         log.debug("Configuring security filters");
-        JwtUsernamePasswordAuthenticationFilter jwtUsernamePasswordAuthenticationFilter = new JwtUsernamePasswordAuthenticationFilter(authenticationManager(http), jwtConfig, jwtService, userRepository, activeSessionService);
-        JwtTokenAuthenticationFilter jwtTokenAuthenticationFilter = new JwtTokenAuthenticationFilter(jwtConfig, jwtService, userDetailsService(), publicUrls, activeSessionService);
-        JwtRefreshTokenFilter jwtRefreshTokenFilter = new JwtRefreshTokenFilter(authenticationManager(http), jwtConfig, jwtService, userDetailsService(), activeSessionService);
+       JwtUsernamePasswordAuthenticationFilter jwtUsernamePasswordAuthenticationFilter = new JwtUsernamePasswordAuthenticationFilter(authenticationManager(http), jwtConfig, jwtService, userRepository, activeSessionService);
 
-        http.addFilterBefore(jwtTokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(jwtUsernamePasswordAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(jwtRefreshTokenFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(xssFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(sqlInjectionFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(securityHeadersFilter, UsernamePasswordAuthenticationFilter.class);
-
-        http.authenticationProvider(customAuthenticationProvider);
-
-        log.debug("Security configuration completed");
         return http.build();
     }
 
-//    @Bean
+
+    //    @Bean
 //    public CorsConfigurationSource corsConfigurationSource() {
 //        return new CorsConfigurationSource() {
 //            @Override
@@ -337,6 +324,40 @@ public class AppConfig {
 //        };
 //    }
 
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+
+        CorsConfiguration config = new CorsConfiguration();
+
+        config.setAllowedOriginPatterns(List.of(
+                "http://localhost:5174",
+                "http://localhost:5173",
+                "http://localhost:*",
+                "https://*.ngrok-free.dev",
+                "https://*.ngrok-free.app"
+        ));
+
+        config.setAllowedMethods(List.of(
+                "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
+        ));
+
+        config.setAllowedHeaders(List.of(
+                "Authorization",
+                "Content-Type",
+                "X-Requested-With",
+                "ngrok-skip-browser-warning"
+        ));
+
+        config.setExposedHeaders(List.of("Authorization"));
+        config.setAllowCredentials(true);
+        config.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
 
 
     @Bean
@@ -346,6 +367,4 @@ public class AppConfig {
                 .passwordEncoder(passwordEncoder());
         return builder.build();
     }
-
-
 }

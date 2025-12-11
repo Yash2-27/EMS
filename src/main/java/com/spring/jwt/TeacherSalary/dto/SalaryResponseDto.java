@@ -6,6 +6,7 @@ import lombok.Data;
 public class SalaryResponseDto {
     private Long salaryId;
     private Integer teacherId;
+    private String teacherName;
     private String month;
     private Integer year;
     private Double calculatedSalary;

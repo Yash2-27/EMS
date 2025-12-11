@@ -5,6 +5,7 @@ package com.spring.jwt.TeacherSalary.controller;
 import com.spring.jwt.TeacherSalary.dto.*;
 import com.spring.jwt.TeacherSalary.service.SalaryService;
 
+import com.spring.jwt.TeacherSalary.service.SalaryServiceMonthly;
 import com.spring.jwt.TeacherSalary.service.TeacherSalaryService;
 import com.spring.jwt.utils.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,8 +22,7 @@ import java.util.List;
 public class SalaryController {
 
     private final TeacherSalaryService teacherSalaryService;
-
-
+    private final SalaryServiceMonthly salaryServiceMonthly;
     private final SalaryService salaryService;
 
     //===========================================================//
@@ -96,39 +96,42 @@ public class SalaryController {
 
         return ResponseEntity.ok(
                 ApiResponse.success("Salary generated successfully",
-                        salaryService.generateSalary(req))
+                        salaryServiceMonthly.generateSalary(req))
         );
     }
 
     //===========================================================//
-    //                       UPDATE DEDUCTION                    //
+    //                       UPDATE SALARY DEDUCTION                    //
     //           /api/v1/teacherSalary/deduction/{id}            //
     //===========================================================//
-    @Operation(summary = "Update salary deduction for a teacher")
-    @PatchMapping("/deduction/{id}")
-    public ResponseEntity<ApiResponse<SalaryResponseDto>> updateDeduction(
-            @PathVariable Long id,
-            @RequestParam Integer deduction) {
-
-        return ResponseEntity.ok(
-                ApiResponse.success("Deduction updated successfully",
-                        salaryService.updateDeduction(id, deduction))
-        );
+    @PatchMapping("/updateMonthly")
+    public SalaryResponseDto updateMonthlySalary(
+            @RequestParam Integer teacherId,
+            @RequestParam String month,
+            @RequestParam Integer year,
+            @RequestBody SalaryMonthlyUpdateRequestDto req
+    ) {
+        return salaryServiceMonthly.updateMonthlySalary(teacherId, month, year, req);
     }
+
 
     //===========================================================//
     //                          PAY SALARY                       //
     //               /api/v1/teacherSalary/pay/{id}              //
     //===========================================================//
-    @Operation(summary = "Mark salary as paid for a teacher")
-    @PostMapping("/pay/{id}")
-    public ResponseEntity<ApiResponse<SalaryResponseDto>> paySalary(@PathVariable Long id) {
+    @PostMapping("/pay")
+    public ResponseEntity<ApiResponse<SalaryResponseDto>> paySalary(
+            @RequestParam Integer teacherId,
+            @RequestParam String month,
+            @RequestParam Integer year) {
 
         return ResponseEntity.ok(
                 ApiResponse.success("Salary paid successfully",
-                        salaryService.paySalary(id))
+                        salaryServiceMonthly.paySalary(teacherId, month, year))
         );
     }
+
+
 
     //===========================================================//
     //                       SALARY HISTORY                      //
@@ -141,7 +144,7 @@ public class SalaryController {
 
         return ResponseEntity.ok(
                 ApiResponse.success("Salary history fetched",
-                        salaryService.getSalaryHistory(teacherId))
+                        salaryServiceMonthly.getSalaryHistory(teacherId))
         );
     }
 
@@ -158,12 +161,12 @@ public class SalaryController {
 
         return ResponseEntity.ok(
                 ApiResponse.success("Monthly salary fetched",
-                        salaryService.getSalaryByMonth(teacherId, month, year))
+                        salaryServiceMonthly.getSalaryByMonth(teacherId, month, year))
         );
     }
 
     //===========================================================//
-    //              FOR ALL TEACHER SALARY INFORMATION           //
+    //              FOR ALL TEACHER SALARY INFORMATION LIST      //
     //             /api/v1/teacherSalary/teacherSummary          //
     //===========================================================//
     @Operation(summary = "Get summary of all teachers' salaries")
@@ -177,6 +180,21 @@ public class SalaryController {
                 )
         );
     }
+
+
+    @Operation(summary = "Get all teachers’ monthly salary records")
+    @GetMapping("/salaryRecords")
+    public ResponseEntity<ApiResponse<List<SalaryResponseDto>>> getAllMonthly() {
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "All monthly salaries fetched successfully",
+                        salaryServiceMonthly.getAllMonthlySalaries()
+                )
+        );
+    }
+
+
 
 }
 

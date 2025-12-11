@@ -1,5 +1,5 @@
-
 package com.spring.jwt.TeachersAttendance.serviceImpl;
+import com.spring.jwt.TeachersAttendance.dto.TeacherAttendanceUpdateDTO;
 import com.spring.jwt.TeachersAttendance.dto.TeachersAttendanceDto;
 import com.spring.jwt.TeachersAttendance.dto.TeachersAttendanceResponseDto;
 import com.spring.jwt.TeachersAttendance.dto.TeachersAttendanceSummaryDto;
@@ -8,6 +8,7 @@ import com.spring.jwt.TeachersAttendance.repository.TeachersAttendanceRepository
 import com.spring.jwt.TeachersAttendance.service.TeachersAttendanceService;
 import com.spring.jwt.entity.Teacher;
 import com.spring.jwt.exception.AttendanceNotFoundException;
+import com.spring.jwt.exception.InvalidAttendanceDataException;
 import com.spring.jwt.exception.TeacherNotFoundException;
 import com.spring.jwt.repository.TeacherRepository;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +46,11 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
                             "Teacher not found with ID: " + dto.getTeacherId()
                     ));
 
+            //  CHECK IF TEACHER IS ACTIVE OR NOT
+            if (!teacher.getStatus().equalsIgnoreCase("ACTIVE")) {
+                throw new TeacherNotFoundException("Teacher is not active. Attendance cannot be created.");
+            }
+
             //  Current date (Asia/Kolkata)
             LocalDate currentDate = LocalDate.now(ZoneId.of("Asia/Kolkata"));
             DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
@@ -63,7 +69,10 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
                         a.setTeacherId(teacher.getTeacherId());
                         a.setTeacherName(teacher.getName());
                         a.setDate(formattedDate);
-                        a.setMonth(currentDate.getMonth().name());
+                        //a.setMonth(currentDate.getMonth().name());
+                        String month = currentDate.getMonth().name(); // e.g., DECEMBER
+                        a.setMonth(formatMonth(month));
+
                         return a;
                     });
 
@@ -119,6 +128,12 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
         if (hours >= fullDayThreshold) return "FULL_DAY";
         if (hours >= halfDayThreshold) return "HALF_DAY";
         return "ABSENT";
+    }
+
+    private String formatMonth(String month) {
+        if (month == null || month.isEmpty()) return month;
+        month = month.toLowerCase();          // december
+        return month.substring(0, 1).toUpperCase() + month.substring(1);  // December
     }
 
     @Override
@@ -196,47 +211,75 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
     }
 
     @Override
-    public TeachersAttendanceResponseDto updateTeacherAttendance(Integer teachersAttendanceId, TeachersAttendance updatedAttendance) {
+    public TeacherAttendanceUpdateDTO updateTeacherAttendance(Integer teachersAttendanceId, TeachersAttendance updatedAttendance) {
         try {
-            // Find existing attendance or throw if not found
+            if (teachersAttendanceId == null || teachersAttendanceId <= 0) {
+                throw new InvalidAttendanceDataException("Attendance ID must be valid and greater than zero");
+            }
+
             TeachersAttendance existingAttendance = attendanceRepo.findById(teachersAttendanceId)
                     .orElseThrow(() -> new AttendanceNotFoundException(
                             "Teacher Attendance not found with ID: " + teachersAttendanceId
                     ));
 
             if (updatedAttendance.getTeacherName() != null) {
-                existingAttendance.setTeacherName(updatedAttendance.getTeacherName());
+                String name = updatedAttendance.getTeacherName().trim();
+                if (name.isEmpty()) {
+                    throw new InvalidAttendanceDataException("Teacher name cannot be blank");
+                }
+                existingAttendance.setTeacherName(name);
             }
-            if (updatedAttendance.getInTime() != null) {
-                existingAttendance.setInTime(updatedAttendance.getInTime());
-            }
-            if (updatedAttendance.getOutTime() != null) {
-                existingAttendance.setOutTime(updatedAttendance.getOutTime());
-            }
-            if (updatedAttendance.getDate() != null) {
-                existingAttendance.setDate(updatedAttendance.getDate());
-            }
-            if (updatedAttendance.getMonth() != null) {
-                existingAttendance.setMonth(updatedAttendance.getMonth());
-            }
+
             if (updatedAttendance.getTeacherId() != null) {
+                if (updatedAttendance.getTeacherId() <= 0) {
+                    throw new InvalidAttendanceDataException("Teacher ID must be greater than zero");
+                }
                 existingAttendance.setTeacherId(updatedAttendance.getTeacherId());
             }
 
-            // Recalculate mark if inTime and outTime are both available
+            if (updatedAttendance.getDate() != null) {
+                if (!updatedAttendance.getDate().matches("^\\d{2}-\\d{2}-\\d{4}$")) {
+                    throw new InvalidAttendanceDataException("Date format must be dd-MM-yyyy");
+                }
+                existingAttendance.setDate(updatedAttendance.getDate());
+            }
+
+            if (updatedAttendance.getMonth() != null) {
+                String month = updatedAttendance.getMonth().trim();
+                if (month.isEmpty()) {
+                    throw new InvalidAttendanceDataException("Month cannot be blank");
+                }
+                if (!month.matches("(?i)^(January|February|March|April|May|June|July|August|September|October|November|December)$")) {
+                    throw new InvalidAttendanceDataException("Invalid month. Only full month names (January–December) are allowed");
+                }
+                existingAttendance.setMonth(formatMonth(updatedAttendance.getMonth()));
+            }
+
+            if (updatedAttendance.getInTime() != null) {
+                if (!updatedAttendance.getInTime().matches("^\\d{2}:\\d{2}:\\d{2}$")) {
+                    throw new InvalidAttendanceDataException("In-time format must be HH:mm:ss");
+                }
+                existingAttendance.setInTime(updatedAttendance.getInTime());
+            }
+
+            if (updatedAttendance.getOutTime() != null) {
+                if (!updatedAttendance.getOutTime().matches("^\\d{2}:\\d{2}:\\d{2}$")) {
+                    throw new InvalidAttendanceDataException("Out-time format must be HH:mm:ss");
+                }
+                existingAttendance.setOutTime(updatedAttendance.getOutTime());
+            }
+
             if (existingAttendance.getInTime() != null && existingAttendance.getOutTime() != null) {
                 double hours = calculateHours(existingAttendance.getInTime(), existingAttendance.getOutTime());
                 String mark = getMark(hours);
                 existingAttendance.setMark(mark);
             }
 
-            //Save updated record
             TeachersAttendance saved = attendanceRepo.save(existingAttendance);
 
-            // Convert to Response DTO
-            TeachersAttendanceResponseDto response = new TeachersAttendanceResponseDto();
+            TeacherAttendanceUpdateDTO response = new TeacherAttendanceUpdateDTO();
             response.setAttendanceId(saved.getTeachersAttendanceId());
-            response.setTeacherId(saved.getTeacherId());
+//            response.setTeacherId(saved.getTeacherId());
             response.setTeacherName(saved.getTeacherName());
             response.setDate(saved.getDate());
             response.setMonth(saved.getMonth());
@@ -247,13 +290,14 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
             return response;
 
         } catch (AttendanceNotFoundException ex) {
-            throw ex; // Already meaningful exception
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalArgumentException("Invalid input data: " + ex.getMessage());
+            throw ex;
+        } catch (InvalidAttendanceDataException e) {
+            throw new InvalidAttendanceDataException("Invalid input: " + e.getMessage());
         } catch (Exception ex) {
             throw new RuntimeException("Error while updating teacher attendance: " + ex.getMessage());
         }
     }
+
 
 //    @Override
 //    public TeachersAttendance updateTeacherAttendance(Integer teachersAttendanceId, TeachersAttendance updatedAttendance) {
@@ -461,4 +505,45 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
 
         return responseList;
     }
+
+    @Override
+    public List<TeachersAttendanceResponseDto> getAllAttendance() {
+        List<TeachersAttendanceResponseDto> responseList = new ArrayList<>();
+
+        try {
+            List<TeachersAttendance> attendances = attendanceRepo.findAll();
+
+            if (attendances == null || attendances.isEmpty()) {
+                throw new AttendanceNotFoundException("No attendance records found in database");
+            }
+
+            responseList = attendances.stream().map(att -> {
+                TeachersAttendanceResponseDto dto = new TeachersAttendanceResponseDto();
+                dto.setAttendanceId(att.getTeachersAttendanceId());
+                dto.setTeacherId(att.getTeacherId());
+                dto.setTeacherName(att.getTeacherName());
+                dto.setDate(att.getDate());
+                dto.setMonth(att.getMonth());
+                dto.setInTime(att.getInTime());
+                dto.setOutTime(att.getOutTime());
+                dto.setMark(att.getMark());
+                return dto;
+            }).collect(Collectors.toList());
+
+        } catch (AttendanceNotFoundException e) {
+            System.err.println("Error: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Unexpected error occurred: " + e.getMessage());
+        }
+
+        return responseList;
+    }
+
 }
+/**
+ *
+ *
+ *
+ *
+ *
+ */
