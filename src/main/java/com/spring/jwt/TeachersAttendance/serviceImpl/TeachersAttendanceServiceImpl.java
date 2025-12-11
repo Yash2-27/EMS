@@ -46,6 +46,11 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
                             "Teacher not found with ID: " + dto.getTeacherId()
                     ));
 
+            //  CHECK IF TEACHER IS ACTIVE OR NOT
+            if (!teacher.getStatus().equalsIgnoreCase("ACTIVE")) {
+                throw new TeacherNotFoundException("Teacher is not active. Attendance cannot be created.");
+            }
+
             //  Current date (Asia/Kolkata)
             LocalDate currentDate = LocalDate.now(ZoneId.of("Asia/Kolkata"));
             DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
@@ -372,7 +377,7 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
                 dto.setMonth(att.getMonth());
                 dto.setInTime(att.getInTime());
                 dto.setOutTime(att.getOutTime());
-//                dto.setMark(att.getMark());
+                dto.setMark(att.getMark());
                 return dto;
             }).collect(Collectors.toList());
 
@@ -500,8 +505,41 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
 
         return responseList;
     }
-}
 
+    @Override
+    public List<TeachersAttendanceResponseDto> getAllAttendance() {
+        List<TeachersAttendanceResponseDto> responseList = new ArrayList<>();
+
+        try {
+            List<TeachersAttendance> attendances = attendanceRepo.findAll();
+
+            if (attendances == null || attendances.isEmpty()) {
+                throw new AttendanceNotFoundException("No attendance records found in database");
+            }
+
+            responseList = attendances.stream().map(att -> {
+                TeachersAttendanceResponseDto dto = new TeachersAttendanceResponseDto();
+                dto.setAttendanceId(att.getTeachersAttendanceId());
+                dto.setTeacherId(att.getTeacherId());
+                dto.setTeacherName(att.getTeacherName());
+                dto.setDate(att.getDate());
+                dto.setMonth(att.getMonth());
+                dto.setInTime(att.getInTime());
+                dto.setOutTime(att.getOutTime());
+                dto.setMark(att.getMark());
+                return dto;
+            }).collect(Collectors.toList());
+
+        } catch (AttendanceNotFoundException e) {
+            System.err.println("Error: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Unexpected error occurred: " + e.getMessage());
+        }
+
+        return responseList;
+    }
+
+}
 /**
  *
  *
