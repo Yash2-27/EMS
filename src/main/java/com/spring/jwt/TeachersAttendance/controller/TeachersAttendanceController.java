@@ -180,6 +180,24 @@ public class TeachersAttendanceController {
 
         return ResponseEntity.ok(ApiResponse.success("Attendance updated successfully", response));
     }
+
+    @GetMapping("/all")
+    public ResponseEntity<ApiResponse<List<TeachersAttendanceResponseDto>>> getAllAttendance() {
+
+        List<TeachersAttendanceResponseDto> response = service.getAllAttendance();
+
+        if (response == null || response.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.error(
+                            HttpStatus.NOT_FOUND,
+                            "No attendance found",
+                            "Data not available"
+                    ));
+        }
+
+        return ResponseEntity.ok(ApiResponse.success("Attendance fetched successfully", response));
+    }
+
 }
 
 /**

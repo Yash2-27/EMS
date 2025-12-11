@@ -24,4 +24,5 @@ public interface TeachersAttendanceService {
 
     TeachersAttendanceSummaryDto getAttendanceSummaryByTeacherIdAndMonth(Integer teacherId, String month);
 
+    List<TeachersAttendanceResponseDto> getAllAttendance();
 }
