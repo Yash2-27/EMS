@@ -105,7 +105,7 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
         //  Known exceptions (custom messages)
         catch (TeacherNotFoundException e) {
             System.err.println(" Error: " + e.getMessage());
-            throw e; // rethrow so controller can handle properly
+            throw e;
         }
         catch (Exception e) {
             System.err.println("Unexpected error occurred while creating attendance: " + e.getMessage());
@@ -162,8 +162,10 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
 
         } catch (TeacherNotFoundException e) {
             System.err.println("Error: " + e.getMessage());
+            throw e;
         } catch (AttendanceNotFoundException e) {
             System.err.println("Error: " + e.getMessage());
+            throw e;
         } catch (Exception e) {
             System.err.println("Unexpected error occurred: " + e.getMessage());
         }
@@ -202,8 +204,10 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
 
         } catch (TeacherNotFoundException e) {
             System.err.println("Validation error: " + e.getMessage());
+            throw e;
         } catch (AttendanceNotFoundException e) {
             System.err.println("Data not found: " + e.getMessage());
+            throw e;
         } catch (Exception e) {
             System.err.println("Unexpected error: " + e.getMessage());
         }
@@ -279,7 +283,7 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
 
             TeacherAttendanceUpdateDTO response = new TeacherAttendanceUpdateDTO();
             response.setAttendanceId(saved.getTeachersAttendanceId());
-//            response.setTeacherId(saved.getTeacherId());
+            response.setTeacherId(saved.getTeacherId());
             response.setTeacherName(saved.getTeacherName());
             response.setDate(saved.getDate());
             response.setMonth(saved.getMonth());
@@ -289,51 +293,14 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
 
             return response;
 
-        } catch (AttendanceNotFoundException ex) {
-            throw ex;
+        } catch (AttendanceNotFoundException e) {
+            throw e;
         } catch (InvalidAttendanceDataException e) {
             throw new InvalidAttendanceDataException("Invalid input: " + e.getMessage());
         } catch (Exception ex) {
             throw new RuntimeException("Error while updating teacher attendance: " + ex.getMessage());
         }
     }
-
-
-//    @Override
-//    public TeachersAttendance updateTeacherAttendance(Integer teachersAttendanceId, TeachersAttendance updatedAttendance) {
-//
-//        TeachersAttendance existingAttendance = attendanceRepo.findById(teachersAttendanceId)
-//                .orElseThrow(() -> new AttendanceNotFoundException(
-//                        "Teacher Attendance not found with ID: " + teachersAttendanceId
-//                ));
-//
-//        if (updatedAttendance.getTeacherName() != null) {
-//            existingAttendance.setTeacherName(updatedAttendance.getTeacherName());
-//        }
-//        if (updatedAttendance.getInTime() != null) {
-//            existingAttendance.setInTime(updatedAttendance.getInTime());
-//        }
-//        if (updatedAttendance.getOutTime() != null) {
-//            existingAttendance.setOutTime(updatedAttendance.getOutTime());
-//        }
-//        if (updatedAttendance.getDate() != null) {
-//            existingAttendance.setDate(updatedAttendance.getDate());
-//        }
-//        if (updatedAttendance.getMonth() != null) {
-//            existingAttendance.setMonth(updatedAttendance.getMonth());
-//        }
-//        if (updatedAttendance.getTeacherId() != null) {
-//            existingAttendance.setTeacherId(updatedAttendance.getTeacherId());
-//        }
-//
-//        //  Recalculate mark if both inTime and outTime are present
-//        if (existingAttendance.getInTime() != null && existingAttendance.getOutTime() != null) {
-//            double hours = calculateHours(existingAttendance.getInTime(), existingAttendance.getOutTime());
-//            String mark = getMark(hours);
-//            existingAttendance.setMark(mark);
-//        }
-//        return attendanceRepo.save(existingAttendance);
-//    }
 
     @Override
     public void deleteTeacherAttendance(Integer teachersAttendanceId) {
@@ -383,10 +350,13 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
 
         } catch (IllegalArgumentException e) {
             System.err.println("Validation Error: " + e.getMessage());
-        }  catch (AttendanceNotFoundException e  ) {
+            throw e;
+        } catch (AttendanceNotFoundException e) {
             System.err.println("Data Not Found: " + e.getMessage());
+            throw e;
         } catch (Exception e) {
             System.err.println("Unexpected Error: " + e.getMessage());
+            throw new RuntimeException("Unexpected error while processing attendance", e);
         }
         return responseList;
     }
@@ -439,8 +409,10 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
 
         } catch (IllegalArgumentException e) {
             System.err.println("Validation Error: " + e.getMessage());
+            throw e;
         } catch (AttendanceNotFoundException e) {
             System.err.println("Data Not Found: " + e.getMessage());
+            throw e;
         } catch (Exception e) {
             System.err.println("Unexpected Error: " + e.getMessage());
         }
@@ -499,6 +471,7 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
 
         } catch (TeacherNotFoundException | AttendanceNotFoundException | IllegalArgumentException e) {
             System.err.println("Error: " + e.getMessage());
+            throw e;
         } catch (Exception e) {
             System.err.println("Unexpected Error: " + e.getMessage());
         }
@@ -532,6 +505,7 @@ public class TeachersAttendanceServiceImpl implements TeachersAttendanceService 
 
         } catch (AttendanceNotFoundException e) {
             System.err.println("Error: " + e.getMessage());
+            throw e;
         } catch (Exception e) {
             System.err.println("Unexpected error occurred: " + e.getMessage());
         }

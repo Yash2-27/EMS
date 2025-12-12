@@ -33,105 +33,62 @@ public class TeachersAttendanceController {
         );
     }
 
-
-    @GetMapping("/teacher/{teacherId}")
+    @GetMapping("/teacher")
     public ResponseEntity<ApiResponse<List<TeachersAttendanceResponseDto>>> getAttendanceByTeacherId(
-            @PathVariable Integer teacherId) {
-
+            @RequestParam(required = false) Integer teacherId) {
         List<TeachersAttendanceResponseDto> response = service.getAttendanceByTeacherId(teacherId);
 
-        if (response == null || response.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ApiResponse.error(
-                            HttpStatus.NOT_FOUND,
-                            "No attendance found",
-                            "Data not available"
-                    ));
-        }
-
-        return ResponseEntity.ok(ApiResponse.success("Attendance fetched successfully", response));
+        return ResponseEntity.ok(ApiResponse.success(
+                "Attendance fetched successfully for teacher ID: " + teacherId,
+                response
+        ));
     }
 
-
-    @GetMapping("/teacher/{teacherId}/month/{month}")
+    @GetMapping("/teacher/month")
     public ResponseEntity<ApiResponse<List<TeachersAttendanceResponseDto>>> getAttendanceByTeacherIdAndMonth(
-            @PathVariable Integer teacherId,
-            @PathVariable String month) {
-
+            @RequestParam(required = false) Integer teacherId,
+            @RequestParam(required = false) String month) {
         List<TeachersAttendanceResponseDto> response = service.getAttendanceByTeacherIdAndMonth(teacherId, month);
-
-        if (response == null || response.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ApiResponse.error(
-                            HttpStatus.NOT_FOUND,
-                            "No attendance found for Teacher ID: " + teacherId + " in month: " + month,
-                            "No data found"
-                    ));
-        }
 
         return ResponseEntity.ok(ApiResponse.success(
                 "Attendance fetched successfully for Teacher ID: " + teacherId + " in month: " + month,
-                response));
+                response
+        ));
     }
 
-    @DeleteMapping("/delete/{attendanceId}")
-    public ResponseEntity<ApiResponse<String>> deleteTeacherAttendance(@PathVariable Integer attendanceId) {
-        try {
-            if (attendanceId == null) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(ApiResponse.error(
-                                HttpStatus.BAD_REQUEST,
-                                "Attendance ID cannot be null",
-                                "Invali d Attendance ID"
-                        ));
-            }
-            service.deleteTeacherAttendance(attendanceId);
-            return ResponseEntity.ok(ApiResponse.success("Attendance deleted successfully", null));
+    @DeleteMapping("/delete")
+    public ResponseEntity<ApiResponse<String>> deleteTeacherAttendance(
+            @RequestParam(required = false) Integer attendanceId) {
 
-        } catch (ResourceNotFoundException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        if (attendanceId == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(ApiResponse.error(
-                            HttpStatus.NOT_FOUND,
-                            ex.getMessage(),
-                            "No attendance record found with the given ID"
+                            HttpStatus.BAD_REQUEST,
+                            "Attendance ID cannot be null",
+                            "Invalid Attendance ID"
                     ));
         }
+        service.deleteTeacherAttendance(attendanceId);
+        return ResponseEntity.ok(ApiResponse.success("Attendance deleted successfully", null));
     }
 
-    @GetMapping("/date/{date}")
+    @GetMapping("/date")
     public ResponseEntity<ApiResponse<List<TeachersAttendanceResponseDto>>> getAttendanceByDate(
-            @PathVariable String date) {
+            @RequestParam(required = false) String date) {
 
         List<TeachersAttendanceResponseDto> response = service.getAttendanceByDate(date);
 
-        if (response == null || response.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ApiResponse.error(
-                            HttpStatus.NOT_FOUND,
-                            "No attendance found for date: " + date,
-                            "No data found"
-                    ));
-        }
         return ResponseEntity.ok(ApiResponse.success(
                 "Attendance fetched successfully for date: " + date,
                 response));
     }
 
-    @GetMapping("teacherId/{teacherId}/year/{year}")
+    @GetMapping("/teacher/year")
     public ResponseEntity<ApiResponse<List<TeachersAttendanceResponseDto>>> getAttendanceByTeacherIdAndYear(
-            @PathVariable Integer teacherId,
-            @PathVariable String year) {
+            @RequestParam(required = false) Integer teacherId,
+            @RequestParam(required = false) String year) {
 
         List<TeachersAttendanceResponseDto> response = service.getAttendanceByTeacherIdAndYear(teacherId, year);
-
-        if (response == null || response.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ApiResponse.error(
-                            HttpStatus.NOT_FOUND,
-                            "No attendance found for teacherId: " + teacherId + " in year: " + year,
-                            "No data found"
-                    ));
-        }
 
         return ResponseEntity.ok(
                 ApiResponse.success(
@@ -140,45 +97,28 @@ public class TeachersAttendanceController {
                 )
         );
     }
-    @GetMapping("/summary/{teacherId}/month/{month}")
+
+    @GetMapping("/summary")
     public ResponseEntity<ApiResponse<TeachersAttendanceSummaryDto>> getMonthlyAttendanceSummary(
-            @PathVariable Integer teacherId,
-            @PathVariable String month) {
+            @RequestParam(required = false) Integer teacherId,
+            @RequestParam(required = false) String month) {
 
         TeachersAttendanceSummaryDto summary = service.getAttendanceSummaryByTeacherIdAndMonth(teacherId, month);
 
-        if (summary == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ApiResponse.error(
-                            HttpStatus.NOT_FOUND,
-                            "No attendance data found for Teacher ID: " + teacherId + " in month: " + month,
-                            "No data found"
-                    ));
-        }
-
         return ResponseEntity.ok(ApiResponse.success(
                 "Monthly Attendance Summary Fetched Successfully For Teacher ID: " + teacherId,
-                summary));
+                summary
+        ));
     }
 
-    @PatchMapping("/update/{id}")
+    @PatchMapping("/update")
     public ResponseEntity<ApiResponse<TeacherAttendanceUpdateDTO>> updateAttendance(
-            @PathVariable("id") Integer attendanceId,
+            @RequestParam(required = false) Integer attendanceId,
             @Valid @RequestBody TeachersAttendance updatedAttendance) {
 
         TeacherAttendanceUpdateDTO updated = service.updateTeacherAttendance(attendanceId, updatedAttendance);
 
-        TeacherAttendanceUpdateDTO response = new TeacherAttendanceUpdateDTO();
-        response.setAttendanceId(updated.getAttendanceId());
-//        response.setTeacherId(updated.getTeacherId());
-        response.setTeacherName(updated.getTeacherName());
-        response.setMonth(updated.getMonth());
-        response.setDate(updated.getDate());
-        response.setInTime(updated.getInTime());
-        response.setOutTime(updated.getOutTime());
-        response.setMark(updated.getMark());
-
-        return ResponseEntity.ok(ApiResponse.success("Attendance updated successfully", response));
+        return ResponseEntity.ok(ApiResponse.success("Attendance updated successfully", updated));
     }
 
     @GetMapping("/all")
