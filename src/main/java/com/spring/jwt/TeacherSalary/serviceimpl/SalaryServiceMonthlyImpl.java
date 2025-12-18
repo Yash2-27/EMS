@@ -1,13 +1,9 @@
 package com.spring.jwt.TeacherSalary.serviceimpl;
 
+import com.spring.jwt.TeacherSalary.dto.*;
 import com.spring.jwt.TeacherSalary.service.SalaryServiceMonthly;
 import com.spring.jwt.TeachersAttendance.entity.TeachersAttendance;
 import com.spring.jwt.TeachersAttendance.repository.TeachersAttendanceRepository;
-
-import com.spring.jwt.TeacherSalary.dto.SalaryGenerateRequestDto;
-import com.spring.jwt.TeacherSalary.dto.SalaryResponseDto;
-import com.spring.jwt.TeacherSalary.dto.SalaryMapper;
-import com.spring.jwt.TeacherSalary.dto.SalaryMonthlyUpdateRequestDto;
 
 
 import com.spring.jwt.TeacherSalary.entity.TeacherSalaryMonthly;
@@ -29,6 +25,7 @@ import java.time.Month;
 import java.time.ZoneId;
 import java.time.format.TextStyle;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -80,10 +77,10 @@ public class SalaryServiceMonthlyImpl implements SalaryServiceMonthly {
                 throw new TeacherSalaryException("Year cannot be null");
 
             String fullMonth = toFullMonth(req.getMonth());
-            String shortMonth = toShortMonth(req.getMonth());
+
 
             // Prevent duplicate salary
-            monthlyRepo.findByTeacherIdAndMonthAndYear(req.getTeacherId(), shortMonth, req.getYear())
+            monthlyRepo.findByTeacherIdAndMonthAndYear(req.getTeacherId(), fullMonth, req.getYear())
                     .ifPresent(m -> {
                         throw new TeacherSalaryException("Salary already generated for this month");
                     });
@@ -102,7 +99,7 @@ public class SalaryServiceMonthlyImpl implements SalaryServiceMonthly {
 
             if (attendanceList.isEmpty()) {
                 attendanceList =
-                        attendanceRepo.findByTeacherIdAndMonth(req.getTeacherId(), shortMonth);
+                        attendanceRepo.findByTeacherIdAndMonth(req.getTeacherId(), fullMonth);
             }
 
             if (attendanceList.isEmpty()) {
@@ -159,7 +156,7 @@ public class SalaryServiceMonthlyImpl implements SalaryServiceMonthly {
             TeacherSalaryMonthly saved = TeacherSalaryMonthly.builder()
                     .teacherId(req.getTeacherId())
                     .teacherName(structure.getTeacherName())
-                    .month(shortMonth)
+                    .month(fullMonth)
                     .year(req.getYear())
                     .calculatedSalary(calculatedSalary)
                     .deduction(deductionAmount)
@@ -276,7 +273,7 @@ public class SalaryServiceMonthlyImpl implements SalaryServiceMonthly {
                 salary.setFinalSalary(salary.getCalculatedSalary() - newDeduction);
             }
 
-            salary.setMonth(newMonthShort);
+            salary.setMonth(newMonthFull);
             salary.setYear(newYear);
 
             monthlyRepo.save(salary);
@@ -297,7 +294,8 @@ public class SalaryServiceMonthlyImpl implements SalaryServiceMonthly {
 
         try {
 
-            String shortMonth = toShortMonth(month);
+
+            String fullMonth = toFullMonth(month);
 
             List<TeacherSalaryMonthly> salaryList = monthlyRepo.findByTeacherId(teacherId);
             if (salaryList.isEmpty()) {
@@ -305,10 +303,10 @@ public class SalaryServiceMonthlyImpl implements SalaryServiceMonthly {
             }
 
             TeacherSalaryMonthly salary = salaryList.stream()
-                    .filter(s -> s.getMonth().equalsIgnoreCase(shortMonth) && s.getYear().equals(year))
+                    .filter(s -> s.getMonth().equalsIgnoreCase(fullMonth) && s.getYear().equals(year))
                     .findFirst()
                     .orElseThrow(() ->
-                            new TeacherSalaryException("Salary for " + shortMonth + " " + year + " not found"));
+                            new TeacherSalaryException("Salary for " + fullMonth + " " + year + " not found"));
 
             if ("PAID".equalsIgnoreCase(salary.getStatus())) {
                 throw new TeacherSalaryException("Salary is already paid");
@@ -374,6 +372,55 @@ public class SalaryServiceMonthlyImpl implements SalaryServiceMonthly {
                 .map(SalaryMapper::toSalaryResponse)
                 .toList();
     }
+
+
+
+    @Override
+    public List<TeacherMonthlyDropdown> getActiveTeacherStructures() {
+
+        List<TeacherMonthlyDropdown> response = new ArrayList<>();
+
+        List<TeacherSalaryStructure> structures =
+                structureRepo.findByStatus("ACTIVE");
+
+        for (TeacherSalaryStructure structure : structures) {
+
+            boolean hasAttendance = attendanceRepo.existsByTeacherId(structure.getTeacherId());
+
+            if (hasAttendance) {
+
+                // Fetch attendance list
+                List<TeachersAttendance> attendanceList =
+                        attendanceRepo.findByTeacherId(structure.getTeacherId());
+
+                String month = null;
+                Integer year = null;
+
+                if (!attendanceList.isEmpty()) {
+                    // Sort by date and pick latest attendance entry
+                    TeachersAttendance latest = attendanceList.stream()
+                            .sorted((a, b) -> b.getDate().compareTo(a.getDate()))
+                            .findFirst()
+                            .get();
+
+                    // Extract month + year from attendance
+                    month = latest.getMonth();
+                    year = Integer.parseInt(latest.getDate().substring(0, 4));
+                }
+
+                response.add(new TeacherMonthlyDropdown(
+                        structure.getTeacherId(),
+                        structure.getTeacherName(),
+                        month,
+                        year
+                ));
+            }
+        }
+
+        return response;
+    }
+
+
 
 
 }

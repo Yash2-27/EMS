@@ -14,7 +14,4 @@ public interface TeacherSalaryMonthlyRepository
     Optional<TeacherSalaryMonthly> findByTeacherIdAndMonthAndYear(Integer teacherId, String month, Integer year);
 
     List<TeacherSalaryMonthly> findByTeacherId(Integer teacherId);
-
-
-
 }

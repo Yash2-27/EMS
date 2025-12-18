@@ -18,6 +18,9 @@ public interface TeacherSalaryStructureRepository
 
     List<TeacherSalaryStructure> findAllByOrderByCreatedAtDesc();
 
+    List<TeacherSalaryStructure> findByStatus(String status);
+
+
 
 
 

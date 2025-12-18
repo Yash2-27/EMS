@@ -61,6 +61,18 @@ public class PaperServiceImpl implements PaperService {
         dto.setResultDate(entity.getResultDate());
         dto.setPaperEndTime(entity.getPaperEndTime());
 
+        if (entity.getPaperPattern() != null) {
+            dto.setNoOfQuestions(entity.getPaperPattern().getNoOfQuestion());
+
+            // Map Pattern ID and Name
+            dto.setPaperPatternId(entity.getPaperPattern().getPaperPatternId());
+            dto.setPatternName(entity.getPaperPattern().getPatternName());
+            dto.setNegativeMarks(entity.getPaperPattern().getNegativeMarks());
+        } else {
+            dto.setNoOfQuestions(0);
+            dto.setNegativeMarks(0);
+        }
+
         // Safely set paperPatternId
         if (entity.getPaperPattern() != null) {
             dto.setPaperPatternId(entity.getPaperPattern().getPaperPatternId());
@@ -87,6 +99,16 @@ public class PaperServiceImpl implements PaperService {
         dto.setIsLive(entity.getIsLive());
         dto.setStudentClass(entity.getStudentClass());
         dto.setPaperEndTime(entity.getPaperEndTime());
+        if (entity.getPaperPattern() != null) {
+            dto.setNoOfQuestions(entity.getPaperPattern().getNoOfQuestion());
+
+            // Map Pattern ID and Name
+            dto.setPaperPatternId(entity.getPaperPattern().getPaperPatternId());
+            dto.setPatternName(entity.getPaperPattern().getPatternName());
+            dto.setNegativeMarks(entity.getPaperPattern().getNegativeMarks());
+        } else {
+            dto.setNoOfQuestions(0);
+        }
 
         // Paper pattern info
         if (entity.getPaperPattern() != null) {
@@ -420,19 +442,41 @@ public PaperDTO createPaper(PaperDTO paperDTO) {
         return toDTO2(paper);
     }
 
+//    @Override
+//    public PageResponseDto<PaperDTO> getAllPapers(int page, int size) {
+//        if (page < 0 || size <= 0) {
+//            throw new InvalidPaginationParameterException("Page number must be >= 0 and size > 0");
+//        }
+//        Pageable pageable = PageRequest.of(page, size, Sort.by("paperId").descending());
+//        Page<Paper> paperPage = paperRepository.findAll(pageable);
+//
+//        List<PaperDTO> paperDTOs = paperPage.getContent().stream().map(this::toDTO).collect(Collectors.toList());
+//
+//        return new PageResponseDto<>(paperDTOs, paperPage.getNumber(), paperPage.getSize(), paperPage.getTotalElements(), paperPage.getTotalPages());
+//    }
+
+
     @Override
     public PageResponseDto<PaperDTO> getAllPapers(int page, int size) {
         if (page < 0 || size <= 0) {
-            throw new InvalidPaginationParameterException("Page number must be >= 0 and size > 0");
+            throw new RuntimeException("Invalid pagination parameters");
         }
         Pageable pageable = PageRequest.of(page, size, Sort.by("paperId").descending());
         Page<Paper> paperPage = paperRepository.findAll(pageable);
 
-        List<PaperDTO> paperDTOs = paperPage.getContent().stream().map(this::toDTO).collect(Collectors.toList());
+        List<PaperDTO> paperDTOs = paperPage.getContent()
+                .stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
 
-        return new PageResponseDto<>(paperDTOs, paperPage.getNumber(), paperPage.getSize(), paperPage.getTotalElements(), paperPage.getTotalPages());
+        return new PageResponseDto<>(
+                paperDTOs,
+                paperPage.getNumber(),
+                paperPage.getSize(),
+                paperPage.getTotalElements(),
+                paperPage.getTotalPages()
+        );
     }
-
 
     @Override
     public PaperDTO updatePaper(Integer id, PaperDTO paperDTO) {
