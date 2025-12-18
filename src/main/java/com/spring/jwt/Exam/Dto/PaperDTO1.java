@@ -50,6 +50,9 @@ public class PaperDTO1 {
     @Schema(description = "Class for which the paper is intended", example = "10th Grade", required = true)
     private String studentClass;
 
+    @Schema(description = "Total number of questions in the paper", example = "30")
+    private Integer noOfQuestions;
+
     @NotNull(message = "Questions list cannot be null")
     @Size(min = 1, message = "At least one question ID must be provided")
     @Schema(description = "List of question IDs included in the paper", example = "[101, 102, 103]", required = true)
@@ -65,4 +68,7 @@ public class PaperDTO1 {
     private String patternName;
     @Schema(description = "List of negative marks per question")
     private List<NegativeMarksDTO> negativeMarksList;
+
+    @Schema(description = "List of negative marks per question")
+    private Integer negativeMarks;
 }

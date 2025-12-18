@@ -194,6 +194,19 @@ public class SalaryController {
         );
     }
 
+    @Operation(summary = "Get all active teachers having attendance")
+    @GetMapping("/activeTeachers")
+    public ResponseEntity<ApiResponse<List<TeacherMonthlyDropdown>>> getActiveTeachersWithAttendance() {
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Active teachers with attendance fetched successfully",
+                        salaryServiceMonthly.getActiveTeacherStructures()
+                )
+        );
+    }
+
+
 
 
 }
