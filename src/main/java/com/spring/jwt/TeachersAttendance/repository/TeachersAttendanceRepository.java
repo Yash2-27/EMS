@@ -18,4 +18,8 @@ public interface TeachersAttendanceRepository extends JpaRepository<TeachersAtte
 
     // Fetch all attendance records of a teacher for a specific month
     List<TeachersAttendance> findByTeacherIdAndMonth(Integer teacherId, String month);
+
+    boolean existsByTeacherId(Integer teacherId);
+
+
 }

@@ -8,7 +8,7 @@ public class TeacherAttendanceUpdateDTO {
 
     private Integer attendanceId;
 
-//    private Integer teacherId;
+    private Integer teacherId;
     private String teacherName;
     private String date;
     private String month;
