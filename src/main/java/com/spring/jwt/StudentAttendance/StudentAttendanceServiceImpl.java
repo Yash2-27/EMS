@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -376,4 +375,39 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
         response.setSubjectWiseSummary(subjectSummaries);
         return response;
     }
+
+    @Override
+    public List<StudentAttendanceSummaryDTO> getStudentAttendanceSummary() {
+        List<Object[]> results = repository.getStudentAttendanceSummary();
+        return results.stream().map(r -> new StudentAttendanceSummaryDTO(
+                (String) r[0],                        // studentName
+                (String) r[1],                        // studentClass
+                r[2] != null ? Long.parseLong(r[2].toString()) : null,  // mobileNumber
+                r[3] != null ? Double.parseDouble(r[3].toString()) : 0  // averagePresentPercentage
+        )).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<StudentExamDateDTO> getStudentExamDate() {
+        return repository.getStudentExamDate()
+                .stream()
+                .map(r -> new StudentExamDateDTO(
+                        r[0].toString(),
+                        ((java.sql.Date) r[1]).toLocalDate()
+                ))
+                .toList();
+    }
+
+    @Override
+    public List<StudentResultsDTO> getStudentResults() {
+        return repository.getStudentResults()
+                .stream()
+                .map(r -> new StudentResultsDTO(
+                        r[0].toString(),
+                        ((java.sql.Date) r[1]).toLocalDate(),
+                        r[2].toString()
+                ))
+                .toList();
+    }
+
 }

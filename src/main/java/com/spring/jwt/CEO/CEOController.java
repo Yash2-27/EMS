@@ -1,13 +1,12 @@
 package com.spring.jwt.CEO;
 
 import com.spring.jwt.utils.ApiResponse;
-import com.spring.jwt.utils.GenericResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
+
 import java.util.List;
 import java.util.Map;
 
@@ -71,6 +70,7 @@ CEOService ceoService;
     );
     }
 
+    @Operation(summary = "CEO Dashboard - Get student classes")
     @GetMapping("/studentClass")
     public ResponseEntity<ApiResponse<List<String>>> getStudentClass() {
         return ResponseEntity.ok(
@@ -78,6 +78,7 @@ CEOService ceoService;
         );
     }
 
+    @Operation(summary = "CEO Dashboard - Get student batches")
     @GetMapping("/studentBatch")
     public ResponseEntity<ApiResponse<List<String>>> getStudentBatch() {
         return ResponseEntity.ok(
@@ -85,6 +86,7 @@ CEOService ceoService;
         );
     }
 
+    @Operation(summary = "CEO Dashboard - Get pie chart data")
     @GetMapping("/pieChart")
     public ResponseEntity<ApiResponse<Map<String, Long>>> getPieChart() {
         return ResponseEntity.ok(
@@ -92,6 +94,7 @@ CEOService ceoService;
         );
     }
 
+    @Operation(summary = "CEO Dashboard - Get monthly chart data")
     @GetMapping("/monthly")
     public ResponseEntity<ApiResponse<Map<String, Map<String, Integer>>>> getMonthlyChart(
             @RequestParam(required = false) String studentClass,
