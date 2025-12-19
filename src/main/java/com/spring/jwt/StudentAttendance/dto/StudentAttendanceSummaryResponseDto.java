@@ -1,5 +1,6 @@
-package com.spring.jwt.StudentAttendance;
+package com.spring.jwt.StudentAttendance.dto;
 
+import com.spring.jwt.StudentAttendance.dto.SubjectAttendanceSummaryDto;
 import lombok.Data;
 
 import java.util.List;

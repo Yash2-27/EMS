@@ -1,5 +1,8 @@
-package com.spring.jwt.StudentAttendance;
+package com.spring.jwt.StudentAttendance.service.Impl;
 
+import com.spring.jwt.StudentAttendance.dto.*;
+import com.spring.jwt.StudentAttendance.repository.StudentAttendanceRepository;
+import com.spring.jwt.StudentAttendance.service.StudentAttendanceService;
 import com.spring.jwt.entity.Student;
 import com.spring.jwt.entity.StudentAttendance;
 import com.spring.jwt.exception.ResourceNotFoundException;
@@ -378,13 +381,16 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
 
     @Override
     public List<StudentAttendanceSummaryDTO> getStudentAttendanceSummary() {
-        List<Object[]> results = repository.getStudentAttendanceSummary();
-        return results.stream().map(r -> new StudentAttendanceSummaryDTO(
-                (String) r[0],                        // studentName
-                (String) r[1],                        // studentClass
-                r[2] != null ? Long.parseLong(r[2].toString()) : null,  // mobileNumber
-                r[3] != null ? Double.parseDouble(r[3].toString()) : 0  // averagePresentPercentage
-        )).collect(Collectors.toList());
+        return repository.getStudentAttendanceSummary()
+                .stream()
+                .map(r -> new StudentAttendanceSummaryDTO(
+                        r[0] != null ? r[0].toString() : null,                 // studentName
+                        r[1] != null ? r[1].toString() : null,                 // studentClass
+                        r[2] != null ? r[2].toString() : null,                 // exam
+                        r[3] != null ? Long.parseLong(r[3].toString()) : null, // mobileNumber
+                        r[4] != null ? Double.parseDouble(r[4].toString()) : 0 // averagePresentPercentage
+                ))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -392,8 +398,9 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
         return repository.getStudentExamDate()
                 .stream()
                 .map(r -> new StudentExamDateDTO(
-                        r[0].toString(),
-                        ((java.sql.Date) r[1]).toLocalDate()
+                        r[0].toString(),                         // studentName
+                        r[1].toString(),                         // exam
+                        ((java.sql.Date) r[2]).toLocalDate()     // startDate
                 ))
                 .toList();
     }
@@ -403,11 +410,27 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
         return repository.getStudentResults()
                 .stream()
                 .map(r -> new StudentResultsDTO(
-                        r[0].toString(),
-                        ((java.sql.Date) r[1]).toLocalDate(),
-                        r[2].toString()
+                        r[0].toString(),                  // studentName
+                        r[2].toString(),                  // exam
+                        r[3].toString(),                  // marks
+                        LocalDate.parse(r[1].toString())  // ✅ resultDate
                 ))
                 .toList();
+    }
+
+    @Override
+    public List<String> getClasses() {
+        return repository.getAllClasses();
+    }
+
+    @Override
+    public List<Long> getStudentCountByClass(String studentClass) {
+        return List.of(repository.getStudentCountByClass(studentClass));
+    }
+
+    @Override
+    public List<Integer> getBatchesByClass(String studentClass) {
+        return repository.getBatchesByClass(studentClass);
     }
 
 }
