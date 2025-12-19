@@ -1,4 +1,4 @@
-package com.spring.jwt.StudentAttendance;
+package com.spring.jwt.StudentAttendance.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,8 +7,8 @@ import lombok.Data;
 @AllArgsConstructor
 public class StudentAttendanceSummaryDTO {
     private String studentName;
-    //private String exam;
     private String studentClass;
+    private String exam;
     private Long mobileNumber;
     private Double averagePresentPercentage;
 }

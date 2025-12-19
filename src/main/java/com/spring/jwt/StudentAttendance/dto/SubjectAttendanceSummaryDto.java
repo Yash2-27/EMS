@@ -1,4 +1,4 @@
-package com.spring.jwt.StudentAttendance;
+package com.spring.jwt.StudentAttendance.dto;
 
 import lombok.Data;
 

@@ -1,4 +1,4 @@
-package com.spring.jwt.StudentAttendance;
+package com.spring.jwt.StudentAttendance.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,6 +9,6 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class StudentExamDateDTO {
     private String studentName;
+    private String exam;
     private LocalDate startDate;
-    //private String exam;
 }

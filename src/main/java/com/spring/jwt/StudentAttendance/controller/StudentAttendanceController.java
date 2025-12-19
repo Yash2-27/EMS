@@ -1,5 +1,7 @@
-package com.spring.jwt.StudentAttendance;
+package com.spring.jwt.StudentAttendance.controller;
 
+import com.spring.jwt.StudentAttendance.service.StudentAttendanceService;
+import com.spring.jwt.StudentAttendance.dto.*;
 import com.spring.jwt.exception.ResourceNotFoundException;
 import com.spring.jwt.utils.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -322,6 +324,85 @@ public class StudentAttendanceController {
                     ApiResponse.error(
                             org.springframework.http.HttpStatus.BAD_REQUEST,
                             "Failed to fetch student results",
+                            e.getMessage()
+                    )
+            );
+        }
+    }
+
+    // Select Class Dropdown
+    @GetMapping("/classesDropdown")
+    @PermitAll
+    @Operation(
+            summary = "Get all classes",
+            description = "Fetches distinct student classes for dropdown"
+    )
+    public ResponseEntity<ApiResponse<List<String>>> getClasses() {
+        try {
+            List<String> classes = studentAttendanceService.getClasses();
+            return ResponseEntity.ok(
+                    ApiResponse.success("Classes fetched successfully", classes)
+            );
+        } catch (Exception e) {
+            log.error("Failed to fetch classes", e);
+            return ResponseEntity.badRequest().body(
+                    ApiResponse.error(
+                            HttpStatus.BAD_REQUEST,
+                            "Failed to fetch classes",
+                            e.getMessage()
+                    )
+            );
+        }
+    }
+
+    // Student Count
+    @GetMapping("/studentCountDropdown")
+    @PermitAll
+    @Operation(
+            summary = "Get student count by class",
+            description = "Fetches total student count for selected class"
+    )
+    public ResponseEntity<ApiResponse<List<Long>>> getStudentCount(
+            @RequestParam("class") String studentClass
+    ) {
+        try {
+            List<Long> count = studentAttendanceService.getStudentCountByClass(studentClass);
+            return ResponseEntity.ok(
+                    ApiResponse.success("Student count fetched successfully", count)
+            );
+        } catch (Exception e) {
+            log.error("Failed to fetch student count for class {}", studentClass, e);
+            return ResponseEntity.badRequest().body(
+                    ApiResponse.error(
+                            HttpStatus.BAD_REQUEST,
+                            "Failed to fetch student count",
+                            e.getMessage()
+                    )
+            );
+        }
+    }
+
+    // Batch Year Dropdown
+    @GetMapping("/batchYearsDropdown")
+    @PermitAll
+    @Operation(
+            summary = "Get Dropdown batch years by class",
+            description = "Fetches available attendance batch years for selected class"
+    )
+    public ResponseEntity<ApiResponse<List<Integer>>> getYears(
+            @RequestParam("class") String studentClass
+    ) {
+        try {
+            List<Integer> years = studentAttendanceService.getBatchesByClass(studentClass);
+            return ResponseEntity.ok(
+                    ApiResponse.success("Batch years fetched successfully", years)
+            );
+        } catch (Exception e) {
+            log.error("Failed to fetch batch years for class {}", studentClass, e);
+            return ResponseEntity.badRequest().body(
+                    ApiResponse.error(
+                            HttpStatus.BAD_REQUEST,
+                            "Failed to fetch batch years",
                             e.getMessage()
                     )
             );

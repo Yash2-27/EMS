@@ -1,4 +1,4 @@
-package com.spring.jwt.StudentAttendance;
+package com.spring.jwt.StudentAttendance.repository;
 
 
 import com.spring.jwt.entity.StudentAttendance;
@@ -53,6 +53,7 @@ public interface StudentAttendanceRepository extends JpaRepository<StudentAttend
                     SELECT 
                     CONCAT(s.name, ' ', s.last_name) AS student_name,
                         s.student_class AS class,
+                        s.exam AS exam,
                         u.mobile_number AS student_mobile,
                         ROUND(AVG(sa.attendance) * 100, 0) AS average_present_percentage
                     FROM student_attendance sa
@@ -72,6 +73,7 @@ public interface StudentAttendanceRepository extends JpaRepository<StudentAttend
     @Query(value = """
                     SELECT 
                     CONCAT(s.name, ' ', s.last_name) AS student_name,
+                    s.exam AS exam,
                     DATE(ed.start_time) AS start_date
                     FROM student s
                     JOIN exam_details ed
@@ -83,6 +85,7 @@ public interface StudentAttendanceRepository extends JpaRepository<StudentAttend
                 SELECT
                     CONCAT(s.name, ' ', s.last_name) AS student_name,
                     DATE(er.result_processed_time) AS result_date,
+                    s.exam AS exam,
                     CONCAT(
                         COALESCE(er.score, 0),
                         '/',
@@ -94,5 +97,39 @@ public interface StudentAttendanceRepository extends JpaRepository<StudentAttend
                 ORDER BY student_name
             """, nativeQuery = true)
     List<Object[]> getStudentResults();
+
+    // 🔽 1️⃣ Select Class Dropdown
+    @Query(
+            value = "SELECT DISTINCT student_class FROM student ORDER BY student_class",
+            nativeQuery = true
+    )
+    List<String> getAllClasses();
+
+    // 🔽 2️⃣ Student Count by Selected Class
+    @Query(
+            value = """
+            SELECT COUNT(*)
+            FROM student s
+            JOIN users u ON s.user_id = u.user_id
+            JOIN user_role ur ON u.user_id = ur.user_id
+            JOIN roles r ON ur.role_id = r.role_id
+            WHERE r.role_name = 'STUDENT'
+            AND s.student_class = :studentClass
+        """,
+            nativeQuery = true
+    )
+    Long getStudentCountByClass(@Param("studentClass") String studentClass);
+
+    // 🔽 3️⃣ batch Dropdown by Selected Class
+    @Query(
+            value = """
+        SELECT DISTINCT batch
+        FROM student
+        WHERE student_class = :studentClass
+        ORDER BY batch
+    """,
+            nativeQuery = true
+    )
+    List<Integer> getBatchesByClass(@Param("studentClass") String studentClass);
 
 }

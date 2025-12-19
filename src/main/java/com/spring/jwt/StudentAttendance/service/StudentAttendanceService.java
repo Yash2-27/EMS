@@ -1,9 +1,9 @@
-package com.spring.jwt.StudentAttendance;
+package com.spring.jwt.StudentAttendance.service;
 
+import com.spring.jwt.StudentAttendance.dto.*;
 import com.spring.jwt.entity.StudentAttendance;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 
 public interface StudentAttendanceService {
@@ -34,5 +34,14 @@ public interface StudentAttendanceService {
     List<StudentExamDateDTO> getStudentExamDate();
 
     List<StudentResultsDTO> getStudentResults();
+
+    // Class dropdown
+    List<String> getClasses();
+
+    // Student count by selected class
+    List<Long> getStudentCountByClass(String studentClass);
+
+    // Batches dropdown by selected class
+    List<Integer> getBatchesByClass(String studentClass);
 
 }
