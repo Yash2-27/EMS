@@ -4,6 +4,7 @@ import com.spring.jwt.dto.*;
 import com.spring.jwt.entity.User;
 import com.spring.jwt.jwt.JwtService;
 import com.spring.jwt.repository.UserRepository;
+import com.spring.jwt.service.CeoProfileService;
 import com.spring.jwt.service.UserService;
 import com.spring.jwt.utils.BaseResponseDTO;
 import com.spring.jwt.utils.EncryptionUtil;
@@ -79,7 +80,8 @@ public class UserController {
 //      Author       : Ashutosh Shedge
 //      Date         : 28/04/2025
 //
-//////////////////////////////////////////////////////////////////////////////////
+
+    /// ///////////////////////////////////////////////////////////////////////////////
     @Operation(
             summary = "Register a new user account",
             description = "Creates a new user account with the provided user details",
@@ -119,7 +121,8 @@ public class UserController {
 //      Author       : Ashutosh Shedge
 //      Date         : 28/04/2025
 //
-//////////////////////////////////////////////////////////////////////////////////
+
+    /// ///////////////////////////////////////////////////////////////////////////////
 
     @Operation(
             summary = "Request password reset",
@@ -233,12 +236,13 @@ public class UserController {
 //      Author       : Ashutosh Shedge
 //      Date         : 28/04/2025
 //
-//////////////////////////////////////////////////////////////////////////////////
+
+    /// ///////////////////////////////////////////////////////////////////////////////
     @Operation(
             summary = "Get all users",
             description = "Returns a paginated list of all users with optional filtering",
             tags = {"User Management"},
-            security = { @SecurityRequirement(name = "bearer-jwt") }
+            security = {@SecurityRequirement(name = "bearer-jwt")}
     )
     @ApiResponses({
             @ApiResponse(
@@ -301,7 +305,7 @@ public class UserController {
             summary = "Get user by ID",
             description = "Returns user details for the specified ID",
             tags = {"User Management"},
-            security = { @SecurityRequirement(name = "bearer-jwt") }
+            security = {@SecurityRequirement(name = "bearer-jwt")}
     )
     @ApiResponses({
             @ApiResponse(
@@ -351,7 +355,7 @@ public class UserController {
             summary = "Get user profile by ID",
             description = "Returns detailed user profile with role-specific data",
             tags = {"User Management"},
-            security = { @SecurityRequirement(name = "bearer-jwt") }
+            security = {@SecurityRequirement(name = "bearer-jwt")}
     )
     @ApiResponses({
             @ApiResponse(
@@ -402,7 +406,7 @@ public class UserController {
             summary = "Get current user's profile",
             description = "Returns the profile of the currently authenticated user",
             tags = {"User Management"},
-            security = { @SecurityRequirement(name = "bearer-jwt") }
+            security = {@SecurityRequirement(name = "bearer-jwt")}
     )
     @ApiResponses({
             @ApiResponse(
@@ -445,7 +449,7 @@ public class UserController {
             summary = "Update user details",
             description = "Updates the details of an existing user",
             tags = {"User Management"},
-            security = { @SecurityRequirement(name = "bearer-jwt") }
+            security = {@SecurityRequirement(name = "bearer-jwt")}
     )
     @ApiResponses({
             @ApiResponse(
@@ -486,7 +490,7 @@ public class UserController {
             summary = "Check device fingerprint",
             description = "Compares the current device fingerprint with the stored one for security verification",
             tags = {"Security"},
-            security = { @SecurityRequirement(name = "bearer-jwt") }
+            security = {@SecurityRequirement(name = "bearer-jwt")}
     )
     @ApiResponses({
             @ApiResponse(
@@ -572,7 +576,7 @@ public class UserController {
             summary = "Get Personal Information",
             description = "Fetches a user’s personal details including name, email, phone number, parent relationship.",
             tags = {"User Management"}
-     )
+    )
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
@@ -622,8 +626,78 @@ public class UserController {
             )
     })
     @PatchMapping("/editPersonalInfo")
-    public ResponseEntity<PersonalInfoDTO> editPersonalInfo(@RequestParam Long userId,@RequestBody PersonalInfoDTO dto) {
+    public ResponseEntity<PersonalInfoDTO> editPersonalInfo(@RequestParam Long userId, @RequestBody PersonalInfoDTO dto) {
         PersonalInfoDTO updatedInfo = userService.updatePersonalInfo(userId, dto);
         return ResponseEntity.ok(updatedInfo);
+    }
+
+    /**
+     * Ceo section profile
+     */
+    private final CeoProfileService ceoProfileService;
+
+    @Operation(
+            summary = "Get CEO Personal Information",
+            description = "Fetches personal details including name, email and phone.",
+            tags = {"User Management"}
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Personal information fetched successfully",
+                    content = @Content(
+                            schema = @Schema(implementation = CeoProfileResponseDto.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "User not found",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponseDto.class)
+                    )
+            )
+    })
+    @GetMapping("/ceo/profile/{userId}")
+    public ResponseEntity<CeoProfileResponseDto> getCeoProfile(
+            @PathVariable Integer userId) {
+
+        return ResponseEntity.ok(ceoProfileService.getProfile(userId));
+    }
+
+    @Operation(
+            summary = "Edit CEO Personal Information",
+            description = "Updates CEO personal details including first name, last name, email and mobile number.",
+            tags = {"User Management"}
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Personal information updated successfully",
+                    content = @Content(
+                            schema = @Schema(implementation = String.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid input data",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponseDto.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "User not found",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponseDto.class)
+                    )
+            )
+    })
+    @PatchMapping("/ceo/profile/{userId}")
+    public ResponseEntity<String> updateCeoProfile(
+            @PathVariable Integer userId,
+            @Valid @RequestBody CeoProfileUpdateDto dto) {
+
+        ceoProfileService.updateProfile(userId, dto);
+        return ResponseEntity.ok("profile updated successfully");
     }
 }
