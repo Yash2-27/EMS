@@ -224,58 +224,30 @@ public class CEOServiceImpl implements CEOService {
     }
 
     @Override
-    public Map<String, Map<String, Integer>> getMonthlyChart(String studentClass, String batch) {
+    public Map<String, Map<String, Integer>> getMonthlyChart(String studentClass, String exam) {
 
-        try {
-            Map<String, Map<String, Integer>> result = new LinkedHashMap<>();
-            result.put("11", new LinkedHashMap<>());
-            result.put("12", new LinkedHashMap<>());
+        Map<String, Map<String, Integer>> result = new LinkedHashMap<>();
 
-            List<Object[]> rows = studentRepository.getMonthlyCountFiltered(studentClass, batch);
+        List<Object[]> rows = studentRepository.getMonthlyCountFiltered(studentClass, exam);
 
-            if (rows == null) {
-                throw new MonthlyChartCustomException("Database returned null for monthly chart data");
-            }
-
-            if (rows.isEmpty()) {
-                throw new MonthlyChartCustomException("No attendance data available for selected filter");
-            }
-
-            for (Object[] row : rows) {
-
-                if (row == null || row.length < 3) {
-                    throw new MonthlyChartCustomException("Invalid data row returned from monthly chart query");
-                }
-
-                if (row[0] == null || row[1] == null || row[2] == null) {
-                    throw new MonthlyChartCustomException("Null value found in monthly chart data");
-                }
-
-                Integer month = ((Number) row[0]).intValue();   // 1–12
-                String cls = row[1].toString();                 // 11 / 12
-                Integer pct = ((Number) row[2]).intValue();     // Percentage
-
-                if (month < 1 || month > 12) {
-                    throw new MonthlyChartCustomException("Invalid month number: " + month);
-                }
-
-                if (!result.containsKey(cls)) {
-                    throw new MonthlyChartCustomException("Unexpected class found: " + cls);
-                }
-
-                String monthName = Month.of(month).name().substring(0, 3);
-                result.get(cls).put(monthName, pct);
-            }
-
-            return result;
-
-        } catch (MonthlyChartCustomException ex) {
-            throw ex;  // rethrow custom exception
-        } catch (Exception ex) {
-            throw new MonthlyChartCustomException("Failed to fetch monthly chart data: " + ex.getMessage());
+        if (rows == null || rows.isEmpty()) {
+            throw new MonthlyChartCustomException("No attendance data available for selected filter");
         }
+
+        for (Object[] row : rows) {
+
+            Integer month = ((Number) row[0]).intValue();
+            String cls = row[1].toString();
+            Integer pct = ((Number) row[2]).intValue();
+
+            String monthName = Month.of(month).name().substring(0, 3);
+
+            result
+                    .computeIfAbsent(cls, k -> new LinkedHashMap<>())
+                    .put(monthName, pct);
+        }
+
+        return result;
     }
-
-
 
 }

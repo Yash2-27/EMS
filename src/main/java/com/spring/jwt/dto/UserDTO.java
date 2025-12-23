@@ -61,6 +61,7 @@ public class UserDTO {
     private String studentcol1;
     private String studentClass;
     private String role; // Single role field for backward compatibility
+    private String exam;
 
     public UserDTO(User user) {
         this.email = user.getEmail();
@@ -69,7 +70,7 @@ public class UserDTO {
         this.lastName = user.getLastName();
         this.mobileNumber = user.getMobileNumber();
         this.userId = user.getId().toString();
-        
+
         if (user.getRoles() != null) {
             this.roles = user.getRoles().stream()
                 .map(Role::getName)

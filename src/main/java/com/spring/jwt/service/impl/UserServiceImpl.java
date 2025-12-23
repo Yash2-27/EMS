@@ -144,6 +144,7 @@ public class UserServiceImpl implements UserService {
         student.setBatch(userDTO.getBatch());
         student.setStudentcol1(userDTO.getStudentcol1());
         student.setStudentClass(userDTO.getStudentClass());
+        student.setExam(userDTO.getExam());
         student.setUserId(user.getId().intValue());
 
         studentRepository.save(student);

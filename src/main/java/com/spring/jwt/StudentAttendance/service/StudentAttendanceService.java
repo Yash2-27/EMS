@@ -44,4 +44,13 @@ public interface StudentAttendanceService {
     // Batches dropdown by selected class
     List<Integer> getBatchesByClass(String studentClass);
 
+
+    // Student Results By Id
+    List<String> getStudentClasses();
+
+    List<StudentDropdownDTO> getStudentsByClass(String studentClass);
+
+    List<String> getBatchesByStudent(Long userId);
+
+    List<StudentExamResultDTO> getStudentResultsById(Long userId);
 }

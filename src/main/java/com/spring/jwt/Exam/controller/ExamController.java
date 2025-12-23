@@ -1,13 +1,10 @@
 package com.spring.jwt.Exam.controller;
 
 import com.spring.jwt.Exam.Dto.*;
-import com.spring.jwt.Exam.entity.ExamSession;
 import com.spring.jwt.Exam.service.ExamService;
 import com.spring.jwt.Exam.serviceImpl.ExcelExportUtil;
 import com.spring.jwt.dto.ResponseDto;
 import com.spring.jwt.exception.ResourceNotFoundException;
-import com.spring.jwt.utils.ApiResponse;
-import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -55,10 +52,7 @@ public class ExamController {
         }
     }
 
-    @GetMapping("/results/{userId}")
-    public List<ExamResultDTO> getExamResultsByUser(@PathVariable Long userId) {
-        return examService.getResultsByUserId(userId);
-    }
+
 
     @GetMapping("/session/{sessionId}/qa")
     public List<SessionQuestionAnswerDTO> getSessionQuestionsAndAnswers(@PathVariable Integer sessionId) {

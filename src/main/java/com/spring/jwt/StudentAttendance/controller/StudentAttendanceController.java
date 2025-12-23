@@ -268,10 +268,7 @@ public class StudentAttendanceController {
             log.error("Error fetching attendance summary", e);
             return ResponseEntity.badRequest().body(
                     ApiResponse.error(
-                            org.springframework.http.HttpStatus.BAD_REQUEST,
-                            "Failed to fetch attendance summary",
-                            e.getMessage()
-                    )
+                            org.springframework.http.HttpStatus.BAD_REQUEST,"Failed to fetch attendance summary",e.getMessage())
             );
         }
     }
@@ -296,10 +293,7 @@ public class StudentAttendanceController {
             log.error("Error fetching student exam date", e);
             return ResponseEntity.badRequest().body(
                     ApiResponse.error(
-                            org.springframework.http.HttpStatus.BAD_REQUEST,
-                            "Failed to fetch student exam date",
-                            e.getMessage()
-                    )
+                            org.springframework.http.HttpStatus.BAD_REQUEST,"Failed to fetch student exam date",e.getMessage())
             );
         }
     }
@@ -346,11 +340,7 @@ public class StudentAttendanceController {
         } catch (Exception e) {
             log.error("Failed to fetch classes", e);
             return ResponseEntity.badRequest().body(
-                    ApiResponse.error(
-                            HttpStatus.BAD_REQUEST,
-                            "Failed to fetch classes",
-                            e.getMessage()
-                    )
+                    ApiResponse.error(HttpStatus.BAD_REQUEST,"Failed to fetch classes",e.getMessage())
             );
         }
     }
@@ -373,11 +363,7 @@ public class StudentAttendanceController {
         } catch (Exception e) {
             log.error("Failed to fetch student count for class {}", studentClass, e);
             return ResponseEntity.badRequest().body(
-                    ApiResponse.error(
-                            HttpStatus.BAD_REQUEST,
-                            "Failed to fetch student count",
-                            e.getMessage()
-                    )
+                    ApiResponse.error(HttpStatus.BAD_REQUEST,"Failed to fetch student count",e.getMessage())
             );
         }
     }
@@ -400,12 +386,80 @@ public class StudentAttendanceController {
         } catch (Exception e) {
             log.error("Failed to fetch batch years for class {}", studentClass, e);
             return ResponseEntity.badRequest().body(
-                    ApiResponse.error(
-                            HttpStatus.BAD_REQUEST,
-                            "Failed to fetch batch years",
-                            e.getMessage()
-                    )
+                    ApiResponse.error(HttpStatus.BAD_REQUEST,"Failed to fetch batch years",e.getMessage())
             );
+        }
+    }
+
+
+    // ---------------- Get all Classes ----------------
+    @GetMapping("/classes")
+    @Operation(summary = "Get all student classes", description = "Fetches all distinct student classes")
+    public ResponseEntity<ApiResponse<List<String>>> getAllClasses() {
+        try {
+            List<String> classes = studentAttendanceService.getStudentClasses();
+            return ResponseEntity.ok(ApiResponse.success("Classes fetched successfully", classes));
+        } catch (Exception e) {
+            log.error("Failed to fetch classes", e);
+            return ResponseEntity.badRequest().body(
+                    ApiResponse.error(HttpStatus.BAD_REQUEST, "Failed to fetch classes", e.getMessage()));
+        }
+    }
+
+    // ---------------- Get Students by Class ----------------
+    @GetMapping("/students/{studentClass}")
+    @Operation(summary = "Get students by class", description = "Fetches all students for the given class")
+    public ResponseEntity<ApiResponse<List<StudentDropdownDTO>>> getStudentsByClass(
+            @PathVariable String studentClass) {
+        try {
+            List<StudentDropdownDTO> students = studentAttendanceService.getStudentsByClass(studentClass);
+            return ResponseEntity.ok(ApiResponse.success("Students fetched successfully", students));
+        } catch (Exception e) {
+            log.error("Failed to fetch students for class {}", studentClass, e);
+            return ResponseEntity.badRequest().body(
+                    ApiResponse.error(HttpStatus.BAD_REQUEST, "Failed to fetch students", e.getMessage()));
+        }
+    }
+
+    // ---------------- Get Batch Years by Class ----------------
+    @GetMapping("/batchYears/{studentClass}")
+    @Operation(summary = "Get batch years by class", description = "Fetches available attendance batch years for a class")
+    public ResponseEntity<ApiResponse<List<Integer>>> getBatchYearsByClass(@PathVariable String studentClass) {
+        try {
+            List<Integer> years = studentAttendanceService.getBatchesByClass(studentClass);
+            return ResponseEntity.ok(ApiResponse.success("Batch years fetched successfully", years));
+        } catch (Exception e) {
+            log.error("Failed to fetch batch years for class {}", studentClass, e);
+            return ResponseEntity.badRequest().body(
+                    ApiResponse.error(HttpStatus.BAD_REQUEST, "Failed to fetch batch years", e.getMessage()));
+        }
+    }
+
+    // ---------------- Get Batches by Student ----------------
+    @GetMapping("/batches/{userId}")
+    @Operation(summary = "Get batches by student", description = "Fetches all batches attended by the student")
+    public ResponseEntity<ApiResponse<List<String>>> getBatchesByStudent(@PathVariable Long userId) {
+        try {
+            List<String> batches = studentAttendanceService.getBatchesByStudent(userId);
+            return ResponseEntity.ok(ApiResponse.success("Batches fetched successfully", batches));
+        } catch (Exception e) {
+            log.error("Failed to fetch batches for student {}", userId, e);
+            return ResponseEntity.badRequest().body(
+                    ApiResponse.error(HttpStatus.BAD_REQUEST, "Failed to fetch batches", e.getMessage()));
+        }
+    }
+
+    // ---------------- Get Student Results by ID ----------------
+    @GetMapping("/results/{userId}")
+    @Operation(summary = "Get student results", description = "Fetches all exam results for a specific student")
+    public ResponseEntity<ApiResponse<List<StudentExamResultDTO>>> getStudentResultsById(@PathVariable Long userId) {
+        try {
+            List<StudentExamResultDTO> results = studentAttendanceService.getStudentResultsById(userId);
+            return ResponseEntity.ok(ApiResponse.success("Student results fetched successfully", results));
+        } catch (Exception e) {
+            log.error("Failed to fetch student results for user {}", userId, e);
+            return ResponseEntity.badRequest().body(
+                    ApiResponse.error(HttpStatus.BAD_REQUEST, "Failed to fetch student results", e.getMessage()));
         }
     }
 

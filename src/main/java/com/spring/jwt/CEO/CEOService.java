@@ -21,6 +21,6 @@ public interface CEOService {
     List<String> getStudentClass();
     List<String> getStudentBatch();
     Map<String, Long> getPieChart();
-    Map<String, Map<String, Integer>> getMonthlyChart(String studentClass, String batch);
+    Map<String, Map<String, Integer>> getMonthlyChart(String studentClass, String exam);
 
 }

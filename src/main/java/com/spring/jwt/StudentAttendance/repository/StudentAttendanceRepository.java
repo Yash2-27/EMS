@@ -98,14 +98,14 @@ public interface StudentAttendanceRepository extends JpaRepository<StudentAttend
             """, nativeQuery = true)
     List<Object[]> getStudentResults();
 
-    // 🔽 1️⃣ Select Class Dropdown
+    // Select Class Dropdown
     @Query(
             value = "SELECT DISTINCT student_class FROM student ORDER BY student_class",
             nativeQuery = true
     )
     List<String> getAllClasses();
 
-    // 🔽 2️⃣ Student Count by Selected Class
+    // Student Count by Selected Class
     @Query(
             value = """
             SELECT COUNT(*)
@@ -120,7 +120,7 @@ public interface StudentAttendanceRepository extends JpaRepository<StudentAttend
     )
     Long getStudentCountByClass(@Param("studentClass") String studentClass);
 
-    // 🔽 3️⃣ batch Dropdown by Selected Class
+    // batch Dropdown by Selected Class
     @Query(
             value = """
         SELECT DISTINCT batch
@@ -131,5 +131,55 @@ public interface StudentAttendanceRepository extends JpaRepository<StudentAttend
             nativeQuery = true
     )
     List<Integer> getBatchesByClass(@Param("studentClass") String studentClass);
+
+
+    // Student Dropdowns and Final Result
+
+    // Student Class dropdown
+    @Query(value = """
+        SELECT DISTINCT student_class
+        FROM student
+        ORDER BY student_class
+    """, nativeQuery = true)
+    List<String> getStudentClasses();
+
+    // Student Name dropdown by class
+    @Query(value = """
+        SELECT user_id,
+               CONCAT(name,' ',last_name) AS studentName
+        FROM student
+        WHERE student_class = :studentClass
+    """, nativeQuery = true)
+    List<Object[]> getStudentsByClass(@Param("studentClass") String studentClass);
+
+    // Batch dropdown by student
+    @Query(value = """
+        SELECT DISTINCT batch
+        FROM student
+        WHERE user_id = :userId
+    """, nativeQuery = true)
+    List<String> getBatchesByStudent(@Param("userId") Long userId);
+
+    // Final student result
+    @Query(value = """
+        SELECT
+            CONCAT(s.name,' ',s.last_name) AS candidateName,
+            s.student_class AS className,
+            s.exam AS examName,
+            s.user_id AS rollNumber,
+            ed.subject AS subjectName,
+
+            er.score,
+            er.total_marks,
+            er.total_questions,
+            er.correct_answers,
+            er.incorrect_answers,
+            er.unanswered_questions
+        FROM student s
+        JOIN exam_results er ON s.user_id = er.user_id
+        JOIN exam_details ed ON er.paper_id = ed.paper_id
+        WHERE s.user_id = :userId
+    """, nativeQuery = true)
+    List<Object[]> getStudentExamResultRaw(@Param("userId") Long userId);
 
 }

@@ -1,9 +1,6 @@
 package com.spring.jwt.Exam.service;
 
-import com.spring.jwt.Exam.Dto.ClassAverageDTO;
-import com.spring.jwt.Exam.Dto.ExamResultDTO;
-import com.spring.jwt.Exam.Dto.MonthlyPercentageDTO;
-import com.spring.jwt.Exam.Dto.SubjectScoreReportDto;
+import com.spring.jwt.Exam.Dto.*;
 import com.spring.jwt.Exam.entity.ExamResult;
 import com.spring.jwt.Exam.entity.ExamSession;
 import com.spring.jwt.Exam.repository.MonthlyPercentageProjection;
@@ -67,6 +64,8 @@ public interface ExamResultService {
     List<ClassAverageDTO> getClassMonthlyAverage(String studentClass);
 
     List<SubjectScoreReportDto> getMonthlySubjectWiseScores(Long studentId, int month, int year);
+
+
 
 
 }
