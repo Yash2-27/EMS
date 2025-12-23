@@ -1,5 +1,6 @@
 package com.spring.jwt.StudentAttendance.service.Impl;
 
+import com.spring.jwt.StudentAttendance.dto.StudentExamResultDTO;
 import com.spring.jwt.StudentAttendance.dto.*;
 import com.spring.jwt.StudentAttendance.repository.StudentAttendanceRepository;
 import com.spring.jwt.StudentAttendance.service.StudentAttendanceService;
@@ -432,5 +433,52 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
     public List<Integer> getBatchesByClass(String studentClass) {
         return repository.getBatchesByClass(studentClass);
     }
+
+
+    //  dropdown
+
+    @Override
+    public List<String> getStudentClasses() {
+        return repository.getStudentClasses();
+    }
+
+    @Override
+    public List<StudentDropdownDTO> getStudentsByClass(String studentClass) {
+        return repository.getStudentsByClass(studentClass)
+                .stream()
+                .map(r -> new StudentDropdownDTO(
+                        ((Number) r[0]).longValue(),
+                        (String) r[1]
+                ))
+                .toList();
+    }
+
+    @Override
+    public List<String> getBatchesByStudent(Long userId) {
+        return repository.getBatchesByStudent(userId);
+    }
+
+    @Override
+    public List<StudentExamResultDTO> getStudentResultsById(Long userId) {
+
+        return repository.getStudentExamResultRaw(userId)
+                .stream()
+                .map(r -> new StudentExamResultDTO(
+                        (String) r[0],
+                        (String) r[1],
+                        (String) r[2],
+                        ((Number) r[3]).longValue(),
+                        (String) r[4],
+
+                        r[5] != null ? ((Number) r[5]).doubleValue() : 0.0,
+                        r[6] != null ? ((Number) r[6]).doubleValue() : 0.0,
+                        r[7] != null ? ((Number) r[7]).intValue() : 0,
+                        r[8] != null ? ((Number) r[8]).intValue() : 0,
+                        r[9] != null ? ((Number) r[9]).intValue() : 0,
+                        r[10] != null ? ((Number) r[10]).intValue() : 0
+                ))
+                .toList();
+    }
+
 
 }
