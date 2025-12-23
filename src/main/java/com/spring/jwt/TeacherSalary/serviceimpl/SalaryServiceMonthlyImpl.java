@@ -79,13 +79,11 @@ public class SalaryServiceMonthlyImpl implements SalaryServiceMonthly {
             String fullMonth = toFullMonth(req.getMonth());
 
 
-            // Prevent duplicate salary
             monthlyRepo.findByTeacherIdAndMonthAndYear(req.getTeacherId(), fullMonth, req.getYear())
                     .ifPresent(m -> {
                         throw new TeacherSalaryException("Salary already generated for this month");
                     });
 
-            // Get teacher salary structure
             TeacherSalaryStructure structure = structureRepo.findByTeacherId(req.getTeacherId())
                     .orElseThrow(() -> new TeacherSalaryException("Salary structure not found for this teacher"));
 
@@ -93,7 +91,7 @@ public class SalaryServiceMonthlyImpl implements SalaryServiceMonthly {
                 throw new TeacherSalaryException("Salary structure is not ACTIVE. Cannot generate salary.");
             }
 
-            // Attendance fetch – try Full month first then short
+            // Attendance fetch try Full month first then short
             List<TeachersAttendance> attendanceList =
                     attendanceRepo.findByTeacherIdAndMonth(req.getTeacherId(), fullMonth);
 
@@ -150,9 +148,7 @@ public class SalaryServiceMonthlyImpl implements SalaryServiceMonthly {
 
             double finalSalary = calculatedSalary - deductionAmount;
 
-            // -------------------------------
-            // CREATE MONTHLY SALARY RECORD
-            // -------------------------------
+
             TeacherSalaryMonthly saved = TeacherSalaryMonthly.builder()
                     .teacherId(req.getTeacherId())
                     .teacherName(structure.getTeacherName())
@@ -348,16 +344,16 @@ public class SalaryServiceMonthlyImpl implements SalaryServiceMonthly {
     public SalaryResponseDto getSalaryByMonth(Integer teacherId, String month, Integer year) {
 
         try {
-            String shortMonth = toShortMonth(month);
+            String fullMonth = toFullMonth(month);
 
             TeacherSalaryMonthly salary = monthlyRepo
-                    .findByTeacherIdAndMonthAndYear(teacherId, shortMonth, year)
+                    .findByTeacherIdAndMonthAndYear(teacherId,fullMonth, year)
                     .orElseThrow(() -> new TeacherSalaryException("Salary not found for this month"));
 
             return SalaryMapper.toSalaryResponse(salary);
         }
         catch (Exception e) {
-            throw new RuntimeException("Failed to fetch salary for month: " + e.getMessage());
+            throw new TeacherSalaryException("Failed to fetch salary for month: " + e.getMessage());
         }
     }
 

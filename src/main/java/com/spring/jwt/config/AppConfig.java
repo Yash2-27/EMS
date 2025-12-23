@@ -78,7 +78,8 @@ public class AppConfig {
     private String frontendUrl;
 
     @Value("#{'${app.cors.allowed-origins:https://undemised-purulently-lamonica.ngrok-free.dev,http://localhost:5173,http://localhost:3000,http://localhost:8080,http://localhost:5173/,http://localhost:8091/,http://localhost:8085/}'.split(',')}")
-    private List<String> allowedOrigins;
+//      @Value("#{'${app.cors.allowed-origins:http://localhost:5173,http://localhost:3000,http://localhost:8080,http://localhost:5173/,http://localhost:8091/,http://localhost:8085/}'.split(',')}")
+      private List<String> allowedOrigins;
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
@@ -165,6 +166,19 @@ public class AppConfig {
                 .permissionsPolicy(permissions -> permissions
                         .policy("camera=(), microphone=(), geolocation=()"))
         );
+
+//        http.headers(headers -> headers
+//                .xssProtection(xss -> xss
+//                        .headerValue(XXssProtectionHeaderWriter.HeaderValue.ENABLED_MODE_BLOCK))
+//                .contentSecurityPolicy(csp -> csp
+//                        .policyDirectives("default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'"))
+//                .frameOptions(frame -> frame.deny())
+//                .referrerPolicy(referrer -> referrer
+//                        .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
+//                .permissionsPolicy(permissions -> permissions
+//                        .policy("camera=(), microphone=(), geolocation=()"))
+//        );
+
 
         log.debug("Configuring URL-based security rules");
         http.authorizeHttpRequests(authorize -> authorize
@@ -301,13 +315,27 @@ public class AppConfig {
                 );
 
         log.debug("Configuring security filters");
-       JwtUsernamePasswordAuthenticationFilter jwtUsernamePasswordAuthenticationFilter = new JwtUsernamePasswordAuthenticationFilter(authenticationManager(http), jwtConfig, jwtService, userRepository, activeSessionService);
+        JwtUsernamePasswordAuthenticationFilter jwtUsernamePasswordAuthenticationFilter = new JwtUsernamePasswordAuthenticationFilter(authenticationManager(http), jwtConfig, jwtService, userRepository, activeSessionService);
+        JwtTokenAuthenticationFilter jwtTokenAuthenticationFilter = new JwtTokenAuthenticationFilter(jwtConfig, jwtService, userDetailsService(), publicUrls, activeSessionService);
+        JwtRefreshTokenFilter jwtRefreshTokenFilter = new JwtRefreshTokenFilter(authenticationManager(http), jwtConfig, jwtService, userDetailsService(), activeSessionService);
+
+        http.addFilterBefore(jwtTokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtUsernamePasswordAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtRefreshTokenFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(xssFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(sqlInjectionFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(securityHeadersFilter, UsernamePasswordAuthenticationFilter.class);
+
+        http.authenticationProvider(customAuthenticationProvider);
+
+        log.debug("Configuring security filters");
 
         return http.build();
     }
 
 
-    //    @Bean
+//        @Bean
 //    public CorsConfigurationSource corsConfigurationSource() {
 //        return new CorsConfigurationSource() {
 //            @Override
