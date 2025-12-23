@@ -14,7 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/exam")
-public class UpcomingExamController {
+public class ExamDetailsController {
 
     @Autowired
     private UpcomingExamsService upcomingExamsService;

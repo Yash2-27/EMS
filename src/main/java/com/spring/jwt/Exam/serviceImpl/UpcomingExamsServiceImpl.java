@@ -1,7 +1,7 @@
 package com.spring.jwt.Exam.serviceImpl;
 
 import com.spring.jwt.Exam.Dto.UpcomingExamDetailsDTO;
-import com.spring.jwt.Exam.entity.UpcomingExams;
+import com.spring.jwt.Exam.entity.ExamDetails;
 import com.spring.jwt.Exam.repository.UpcomingExamsRepository;
 import com.spring.jwt.Exam.repository.PaperRepository;
 import com.spring.jwt.Exam.service.UpcomingExamsService;
@@ -28,7 +28,7 @@ public class UpcomingExamsServiceImpl implements UpcomingExamsService {
     @Autowired
     private PaperRepository paperRepository;
 
-    private UpcomingExamDetailsDTO convertToDto(UpcomingExams exam) {
+    private UpcomingExamDetailsDTO convertToDto(ExamDetails exam) {
         return UpcomingExamDetailsDTO.builder()
                 .title(exam.getTitle())
                 .subject(exam.getSubject())
@@ -40,7 +40,7 @@ public class UpcomingExamsServiceImpl implements UpcomingExamsService {
     @Override
     @Transactional(readOnly = true)
     public ResponseDto<List<UpcomingExamDetailsDTO>> getAllUpcomingExams() {
-        List<UpcomingExams> list =
+        List<ExamDetails> list =
                 upcomingExamsRepository.findByStartTimeAfterOrderByStartTimeAsc(LocalDateTime.now());
 
         if (list.isEmpty()) {
@@ -66,7 +66,7 @@ public class UpcomingExamsServiceImpl implements UpcomingExamsService {
             throw new ResourceNotFoundException("Student class '" + studentClass + "' not found in the database.");
         }
 
-        List<UpcomingExams> list =
+        List<ExamDetails> list =
                 upcomingExamsRepository.findByStudentClassAndStartTimeAfterOrderByStartTimeAsc(
                         studentClass, LocalDateTime.now());
 
@@ -84,7 +84,7 @@ public class UpcomingExamsServiceImpl implements UpcomingExamsService {
     @Override
     @Transactional(readOnly = true)
     public ResponseDto<List<UpcomingExamDetailsDTO>> getAllPreviousExams() {
-        List<UpcomingExams> list =
+        List<ExamDetails> list =
                 upcomingExamsRepository.findByStartTimeBeforeOrderByStartTimeDesc(LocalDateTime.now());
 
         if (list.isEmpty()) {
@@ -110,7 +110,7 @@ public class UpcomingExamsServiceImpl implements UpcomingExamsService {
             throw new ResourceNotFoundException("Student class '" + studentClass + "' not found in the database.");
         }
 
-        List<UpcomingExams> list =
+        List<ExamDetails> list =
                 upcomingExamsRepository.findByStudentClassAndStartTimeBeforeOrderByStartTimeDesc(
                         studentClass, LocalDateTime.now());
 
@@ -128,7 +128,7 @@ public class UpcomingExamsServiceImpl implements UpcomingExamsService {
     @Override
     @Transactional(readOnly = true)
     public ResponseDto<UpcomingExamDetailsDTO> getUpcomingExamDetailsById(Integer paperId) {
-        Optional<UpcomingExams> exam = upcomingExamsRepository.findByPaper_PaperId(paperId);
+        Optional<ExamDetails> exam = upcomingExamsRepository.findByPaper_PaperId(paperId);
 
         if (exam.isEmpty()) {
             throw new ResourceNotFoundException("Upcoming exam with paper ID " + paperId + " not found.");
@@ -140,7 +140,7 @@ public class UpcomingExamsServiceImpl implements UpcomingExamsService {
     @Override
     @Transactional(readOnly = true)
     public ResponseDto<UpcomingExamDetailsDTO> getUpcomingExamDetailsByUpcomingExamId(Integer upcomingExamId) {
-        Optional<UpcomingExams> exam = upcomingExamsRepository.findById(upcomingExamId);
+        Optional<ExamDetails> exam = upcomingExamsRepository.findById(upcomingExamId);
 
         if (exam.isEmpty()) {
             throw new ResourceNotFoundException("Upcoming exam with ID " + upcomingExamId + " not found.");
@@ -171,9 +171,9 @@ public class UpcomingExamsServiceImpl implements UpcomingExamsService {
             throw new IllegalArgumentException("Subject missing for PaperPattern ID: " + pattern.getPaperPatternId());
         }
 
-        Optional<UpcomingExams> existing = upcomingExamsRepository.findByPaper_PaperId(paperId);
+        Optional<ExamDetails> existing = upcomingExamsRepository.findByPaper_PaperId(paperId);
 
-        UpcomingExams exam = existing.orElse(new UpcomingExams());
+        ExamDetails exam = existing.orElse(new ExamDetails());
         exam.setPaper(paper);
         exam.setTitle(paper.getTitle());
         exam.setStartTime(paper.getStartTime());

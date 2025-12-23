@@ -6,7 +6,6 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.BatchSize;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -49,7 +48,7 @@ public class Paper {
     // cascade = ALL ensures that if a Paper is deleted, its associated UpcomingExams entry is also deleted.
     // orphanRemoval = true means if the upcomingExam is set to null, the associated UpcomingExams entry is removed.
     @OneToOne(mappedBy = "paper", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private UpcomingExams upcomingExam; // Reference to the UpcomingExams entity
+    private ExamDetails upcomingExam; // Reference to the UpcomingExams entity
     // >>> END OF MODIFICATION <<<
 
     public List<Question> getQuestions() {
