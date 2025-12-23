@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpcomingExams {
+public class ExamDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -114,25 +114,28 @@ public class SalaryServiceStructureImpl implements SalaryService {
                     .orElseThrow(() -> new TeacherSalaryException(
                             "Salary structure not found for teacher ID: " + teacherId));
 
-            if (!"ACTIVE".equalsIgnoreCase(structure.getStatus())) {
-                throw new TeacherSalaryException(
-                        "Cannot update salary structure: Salary structure is INACTIVE");
-            }
-
-            // Update only the fields that are provided
             if (req.getPerDaySalary() != null) {
                 structure.setPerDaySalary(req.getPerDaySalary());
             }
-
             if (req.getAnnualSalary() != null) {
                 structure.setAnnualSalary(req.getAnnualSalary());
             }
 
-            structure.setUpdatedAt(LocalDateTime.now(tz));
 
+            if (req.getStatus() != null) {
+                String newStatus = req.getStatus().toUpperCase();
+
+                if (!newStatus.equals("ACTIVE") && !newStatus.equals("INACTIVE")) {
+                    throw new TeacherSalaryException(
+                            "Invalid status. Allowed values are ACTIVE or INACTIVE");
+                }
+
+                structure.setStatus(newStatus);
+            }
+
+            structure.setUpdatedAt(LocalDateTime.now(tz));
             structureRepo.save(structure);
 
-            // Use the new mapper method for partial update
             return SalaryMapper.toStructureResponse(structure, req);
 
         } catch (TeacherSalaryException e) {
@@ -142,6 +145,7 @@ public class SalaryServiceStructureImpl implements SalaryService {
                     "Failed to update salary structure: " + e.getMessage());
         }
     }
+
 
 
     // ----------------------------------------------------------
@@ -210,7 +214,7 @@ public class SalaryServiceStructureImpl implements SalaryService {
                     .orElseThrow(() -> new TeacherSalaryException("Salary record not found"));
 
             Integer d = deduction == null ? 0 : deduction;
-            salary.setDeduction((int) Math.round(d)); // if deduction field is Integer
+            salary.setDeduction((int) Math.round(d));
             salary.setFinalSalary(salary.getCalculatedSalary() - d);
 
             monthlyRepo.save(salary);

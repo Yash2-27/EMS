@@ -19,8 +19,8 @@ public class SalaryStructureRequestDto {
 
     @NotNull(message = "Annual salary is required")
     @Positive(message = "Annual  salary must be a positive number")
-    @Min(value = 150000, message = "Annual salary must be greater than 100000")
-    @Max(value=3000000, message = "maximum Limit is reached cant extend after 2000000 ")
+    @Min(value = 100000, message = "Annual salary must be greater than 100000")
+    @Max(value=3000000, message = "maximum Limit is reached cant extend after 3000000 ")
     private Integer annualSalary;
 
 }
