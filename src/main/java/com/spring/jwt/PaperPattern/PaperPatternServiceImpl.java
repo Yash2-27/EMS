@@ -93,54 +93,139 @@ class PaperPatternServiceImpl implements PaperPatternService {
                 .collect(Collectors.toList());
     }
 
+//    @Override
+//    public PaperPatternDto updatePaperPattern(Integer id, PaperPatternDto paperPatternDto) {
+//        PaperPattern paperPattern = paperPatternRepository.findById(id)
+//                .orElseThrow(() -> new PaperPatternNotFoundException("Pattern not found with id: " + id));
+//
+//        // update normal fields
+//        Optional.ofNullable(paperPatternDto.getPatternName()).ifPresent(paperPattern::setPatternName);
+//        Optional.ofNullable(paperPatternDto.getSubject()).ifPresent(paperPattern::setSubject);
+//        Optional.ofNullable(paperPatternDto.getMarks()).ifPresent(paperPattern::setMarks);
+//        Optional.ofNullable(paperPatternDto.getNegativeMarks()).ifPresent(paperPattern::setNegativeMarks);
+//
+//        // handle type-specific logic
+//        if (paperPatternDto.getType() != null) {
+//            paperPattern.setType(paperPatternDto.getType());
+//
+//            switch (paperPatternDto.getType()) {
+//                case MCQ:
+//                    if (paperPatternDto.getMCQ() == null || paperPatternDto.getMCQ() <= 0) {
+//                        throw new IllegalArgumentException("MCQ count is required for type MCQ and must be > 0");
+//                    }
+//                    paperPattern.setNoOfQuestion(paperPatternDto.getMCQ());
+//                    paperPattern.setRequiredQuestion(paperPatternDto.getMCQ());
+//                    break;
+//
+//                case DESCRIPTIVE:
+//                    if (paperPatternDto.getDESCRIPTIVE() == null || paperPatternDto.getDESCRIPTIVE() <= 0) {
+//                        throw new IllegalArgumentException("Descriptive count is required for type DESCRIPTIVE and must be > 0");
+//                    }
+//                    paperPattern.setNoOfQuestion(paperPatternDto.getDESCRIPTIVE());
+//                    paperPattern.setRequiredQuestion(paperPatternDto.getDESCRIPTIVE());
+//                    break;
+//
+//                case MCQ_DESCRIPTIVE:
+//                    Integer mcq = paperPatternDto.getMCQ();
+//                    Integer desc = paperPatternDto.getDESCRIPTIVE();
+//                    if (mcq == null || mcq <= 0 || desc == null || desc <= 0) {
+//                        throw new IllegalArgumentException("Both MCQ and Descriptive counts are required and must be > 0 for type MCQ_DESCRIPTIVE");
+//                    }
+//                    int total = mcq + desc;
+//                    paperPattern.setNoOfQuestion(total);
+//                    paperPattern.setRequiredQuestion(total);
+//                    break;
+//            }
+//        }
+//
+//        PaperPattern savedPattern = paperPatternRepository.save(paperPattern);
+//        return mapper.toDto(savedPattern);
+//    }
+
+
+
     @Override
+    @Transactional
     public PaperPatternDto updatePaperPattern(Integer id, PaperPatternDto paperPatternDto) {
+
         PaperPattern paperPattern = paperPatternRepository.findById(id)
-                .orElseThrow(() -> new PaperPatternNotFoundException("Pattern not found with id: " + id));
+                .orElseThrow(() ->
+                        new PaperPatternNotFoundException("Pattern not found with id: " + id));
 
-        // update normal fields
-        Optional.ofNullable(paperPatternDto.getPatternName()).ifPresent(paperPattern::setPatternName);
-        Optional.ofNullable(paperPatternDto.getSubject()).ifPresent(paperPattern::setSubject);
-        Optional.ofNullable(paperPatternDto.getMarks()).ifPresent(paperPattern::setMarks);
-        Optional.ofNullable(paperPatternDto.getNegativeMarks()).ifPresent(paperPattern::setNegativeMarks);
 
-        // handle type-specific logic
-        if (paperPatternDto.getType() != null) {
-            paperPattern.setType(paperPatternDto.getType());
+        Optional.ofNullable(paperPatternDto.getPatternName())
+                .ifPresent(paperPattern::setPatternName);
 
-            switch (paperPatternDto.getType()) {
-                case MCQ:
-                    if (paperPatternDto.getMCQ() == null || paperPatternDto.getMCQ() <= 0) {
-                        throw new IllegalArgumentException("MCQ count is required for type MCQ and must be > 0");
-                    }
-                    paperPattern.setNoOfQuestion(paperPatternDto.getMCQ());
-                    paperPattern.setRequiredQuestion(paperPatternDto.getMCQ());
-                    break;
+        Optional.ofNullable(paperPatternDto.getSubject())
+                .ifPresent(paperPattern::setSubject);
 
-                case DESCRIPTIVE:
-                    if (paperPatternDto.getDESCRIPTIVE() == null || paperPatternDto.getDESCRIPTIVE() <= 0) {
-                        throw new IllegalArgumentException("Descriptive count is required for type DESCRIPTIVE and must be > 0");
-                    }
-                    paperPattern.setNoOfQuestion(paperPatternDto.getDESCRIPTIVE());
-                    paperPattern.setRequiredQuestion(paperPatternDto.getDESCRIPTIVE());
-                    break;
+        Optional.ofNullable(paperPatternDto.getMarks())
+                .ifPresent(paperPattern::setMarks);
 
-                case MCQ_DESCRIPTIVE:
-                    Integer mcq = paperPatternDto.getMCQ();
-                    Integer desc = paperPatternDto.getDESCRIPTIVE();
-                    if (mcq == null || mcq <= 0 || desc == null || desc <= 0) {
-                        throw new IllegalArgumentException("Both MCQ and Descriptive counts are required and must be > 0 for type MCQ_DESCRIPTIVE");
-                    }
-                    int total = mcq + desc;
-                    paperPattern.setNoOfQuestion(total);
-                    paperPattern.setRequiredQuestion(total);
-                    break;
+        Optional.ofNullable(paperPatternDto.getNegativeMarks())
+                .ifPresent(paperPattern::setNegativeMarks);
+
+
+        QType effectiveType = paperPatternDto.getType() != null
+                ? paperPatternDto.getType()
+                : paperPattern.getType();
+
+        paperPattern.setType(effectiveType);
+
+
+        switch (effectiveType) {
+
+            case MCQ: {
+                Integer mcq = paperPatternDto.getMCQ();
+                if (mcq == null || mcq <= 0) {
+                    throw new IllegalArgumentException(
+                            "MCQ count is required for type MCQ and must be > 0");
+                }
+
+                paperPattern.setMCQ(mcq);
+                paperPattern.setDESCRIPTIVE(0);
+                paperPattern.setNoOfQuestion(mcq);
+                paperPattern.setRequiredQuestion(mcq);
+                break;
+            }
+
+            case DESCRIPTIVE: {
+                Integer desc = paperPatternDto.getDESCRIPTIVE();
+                if (desc == null || desc <= 0) {
+                    throw new IllegalArgumentException(
+                            "Descriptive count is required for type DESCRIPTIVE and must be > 0");
+                }
+
+                paperPattern.setDESCRIPTIVE(desc);
+                paperPattern.setMCQ(0);
+                paperPattern.setNoOfQuestion(desc);
+                paperPattern.setRequiredQuestion(desc);
+                break;
+            }
+
+            case MCQ_DESCRIPTIVE: {
+                Integer mcq = paperPatternDto.getMCQ();
+                Integer desc = paperPatternDto.getDESCRIPTIVE();
+
+                if (mcq == null || mcq <= 0 || desc == null || desc <= 0) {
+                    throw new IllegalArgumentException(
+                            "Both MCQ and Descriptive counts are required and must be > 0");
+                }
+
+                paperPattern.setMCQ(mcq);
+                paperPattern.setDESCRIPTIVE(desc);
+
+                int total = mcq + desc;
+                paperPattern.setNoOfQuestion(total);
+                paperPattern.setRequiredQuestion(total);
+                break;
             }
         }
 
         PaperPattern savedPattern = paperPatternRepository.save(paperPattern);
         return mapper.toDto(savedPattern);
     }
+
 
     @Override
     public void deletePaperPattern(Integer id) {

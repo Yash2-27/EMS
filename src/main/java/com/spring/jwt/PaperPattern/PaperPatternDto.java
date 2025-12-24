@@ -1,5 +1,6 @@
 package com.spring.jwt.PaperPattern;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.spring.jwt.entity.enum01.QType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -29,7 +30,10 @@ public class PaperPatternDto {
     @Schema(description = "Total marks of pattern")
     private Integer marks;
 
+
     private Integer MCQ;
 
+
     private Integer DESCRIPTIVE;
+
 }
