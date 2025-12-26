@@ -395,26 +395,27 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
     }
 
     @Override
-    public List<StudentExamDateDTO> getStudentExamDate() {
-        return repository.getStudentExamDate()
+    public List<StudentExamDateDTO> getStudentExamDate(String studentClass, Integer batch) {
+
+        return repository.getStudentExamDate(studentClass, batch)
                 .stream()
                 .map(r -> new StudentExamDateDTO(
-                        r[0].toString(),                         // studentName
-                        r[1].toString(),                         // exam
-                        ((java.sql.Date) r[2]).toLocalDate()     // startDate
+                        r[0].toString(),                 // studentName
+                        r[1].toString(),                 // exam
+                        LocalDate.parse(r[2].toString()) // startDate
                 ))
                 .toList();
     }
 
     @Override
-    public List<StudentResultsDTO> getStudentResults() {
-        return repository.getStudentResults()
+    public List<StudentResultsDTO> getStudentResults(String studentClass, Integer batch) {
+        return repository.getStudentResults(studentClass, batch)
                 .stream()
                 .map(r -> new StudentResultsDTO(
-                        r[0].toString(),                  // studentName
-                        r[2].toString(),                  // exam
-                        r[3].toString(),                  // marks
-                        LocalDate.parse(r[1].toString())  // ✅ resultDate
+                        r[0].toString(),                 // studentName
+                        r[2].toString(),                 // exam
+                        r[3].toString(),                 // marks
+                        LocalDate.parse(r[1].toString()) // resultDate
                 ))
                 .toList();
     }
@@ -459,9 +460,9 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
     }
 
     @Override
-    public List<StudentExamResultDTO> getStudentResultsById(Long userId) {
+    public List<StudentExamResultDTO> getStudentResultsById(Long userId, String batch) {
 
-        return repository.getStudentExamResultRaw(userId)
+        return repository.getStudentExamResultRaw(userId, batch)
                 .stream()
                 .map(r -> new StudentExamResultDTO(
                         (String) r[0],
