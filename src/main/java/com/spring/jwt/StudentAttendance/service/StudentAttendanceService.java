@@ -31,9 +31,9 @@ public interface StudentAttendanceService {
 
     List<StudentAttendanceSummaryDTO> getStudentAttendanceSummary();
 
-    List<StudentExamDateDTO> getStudentExamDate();
+    List<StudentExamDateDTO> getStudentExamDate(String studentClass, Integer batch);
 
-    List<StudentResultsDTO> getStudentResults();
+    List<StudentResultsDTO> getStudentResults(String studentClass, Integer batch);
 
     // Class dropdown
     List<String> getClasses();
@@ -52,5 +52,5 @@ public interface StudentAttendanceService {
 
     List<String> getBatchesByStudent(Long userId);
 
-    List<StudentExamResultDTO> getStudentResultsById(Long userId);
+    List<StudentExamResultDTO> getStudentResultsById(Long userId, String batch);
 }
