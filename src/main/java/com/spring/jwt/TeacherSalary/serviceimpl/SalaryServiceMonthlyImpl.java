@@ -228,12 +228,13 @@ public class SalaryServiceMonthlyImpl implements SalaryServiceMonthly {
 
             boolean existsAttendance = attendanceList.stream().anyMatch(a -> {
                 try {
-                    int attYear = Integer.parseInt(a.getDate().substring(0, 4));
+                    int attYear = Integer.parseInt(a.getDate().substring(6, 10));
                     return attYear == newYear;
                 } catch (Exception e) {
                     return false;
                 }
             });
+
 
             if (!existsAttendance) {
                 throw new TeacherSalaryException(
@@ -381,11 +382,11 @@ public class SalaryServiceMonthlyImpl implements SalaryServiceMonthly {
 
         for (TeacherSalaryStructure structure : structures) {
 
-            boolean hasAttendance = attendanceRepo.existsByTeacherId(structure.getTeacherId());
+            boolean hasAttendance =
+                    attendanceRepo.existsByTeacherId(structure.getTeacherId());
 
             if (hasAttendance) {
 
-                // Fetch attendance list
                 List<TeachersAttendance> attendanceList =
                         attendanceRepo.findByTeacherId(structure.getTeacherId());
 
@@ -393,15 +394,29 @@ public class SalaryServiceMonthlyImpl implements SalaryServiceMonthly {
                 Integer year = null;
 
                 if (!attendanceList.isEmpty()) {
-                    // Sort by date and pick latest attendance entry
+
                     TeachersAttendance latest = attendanceList.stream()
                             .sorted((a, b) -> b.getDate().compareTo(a.getDate()))
                             .findFirst()
                             .get();
 
-                    // Extract month + year from attendance
                     month = latest.getMonth();
-                    year = Integer.parseInt(latest.getDate().substring(0, 4));
+
+
+                    String dateStr = latest.getDate();
+                    dateStr = dateStr.contains(" ")
+                            ? dateStr.substring(0, dateStr.indexOf(" "))
+                            : dateStr.contains("T")
+                            ? dateStr.substring(0, dateStr.indexOf("T"))
+                            : dateStr;
+
+                    dateStr = dateStr.replace("/", "-");
+
+                    if (dateStr.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                        year = Integer.parseInt(dateStr.substring(0, 4));
+                    } else if (dateStr.matches("\\d{2}-\\d{2}-\\d{4}")) {
+                        year = Integer.parseInt(dateStr.substring(6, 10));
+                    }
                 }
 
                 response.add(new TeacherMonthlyDropdown(
@@ -415,9 +430,7 @@ public class SalaryServiceMonthlyImpl implements SalaryServiceMonthly {
 
         return response;
     }
-
-
-
-
 }
+
+
 

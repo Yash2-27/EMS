@@ -56,21 +56,37 @@ public class PaperPatternController {
             return buildErrorResponse("Failed to fetch paper patterns", ex);
         }
     }
+//
+//    @Operation(summary = "Update a paper pattern")
+//    @PutMapping("/{id}")
+//    public ResponseEntity<?> updatePaperPattern(
+//            @Parameter(description = "ID of the paper pattern to update", example = "1")
+//            @PathVariable Integer id,
+//            @Parameter(description = "Updated paper pattern details")
+//            @RequestBody PaperPatternDto paperPatternDto) {
+//        try {
+//            PaperPatternDto updated = paperPatternService.updatePaperPattern(id, paperPatternDto);
+//            return ResponseEntity.ok(updated);
+//        } catch (Exception ex) {
+//            return buildErrorResponse("Failed to update paper pattern", ex);
+//        }
+//    }
 
-    @Operation(summary = "Update a paper pattern")
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updatePaperPattern(
-            @Parameter(description = "ID of the paper pattern to update", example = "1")
+
+    @Operation(summary = "Partially update a paper pattern")
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> patchPaperPattern(
             @PathVariable Integer id,
-            @Parameter(description = "Updated paper pattern details")
             @RequestBody PaperPatternDto paperPatternDto) {
         try {
-            PaperPatternDto updated = paperPatternService.updatePaperPattern(id, paperPatternDto);
+            PaperPatternDto updated =
+                    paperPatternService.updatePaperPattern(id, paperPatternDto);
             return ResponseEntity.ok(updated);
         } catch (Exception ex) {
-            return buildErrorResponse("Failed to update paper pattern", ex);
+            return buildErrorResponse("Failed to patch paper pattern", ex);
         }
     }
+
 
     @Operation(summary = "Delete a paper pattern by ID")
     @DeleteMapping("/{id}")
