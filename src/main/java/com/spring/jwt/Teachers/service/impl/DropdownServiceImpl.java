@@ -1,6 +1,6 @@
 package com.spring.jwt.Teachers.service.impl;
 
-import com.spring.jwt.Teachers.dto.QuestionBankDTO;
+
 import com.spring.jwt.Teachers.dto.TeacherQuestionFlatDto;
 import com.spring.jwt.Teachers.service.DropdownService;
 import com.spring.jwt.exception.DropdownResourceNotFoundException;
@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +20,48 @@ public class DropdownServiceImpl implements DropdownService {
 
     private static final Logger logger = LoggerFactory.getLogger(DropdownServiceImpl.class);
     private final TeacherRepository teacherRepository;
+
+    @Override
+    public List<String> getAllSubjects() {
+        return Optional.ofNullable(teacherRepository.findAllSubjects())
+                .filter(list -> !list.isEmpty())
+                .orElseThrow(() -> new DropdownResourceNotFoundException("No subjects found."));
+    }
+
+    @Override
+    public List<String> getClassesBySubject(String subject) {
+        return Optional.ofNullable(teacherRepository.findClassesBySubject(subject))
+                .filter(list -> !list.isEmpty())
+                .orElseThrow(() -> new DropdownResourceNotFoundException("No classes found for subject: " + subject));
+    }
+
+    @Override
+    public List<String> getIsLiveOptions(String subject, String studentClass) {
+        List<Boolean> isLiveList = teacherRepository.findIsLiveByClassAndSubject(studentClass, subject);
+        return isLiveList.stream().map(b -> b ? "Live" : "Past").collect(Collectors.toList());
+    }
+
+    @Override
+    public List<TeacherQuestionFlatDto> getQuestionPaper(String subject, String studentClass, String isLiveStr) {
+        Boolean isLive = "Live".equalsIgnoreCase(isLiveStr != null ? isLiveStr : "");
+        return Optional.ofNullable(
+                        teacherRepository.findQuestionPaperBySubjectClassIsLive(subject, studentClass, isLive))
+                .filter(list -> !list.isEmpty())
+                .orElseThrow(() -> new DropdownResourceNotFoundException(
+                        "No question paper found for subject: " + subject +
+                                ", class: " + studentClass +
+                                ", isLive: " + isLiveStr));
+    }
+
+    // Get ALL
+    @Override
+    public List<TeacherQuestionFlatDto> getAllQuestionPaper() {
+        logger.info("Fetching all teacher questions");
+        return teacherRepository.getAllQuestionPaper();
+    }
+
+    // Question Bank
+
 
     @Override
     public List<String> getAllClasses() {
@@ -53,12 +96,12 @@ public class DropdownServiceImpl implements DropdownService {
     }
 
     @Override
-    public List<TeacherQuestionFlatDto> getQuestionPaper(String studentClass, Integer teacherId, String subject) {
+    public List<TeacherQuestionFlatDto> getQuestionBank(String studentClass, Integer teacherId, String subject) {
         logger.info("Fetching question papers for class: {}, teacherId: {}, subject: {}",
                 studentClass, teacherId, subject);
 
         List<TeacherQuestionFlatDto> papers = Optional.ofNullable(
-                        teacherRepository.findByQuestionPaper(studentClass, teacherId, subject))
+                        teacherRepository.findByQuestionBank(studentClass, teacherId, subject))
                 .filter(list -> !list.isEmpty())
                 .orElseThrow(() -> new DropdownResourceNotFoundException(
                         "No question paper found for subject: " + subject));
@@ -66,21 +109,11 @@ public class DropdownServiceImpl implements DropdownService {
         logger.debug("Question papers fetched: {}", papers);
         return papers;
     }
-//
-//    @Override
-//    public List<QuestionBankDTO> getQuestionsOnly(String studentClass, String subject, Integer teacherId) {
-//        logger.info("Fetching questions without options for class: {}, subject: {}",
-//                studentClass, subject);
-//
-//        List<QuestionBankDTO> questions = Optional.ofNullable(
-//                        teacherRepository.findQuestionsOnly(studentClass, subject, teacherId))
-//                .filter(list -> !list.isEmpty())
-//                .orElseThrow(() -> new DropdownResourceNotFoundException(
-//                        "No questions found for subject: " + subject));
-//
-//        logger.debug("Questions fetched: {}", questions);
-//        return questions;
-//
-//
-//    }}
+
+
+    @Override
+    public List<TeacherQuestionFlatDto> getAllQuestionBank() {
+        logger.info("Fetching ALL Question Bank data");
+        return teacherRepository.getAllQuestionBank();
+    }
 }

@@ -256,10 +256,37 @@ public class StudentAttendanceController {
             summary = "Get student attendance summary",
             description = "Returns student name, class, mobile number and average attendance percentage"
     )
-    public ResponseEntity<ApiResponse<List<StudentAttendanceSummaryDTO>>> getAttendanceSummary() {
+    public ResponseEntity<ApiResponse<List<StudentAttendanceSummaryDTO>>> getAttendanceSummary(
+            @RequestParam String studentClass,
+            @RequestParam(required = false) Integer batch
+    ) {
         try {
             List<StudentAttendanceSummaryDTO> list =
-                    studentAttendanceService.getStudentAttendanceSummary();
+                    studentAttendanceService.getStudentAttendanceSummary(studentClass, batch);
+
+            return ResponseEntity.ok(
+                    ApiResponse.success("Attendance summary fetched successfully", list)
+            );
+        } catch (Exception e) {
+            log.error("Error fetching attendance summary", e);
+            return ResponseEntity.badRequest().body(
+                    ApiResponse.error(
+                            org.springframework.http.HttpStatus.BAD_REQUEST,"Failed to fetch attendance summary",e.getMessage())
+            );
+        }
+    }
+
+
+    @GetMapping("/allStudentAttendance")
+    @PermitAll
+    @Operation(
+            summary = "Get student attendance summary",
+            description = "Returns student name, class, mobile number and average attendance percentage"
+    )
+    public ResponseEntity<ApiResponse<List<StudentAttendanceSummaryDTO>>> getAllAttendanceSummary() {
+        try {
+            List<StudentAttendanceSummaryDTO> list =
+                    studentAttendanceService.getAllStudentAttendanceSummary();
 
             return ResponseEntity.ok(
                     ApiResponse.success("Attendance summary fetched successfully", list)
@@ -301,10 +328,33 @@ public class StudentAttendanceController {
         }
     }
 
+    @GetMapping("/getAllStudentExams")
+    @PermitAll
+    @Operation(
+            summary = "Get student Name exam start date",
+            description = "Returns student name and exam start date (date only)"
+    )
+    public ResponseEntity<ApiResponse<List<StudentExamDateDTO>>> getAllStudentExamDate() {
+        try {
+            List<StudentExamDateDTO> list =
+                    studentAttendanceService.getAllStudentExamDate();
+
+            return ResponseEntity.ok(
+                    ApiResponse.success("Student Name and exam dates fetched successfully", list)
+            );
+        } catch (Exception e) {
+            log.error("Error fetching student exam date", e);
+            return ResponseEntity.badRequest().body(
+                    ApiResponse.error(
+                            org.springframework.http.HttpStatus.BAD_REQUEST,"Failed to fetch student exam date",e.getMessage())
+            );
+        }
+    }
+
     @GetMapping("/studentResults")
     @PermitAll
     @Operation(
-            summary = "Get student results",
+            summary = "Get student results (list)",
             description = "Fetch student results by class and batch"
     )
     public ResponseEntity<ApiResponse<List<StudentResultsDTO>>> getStudentResults(
@@ -330,6 +380,32 @@ public class StudentAttendanceController {
         }
     }
 
+
+    @GetMapping("/getAllStudentResults")
+    @PermitAll
+    @Operation(
+            summary = "Get all student results",
+            description = "Fetches student name, exam, date and marks"
+    )
+    public ResponseEntity<ApiResponse<List<StudentResultsDTO>>> getAllStudentResults() {
+        try {
+            List<StudentResultsDTO> list =
+                    studentAttendanceService.getAllStudentResults();
+
+            return ResponseEntity.ok(
+                    ApiResponse.success("Student results fetched successfully", list)
+            );
+        } catch (Exception e) {
+            log.error("Failed to fetch student results", e);
+            return ResponseEntity.badRequest().body(
+                    ApiResponse.error(
+                            org.springframework.http.HttpStatus.BAD_REQUEST,
+                            "Failed to fetch student results",
+                            e.getMessage()
+                    )
+            );
+        }
+    }
 
     // Select Class Dropdown
     @GetMapping("/classesDropdown")
@@ -360,10 +436,11 @@ public class StudentAttendanceController {
             description = "Fetches total student count for selected class"
     )
     public ResponseEntity<ApiResponse<List<Long>>> getStudentCount(
-            @RequestParam("class") String studentClass
+            @RequestParam("class") String studentClass,
+            @RequestParam(value = "batch", required = false) Integer batch
     ) {
         try {
-            List<Long> count = studentAttendanceService.getStudentCountByClass(studentClass);
+            List<Long> count = studentAttendanceService.getStudentCountByClass(studentClass, batch);
             return ResponseEntity.ok(
                     ApiResponse.success("Student count fetched successfully", count)
             );
@@ -458,19 +535,17 @@ public class StudentAttendanceController {
 
     // ---------------- Get Student Results by ID ----------------
     @GetMapping("/results/{userId}")
-    @Operation(summary = "Get student results", description = "Fetches all exam results for a specific student")
     public ResponseEntity<ApiResponse<List<StudentExamResultDTO>>> getStudentResultsById(
-            @RequestParam Long userId,
-            @RequestParam String batch
+            @PathVariable Long userId,
+            @RequestParam(required = false) String batch
     ) {
-        try {
-            List<StudentExamResultDTO> results = studentAttendanceService.getStudentResultsById(userId, batch);
-            return ResponseEntity.ok(ApiResponse.success("Student results fetched successfully", results));
-        } catch (Exception e) {
-            log.error("Failed to fetch student results for user {}", userId, e);
-            return ResponseEntity.badRequest().body(
-                    ApiResponse.error(HttpStatus.BAD_REQUEST, "Failed to fetch student results", e.getMessage()));
-        }
+        List<StudentExamResultDTO> results =
+                studentAttendanceService.getStudentResultsById(userId, batch);
+
+        return ResponseEntity.ok(
+                ApiResponse.success("Student results fetched successfully", results)
+        );
     }
+
 
 }
