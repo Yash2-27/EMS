@@ -16,6 +16,7 @@ public class TeachersAttendance {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "teachers_attendance_id")
     private Integer teachersAttendanceId;
 
     private Integer teacherId;

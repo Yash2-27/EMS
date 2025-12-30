@@ -381,8 +381,27 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
     }
 
     @Override
-    public List<StudentAttendanceSummaryDTO> getStudentAttendanceSummary() {
-        return repository.getStudentAttendanceSummary()
+    public List<StudentAttendanceSummaryDTO> getStudentAttendanceSummary(
+            String studentClass,
+            Integer batch
+    ) {
+        return repository
+                .getStudentAttendanceSummary(studentClass, batch)
+                .stream()
+                .map(r -> new StudentAttendanceSummaryDTO(
+                        r[0] != null ? r[0].toString() : null,                 // studentName
+                        r[1] != null ? r[1].toString() : null,                 // class
+                        r[2] != null ? r[2].toString() : null,                 // exam
+                        r[3] != null ? Long.parseLong(r[3].toString()) : null, // mobile
+                        r[4] != null ? Double.parseDouble(r[4].toString()) : 0 // avg %
+                ))
+                .toList();
+    }
+
+    // get all
+    @Override
+    public List<StudentAttendanceSummaryDTO> getAllStudentAttendanceSummary() {
+        return repository.getAllStudentAttendanceSummary()
                 .stream()
                 .map(r -> new StudentAttendanceSummaryDTO(
                         r[0] != null ? r[0].toString() : null,                 // studentName
@@ -393,6 +412,7 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
                 ))
                 .collect(Collectors.toList());
     }
+
 
     @Override
     public List<StudentExamDateDTO> getStudentExamDate(String studentClass, Integer batch) {
@@ -408,14 +428,13 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
     }
 
     @Override
-    public List<StudentResultsDTO> getStudentResults(String studentClass, Integer batch) {
-        return repository.getStudentResults(studentClass, batch)
+    public List<StudentExamDateDTO> getAllStudentExamDate() {
+        return repository.getAllStudentExamDate()
                 .stream()
-                .map(r -> new StudentResultsDTO(
-                        r[0].toString(),                 // studentName
-                        r[2].toString(),                 // exam
-                        r[3].toString(),                 // marks
-                        LocalDate.parse(r[1].toString()) // resultDate
+                .map(r -> new StudentExamDateDTO(
+                        r[0].toString(),                         // studentName
+                        r[1].toString(),                         // exam
+                        ((java.sql.Date) r[2]).toLocalDate()     // startDate
                 ))
                 .toList();
     }
@@ -426,8 +445,8 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
     }
 
     @Override
-    public List<Long> getStudentCountByClass(String studentClass) {
-        return List.of(repository.getStudentCountByClass(studentClass));
+    public List<Long> getStudentCountByClass(String studentClass,Integer batch) {
+        return List.of(repository.getStudentCountByClass(studentClass,batch));
     }
 
     @Override
@@ -459,9 +478,15 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
         return repository.getBatchesByStudent(userId);
     }
 
+
+
+
+    //-----------------------------------------------------
+
+
+    // 🔹 Detail Page
     @Override
     public List<StudentExamResultDTO> getStudentResultsById(Long userId, String batch) {
-
         return repository.getStudentExamResultRaw(userId, batch)
                 .stream()
                 .map(r -> new StudentExamResultDTO(
@@ -480,6 +505,37 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
                 ))
                 .toList();
     }
+
+    // 🔹 List Page (Filtered)
+    @Override
+    public List<StudentResultsDTO> getStudentResults(String studentClass, Integer batch) {
+        return repository.getStudentResults(studentClass, batch)
+                .stream()
+                .map(r -> new StudentResultsDTO(
+                        r[0] != null ? ((Number) r[0]).intValue() : null, // userId
+                        r[1] != null ? r[1].toString() : null,            // studentName
+                        r[3] != null ? r[3].toString() : null,            // exam
+                        r[4] != null ? r[4].toString() : "0/0",           // marks
+                        r[2] != null ? ((java.sql.Date) r[2]).toLocalDate() : null
+                ))
+                .toList();
+    }
+
+    // 🔹 All Students
+    @Override
+    public List<StudentResultsDTO> getAllStudentResults() {
+        return repository.getAllStudentResults()
+                .stream()
+                .map(r -> new StudentResultsDTO(
+                        r[0] != null ? ((Number) r[0]).intValue() : null, // userId
+                        r[1] != null ? r[1].toString() : null,            // studentName
+                        r[3] != null ? r[3].toString() : null,            // exam
+                        r[4] != null ? r[4].toString() : "0/0",           // marks
+                        r[2] != null ? ((java.sql.Date) r[2]).toLocalDate() : null
+                ))
+                .toList();
+    }
+
 
 
 }

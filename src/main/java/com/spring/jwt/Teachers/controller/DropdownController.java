@@ -16,31 +16,37 @@ public class DropdownController {
 
     private final DropdownService dropdownService;
 
-    @GetMapping("/getAllStudentClass")
-    public ResponseEntity<ApiResponse<List<String>>> getAllClasses() {
-        return ResponseEntity.ok(ApiResponse.success("Classes fetched successfully", dropdownService.getAllClasses()));
-    }
-
-    @GetMapping("/teachers")
-    public ResponseEntity<ApiResponse<List<Object>>> getTeachersByClasses(@RequestParam String studentClass) {
-        return ResponseEntity.ok(ApiResponse.success("Teachers fetched successfully", dropdownService.getTeachersByClasses(studentClass)));
-    }
 
     @GetMapping("/subjects")
-    public ResponseEntity<ApiResponse<List<String>>> getSubjects(@RequestParam String studentClass,
-                                                                 @RequestParam Integer teacherId) {
-        return ResponseEntity.ok(ApiResponse.success("Subjects fetched successfully", dropdownService.getSubjects(studentClass, teacherId)));
+    public ResponseEntity<ApiResponse<List<String>>> getAllSubjects() {
+        return ResponseEntity.ok(ApiResponse.success("Subjects fetched successfully", dropdownService.getAllSubjects()));
+    }
+
+    @GetMapping("/classes")
+    public ResponseEntity<ApiResponse<List<String>>> getClassesBySubject(@RequestParam String subject) {
+        return ResponseEntity.ok(ApiResponse.success("Classes fetched successfully", dropdownService.getClassesBySubject(subject)));
+    }
+
+    @GetMapping("/isLiveOptions")
+    public ResponseEntity<ApiResponse<List<String>>> getIsLiveOptions(@RequestParam String subject,
+                                                                      @RequestParam String studentClass) {
+        return ResponseEntity.ok(ApiResponse.success("isLive options fetched successfully", dropdownService.getIsLiveOptions(subject, studentClass)));
     }
 
     @GetMapping("/paper")
-    public ResponseEntity<ApiResponse<List<TeacherQuestionFlatDto>>> getQuestionPaper(
-            @RequestParam String studentClass,
-            @RequestParam Integer teacherId,
-            @RequestParam String subject) {
-
-        List<TeacherQuestionFlatDto> papers = dropdownService.getQuestionPaper(studentClass, teacherId, subject);
-        return ResponseEntity.ok(ApiResponse.success("Question papers fetched successfully", papers));
+    public ResponseEntity<ApiResponse<List<TeacherQuestionFlatDto>>> getQuestionPaper(@RequestParam String subject,
+                                                                                      @RequestParam String studentClass,
+                                                                                      @RequestParam String isLive) {
+        return ResponseEntity.ok(ApiResponse.success("Question papers fetched successfully",
+                dropdownService.getQuestionPaper(subject, studentClass, isLive)));
     }
+
+    @GetMapping("/getAllPaper")
+    public ResponseEntity<ApiResponse<List<TeacherQuestionFlatDto>>> getAllQuestionPaper() {
+        return ResponseEntity.ok(ApiResponse.success("All Question papers fetched successfully", dropdownService.getAllQuestionPaper()));
+    }
+
+
 
 //    @GetMapping("/questionBank")
 //    public ResponseEntity<?> getQuestionsOnly(
@@ -60,4 +66,38 @@ public class DropdownController {
      return ResponseEntity.ok(titles);
      }
      **/
+
+
+
+    @GetMapping("/getAllStudentClass")
+    public ResponseEntity<ApiResponse<List<String>>> getAllClasses() {
+        return ResponseEntity.ok(ApiResponse.success("Classes fetched successfully", dropdownService.getAllClasses()));
+    }
+
+    @GetMapping("/questionBankTeachers")
+    public ResponseEntity<ApiResponse<List<Object>>> getTeachersByClasses(@RequestParam String studentClass) {
+        return ResponseEntity.ok(ApiResponse.success("Teachers fetched successfully", dropdownService.getTeachersByClasses(studentClass)));
+    }
+
+    @GetMapping("/questionBankSubjects")
+    public ResponseEntity<ApiResponse<List<String>>> getSubjects(@RequestParam String studentClass,
+                                                                 @RequestParam Integer teacherId) {
+        return ResponseEntity.ok(ApiResponse.success("Subjects fetched successfully", dropdownService.getSubjects(studentClass, teacherId)));
+    }
+
+    @GetMapping("/questionBank")
+    public ResponseEntity<ApiResponse<List<TeacherQuestionFlatDto>>> getQuestionBank(
+            @RequestParam String studentClass,
+            @RequestParam Integer teacherId,
+            @RequestParam String subject) {
+
+        List<TeacherQuestionFlatDto> papers = dropdownService.getQuestionBank(studentClass, teacherId, subject);
+        return ResponseEntity.ok(ApiResponse.success("Question papers fetched successfully", papers));
+    }
+
+    @GetMapping("/getAllQuestionBank")
+    public ResponseEntity<ApiResponse<List<TeacherQuestionFlatDto>>> getAllQuestionBank() {
+        return ResponseEntity.ok(ApiResponse.success("Question papers fetched successfully", dropdownService.getAllQuestionBank()));
+    }
+
 }

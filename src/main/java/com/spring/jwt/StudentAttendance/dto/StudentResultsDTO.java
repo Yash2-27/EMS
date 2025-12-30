@@ -8,6 +8,7 @@ import java.time.LocalDate;
 @Data
 @AllArgsConstructor
 public class StudentResultsDTO {
+    private Integer userId;
     private String studentName;
     private String exam;
     private String marks;

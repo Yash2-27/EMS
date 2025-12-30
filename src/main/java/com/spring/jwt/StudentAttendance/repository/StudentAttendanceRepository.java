@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,6 +48,40 @@ public interface StudentAttendanceRepository extends JpaRepository<StudentAttend
 
     StudentAttendance findFirstByUserId(Integer userId);
 
+
+
+
+    @Query(value = """
+    SELECT 
+        CONCAT(s.name, ' ', s.last_name) AS student_name,
+        s.exam AS exam,
+        DATE(ed.start_time) AS start_date
+    FROM student s
+    LEFT JOIN exam_details ed
+        ON s.student_class = ed.student_class
+    WHERE s.student_class = :studentClass
+      AND (:batch IS NULL OR s.batch = :batch)
+    ORDER BY student_name
+""", nativeQuery = true)
+    List<Object[]> getStudentExamDate(
+            @Param("studentClass") String studentClass,
+            @Param("batch") Integer batch
+    );
+
+    @Query(value = """
+                    SELECT 
+                    CONCAT(s.name, ' ', s.last_name) AS student_name,
+                    s.exam AS exam,
+                    DATE(ed.start_time) AS start_date
+                    FROM student s
+                    JOIN exam_details ed
+                    ON s.student_class = ed.student_class
+            """, nativeQuery = true)
+    List<Object[]> getAllStudentExamDate();
+
+
+    // ===============================================================
+
     @Query(value = """
                     SELECT 
                     CONCAT(s.name, ' ', s.last_name) AS student_name,
@@ -68,51 +101,42 @@ public interface StudentAttendanceRepository extends JpaRepository<StudentAttend
                         u.mobile_number
                     ORDER BY student_name;
             """, nativeQuery = true)
-    List<Object[]> getStudentAttendanceSummary();
-
-
+    List<Object[]> getAllStudentAttendanceSummary();
 
     @Query(value = """
-                SELECT 
-                    CONCAT(s.name, ' ', s.last_name) AS student_name,
-                    s.exam AS exam,
-                    DATE(ed.start_time) AS start_date
-                FROM student s
-                JOIN exam_details ed
-                    ON s.student_class = ed.student_class
-                WHERE s.student_class = :studentClass
-                  AND (:batch IS NULL OR s.batch = :batch)
-                ORDER BY student_name
-            """, nativeQuery = true)
-    List<Object[]> getStudentExamDate(
+    SELECT 
+        CONCAT(s.name, ' ', s.last_name) AS student_name,
+        s.student_class,
+        s.exam,
+        u.mobile_number,
+        ROUND(
+            AVG(CASE WHEN sa.attendance = TRUE THEN 1 ELSE 0 END) * 100, 0
+        ) AS average_present_percentage
+    FROM student s
+    JOIN users u ON s.user_id = u.user_id
+    JOIN user_role ur ON u.user_id = ur.user_id
+    JOIN roles r ON ur.role_id = r.role_id
+    LEFT JOIN student_attendance sa 
+        ON sa.user_id = s.user_id
+    WHERE r.role_name = 'STUDENT'
+      AND s.student_class = :studentClass
+      AND (:batch IS NULL OR s.batch = :batch)
+    GROUP BY
+        s.user_id,
+        s.student_class,
+        s.exam,
+        u.mobile_number,
+        s.name,
+        s.last_name
+    ORDER BY student_name
+""", nativeQuery = true)
+    List<Object[]> getStudentAttendanceSummary(
             @Param("studentClass") String studentClass,
             @Param("batch") Integer batch
     );
 
     // -------------------------------------------------------------------------------------
 
-
-    // Student Results (FILTERED)
-    @Query(value = """
-        SELECT
-            CONCAT(s.name, ' ', s.last_name) AS student_name,
-            DATE(er.result_processed_time) AS result_date,
-            s.exam AS exam,
-            CONCAT(
-                COALESCE(er.score, 0),
-                '/',
-                COALESCE(er.total_marks, 0)
-            ) AS marks
-        FROM student s
-        JOIN exam_results er ON s.user_id = er.user_id
-        WHERE s.student_class = :studentClass
-        AND (:batch IS NULL OR s.batch = :batch)
-        ORDER BY student_name
-    """, nativeQuery = true)
-    List<Object[]> getStudentResults(
-            @Param("studentClass") String studentClass,
-            @Param("batch") Integer batch
-    );
 
     // Class Dropdown
     @Query(value = "SELECT DISTINCT student_class FROM student ORDER BY student_class",
@@ -121,11 +145,15 @@ public interface StudentAttendanceRepository extends JpaRepository<StudentAttend
 
     // 🔹 Student Count by Class
     @Query(value = """
-        SELECT COUNT(*)
-        FROM student
-        WHERE student_class = :studentClass
-    """, nativeQuery = true)
-    Long getStudentCountByClass(@Param("studentClass") String studentClass);
+    SELECT COUNT(*)
+    FROM student
+    WHERE student_class = :studentClass
+      AND (:batch IS NULL OR batch = :batch)
+""", nativeQuery = true)
+    Long getStudentCountByClass(
+            @Param("studentClass") String studentClass,
+            @Param("batch") Integer batch
+    );
 
     // Batch Dropdown
     @Query(value = """
@@ -168,30 +196,65 @@ public interface StudentAttendanceRepository extends JpaRepository<StudentAttend
     """, nativeQuery = true)
     List<String> getBatchesByStudent(@Param("userId") Long userId);
 
-    // Final student result
+    //--------------------------------------------
+
+    // 🔹 Student Detail
     @Query(value = """
-                SELECT
-                    CONCAT(s.name,' ',s.last_name) AS studentName,
-                    s.student_class AS className,
-                    s.exam AS examName,
-                    s.user_id AS rollNumber,
-                    ed.subject AS subjectName,
-            
-                    er.score,
-                    er.total_marks,
-                    er.total_questions,
-                    er.correct_answers,
-                    er.incorrect_answers,
-                    er.unanswered_questions
-                FROM student s
-                JOIN exam_results er ON s.user_id = er.user_id
-                JOIN exam_details ed ON er.paper_id = ed.paper_id
-                WHERE s.user_id = :userId
-                  AND s.batch = :batch
-            """, nativeQuery = true)
+        SELECT
+        
+            CONCAT(s.name,' ',s.last_name) AS studentName,
+            s.student_class,
+            s.exam,
+            s.user_id,
+            ed.subject,
+            er.score,
+            er.total_marks,
+            er.total_questions,
+            er.correct_answers,
+            er.incorrect_answers,
+            er.unanswered_questions
+        FROM student s
+        JOIN exam_results er ON s.user_id = er.user_id
+        JOIN exam_details ed ON er.paper_id = ed.paper_id
+        WHERE s.user_id = :userId
+          AND (:batch IS NULL OR s.batch = :batch)
+    """, nativeQuery = true)
     List<Object[]> getStudentExamResultRaw(
             @Param("userId") Long userId,
             @Param("batch") String batch
     );
+
+    // 🔹 Filtered List
+    @Query(value = """
+        SELECT
+            s.user_id,
+            CONCAT(s.name,' ',s.last_name),
+            DATE(er.result_processed_time),
+            s.exam,
+            CONCAT(er.score,'/',er.total_marks)
+        FROM student s
+        JOIN exam_results er ON s.user_id = er.user_id
+        WHERE s.student_class = :studentClass
+          AND (:batch IS NULL OR s.batch = :batch)
+        ORDER BY s.name
+    """, nativeQuery = true)
+    List<Object[]> getStudentResults(
+            @Param("studentClass") String studentClass,
+            @Param("batch") Integer batch
+    );
+
+    // 🔹 All Students
+    @Query(value = """
+        SELECT
+            s.user_id,
+            CONCAT(s.name,' ',s.last_name),
+            DATE(er.result_processed_time),
+            s.exam,
+            CONCAT(er.score,'/',er.total_marks)
+        FROM student s
+        JOIN exam_results er ON s.user_id = er.user_id
+        ORDER BY s.name
+    """, nativeQuery = true)
+    List<Object[]> getAllStudentResults();
 
 }

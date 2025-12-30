@@ -29,17 +29,17 @@ public interface StudentAttendanceService {
 
     StudentAttendanceSummaryResponseDto getSubjectWiseSummaryByUserId(Integer userId);
 
-    List<StudentAttendanceSummaryDTO> getStudentAttendanceSummary();
+    List<StudentAttendanceSummaryDTO> getStudentAttendanceSummary(String studentClass, Integer batch);
 
     List<StudentExamDateDTO> getStudentExamDate(String studentClass, Integer batch);
+    List<StudentExamDateDTO> getAllStudentExamDate();
 
-    List<StudentResultsDTO> getStudentResults(String studentClass, Integer batch);
 
-    // Class dropdown
+   // Class dropdown
     List<String> getClasses();
 
     // Student count by selected class
-    List<Long> getStudentCountByClass(String studentClass);
+    List<Long> getStudentCountByClass(String studentClass, Integer batch);
 
     // Batches dropdown by selected class
     List<Integer> getBatchesByClass(String studentClass);
@@ -52,5 +52,29 @@ public interface StudentAttendanceService {
 
     List<String> getBatchesByStudent(Long userId);
 
+    List<StudentAttendanceSummaryDTO> getAllStudentAttendanceSummary();
+
+
+
+
+
+
+
+
+
+
+
+
+    // -----------------------------------------
+
     List<StudentExamResultDTO> getStudentResultsById(Long userId, String batch);
+
+    List<StudentResultsDTO> getStudentResults(String studentClass, Integer batch);
+
+    List<StudentResultsDTO> getAllStudentResults();
+
+
+
+
+
 }
